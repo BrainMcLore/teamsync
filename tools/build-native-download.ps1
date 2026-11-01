@@ -1,7 +1,18 @@
-param([string]$Msvc = 'C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Tools\MSVC\14.44.35207', [string]$SdkVersion = '10.0.26100.0')
+param([string]$Msvc = '', [string]$SdkVersion = '')
 $ErrorActionPreference = 'Stop'
 $projectRoot = Split-Path $PSScriptRoot -Parent
 $sdkRoot = Join-Path ${env:ProgramFiles(x86)} 'Windows Kits\10'
+if (-not $Msvc) {
+  $vswhere = Join-Path ${env:ProgramFiles(x86)} 'Microsoft Visual Studio\Installer\vswhere.exe'
+  if (-not (Test-Path -LiteralPath $vswhere)) { throw 'Visual Studio C++ tools are required. Pass -Msvc to select an installation.' }
+  $installation = & $vswhere -latest -products '*' -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath
+  if (-not $installation) { throw 'Visual Studio C++ tools were not found.' }
+  $Msvc = (Get-ChildItem -LiteralPath (Join-Path $installation 'VC\Tools\MSVC') -Directory | Sort-Object { [version]$_.Name } -Descending | Select-Object -First 1).FullName
+}
+if (-not $SdkVersion) {
+  $SdkVersion = (Get-ChildItem -LiteralPath (Join-Path $sdkRoot 'Include') -Directory | Where-Object { Test-Path -LiteralPath (Join-Path $_.FullName 'um\Windows.h') } | Sort-Object { [version]$_.Name } -Descending | Select-Object -First 1).Name
+}
+if (-not $Msvc -or -not $SdkVersion) { throw 'MSVC and Windows SDK must be installed.' }
 $package = Join-Path $projectRoot '.tools\webview2-sdk'
 $pin = Get-Content (Join-Path $projectRoot 'native\download\SDK.json') -Raw | ConvertFrom-Json
 if (-not (Test-Path -LiteralPath (Join-Path $package 'build\native\include\WebView2.h'))) {

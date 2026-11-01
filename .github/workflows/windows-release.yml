@@ -1,0 +1,75 @@
+name: Windows release
+
+on:
+  workflow_dispatch:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: read
+
+jobs:
+  windows:
+    runs-on: windows-2022
+    timeout-minutes: 60
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.10'
+          cache: pip
+          cache-dependency-path: |
+            worker/requirements.txt
+            worker/requirements-build.txt
+            server/requirements.txt
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.47.8'
+          channel: stable
+          cache: true
+      - name: Prepare Python and native tools
+        run: |
+          python -m venv .venv
+          .venv/Scripts/python.exe -m pip install -r worker/requirements-build.txt -r server/requirements.txt
+          if ($LASTEXITCODE -ne 0) { throw 'Python dependency installation failed.' }
+          $inno = Get-ChildItem 'C:\Program Files (x86)\Inno Setup*\ISCC.exe' -ErrorAction SilentlyContinue | Select-Object -First 1
+          if (-not $inno) {
+            choco install innosetup --yes --no-progress
+            if ($LASTEXITCODE -ne 0) { throw 'Inno Setup installation failed.' }
+            $inno = Get-ChildItem 'C:\Program Files (x86)\Inno Setup*\ISCC.exe' | Select-Object -First 1
+          }
+          if (-not $inno) { throw 'Inno Setup compiler not found.' }
+          "TEAMSYNC_ISCC=$($inno.FullName)" >> $env:GITHUB_ENV
+      - name: Verify packaging and parser fixture
+        run: |
+          python -m unittest discover -s tools -p test_release.py -v
+          if ($LASTEXITCODE -ne 0) { throw 'Release tooling checks failed.' }
+          .venv/Scripts/python.exe tools/fetch_demo_fixture.py
+          if ($LASTEXITCODE -ne 0) { throw 'Pinned demo fixture verification failed.' }
+      - name: Build demo companion
+        run: ./tools/build-demo-worker.ps1
+      - name: Verify worker and server
+        env:
+          PYTHONPATH: worker
+        run: |
+          .venv/Scripts/python.exe -m pytest worker server/tests -q
+          if ($LASTEXITCODE -ne 0) { throw 'Worker/server checks failed.' }
+      - name: Build and verify Windows installer
+        run: ./tools/build-windows.ps1 -Flutter (Get-Command flutter.bat).Source -Installer -InnoCompiler $env:TEAMSYNC_ISCC
+      - name: Package source, compatible server and checksums
+        run: |
+          python tools/package-source.py
+          if ($LASTEXITCODE -ne 0) { throw 'Source packaging failed.' }
+          python tools/package-server.py
+          if ($LASTEXITCODE -ne 0) { throw 'Server packaging failed.' }
+          python tools/release-checksums.py --require-windows
+          if ($LASTEXITCODE -ne 0) { throw 'Release verification failed.' }
+      - uses: actions/upload-artifact@v7
+        with:
+          name: teamsync-windows-${{ github.sha }}
+          path: dist/*
+          if-no-files-found: error
+          retention-days: 30

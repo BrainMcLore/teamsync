@@ -1,4 +1,4 @@
-param([string]$Flutter = '', [switch]$Installer, [string]$ApiUrl = 'https://teamsync-api-ui7n.onrender.com')
+param([string]$Flutter = '', [switch]$Installer, [string]$ApiUrl = 'https://teamsync-api-ui7n.onrender.com', [string]$InnoCompiler = '')
 $ErrorActionPreference = 'Stop'
 $projectRoot = Split-Path $PSScriptRoot -Parent
 if (-not $Flutter) { $Flutter = Join-Path $projectRoot '.tools\flutter\bin\flutter.bat' }
@@ -31,12 +31,21 @@ try {
     New-Item -ItemType Directory -Path $workerTarget -Force | Out-Null
     Copy-Item -Path (Join-Path $workerRoot '*') -Destination $workerTarget -Recurse -Force
     $redistBase = Join-Path ${env:ProgramFiles(x86)} 'Microsoft Visual Studio\2022\BuildTools\VC\Redist\MSVC'
+    if (-not (Test-Path -LiteralPath $redistBase)) {
+        $vswhere = Join-Path ${env:ProgramFiles(x86)} 'Microsoft Visual Studio\Installer\vswhere.exe'
+        if (Test-Path -LiteralPath $vswhere) {
+            $installation = & $vswhere -latest -products '*' -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath
+            if ($installation) { $redistBase = Join-Path $installation 'VC\Redist\MSVC' }
+        }
+    }
     if (Test-Path -LiteralPath $redistBase) {
         $crt = Get-ChildItem -LiteralPath $redistBase -Directory | Where-Object Name -Match '^\d' | Sort-Object Name -Descending | ForEach-Object { Join-Path $_.FullName 'x64\Microsoft.VC143.CRT' } | Where-Object { Test-Path -LiteralPath $_ } | Select-Object -First 1
         if ($crt) { Get-ChildItem -LiteralPath $crt -Filter '*.dll' | Copy-Item -Destination 'build\windows\x64\v08\runner\Release' }
+        else { throw 'MSVC runtime files were not found.' }
     }
+    else { throw 'MSVC runtime directory was not found.' }
     if ($Installer) {
-        $compiler = Join-Path $projectRoot '.tools\inno\ISCC.exe'
+        $compiler = if ($InnoCompiler) { $InnoCompiler } else { Join-Path $projectRoot '.tools\inno\ISCC.exe' }
         if (-not (Test-Path -LiteralPath $compiler)) { throw 'Inno Setup is required at .tools\inno\ISCC.exe.' }
         & $compiler (Join-Path $projectRoot 'packaging\teamsync.iss')
         if ($LASTEXITCODE -ne 0) { throw 'Installer build failed.' }
