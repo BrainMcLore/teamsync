@@ -21,4 +21,4 @@ for entry in json.loads((catalog/'Contents.json').read_text())['images']:
     if 'filename' in entry:
         size=round(float(entry['size'].split('x')[0])*float(entry['scale'].rstrip('x')))
         icon(size).save(catalog/entry['filename'])
-icon(512).save(root/'artifacts/app-icon.png')
+icon(512).save(root/'docs/images/app-icon.png')

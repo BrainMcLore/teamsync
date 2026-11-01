@@ -22,7 +22,7 @@ for required, name in [(args.require_windows, expected[0]), (args.require_androi
     if required and name in missing:
         cli.error(f'Required artifact is missing: {name}')
 paths = [dist / name for name in expected if (dist / name).is_file()]
-server = dist / 'TeamSync-0.7.0-Server.zip'
+server = dist / f'TeamSync-{version}-Server.zip'
 if server.is_file():
     paths.append(server)
 files = [{'name': p.name, 'bytes': p.stat().st_size, 'sha256': sha256_file(p)} for p in sorted(paths)]

@@ -25,19 +25,20 @@ class SnapshotSync extends TacticalSync {
   Future<void> run(String localTeam, {required String conflictLabel}) async {}
 }
 
-Widget snapshotApp(Store store, LocalFiles files) => MaterialApp(
-  debugShowCheckedModeBanner: false,
-  theme: workspaceTheme(),
-  locale: const Locale('ru'),
-  localizationsDelegates: AppLocalizations.localizationsDelegates,
-  supportedLocales: AppLocalizations.supportedLocales,
-  home: Workspace(
-    store: store,
-    files: files,
-    onLocale: (_) {},
-    sync: SnapshotSync(store, files),
-  ),
-);
+Widget snapshotApp(Store store, LocalFiles files, {String language = 'ru'}) =>
+    MaterialApp(
+      debugShowCheckedModeBanner: false,
+      theme: workspaceTheme(),
+      locale: Locale(language),
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
+      home: Workspace(
+        store: store,
+        files: files,
+        onLocale: (_) {},
+        sync: SnapshotSync(store, files),
+      ),
+    );
 
 Future<void> cacheImage(String path) async {
   final file = File(path),
@@ -76,169 +77,182 @@ void main() {
     }
     PaintingBinding.instance.imageCache.maximumSizeBytes = 300 * 1024 * 1024;
   });
-  testWidgets('capture native studio maps, editor and mobile task layouts', (
-    tester,
-  ) async {
-    tester.view.physicalSize = const Size(1440, 900);
-    tester.view.devicePixelRatio = 1;
-    addTearDown(tester.view.resetPhysicalSize);
-    addTearDown(tester.view.resetDevicePixelRatio);
-    final root = Directory.systemTemp.createTempSync('teamsync_studio_'),
-        store = Store(':memory:');
-    addTearDown(() {
-      store.close();
-      root.deleteSync(recursive: true);
-    });
-    final catalog = await tester.runAsync(() => MapCatalog.install(root));
-    await tester.runAsync(() async {
-      for (final map in catalog!.maps) {
-        for (final level in map['levels'] as List) {
-          await cacheImage(catalog.path(level['asset'] as String));
+  for (final language in ['ru', 'en']) {
+    testWidgets('capture native studio layouts $language', (tester) async {
+      tester.view.physicalSize = const Size(1440, 900);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      String tr(String ru, String en) => language == 'ru' ? ru : en;
+      final root = Directory.systemTemp.createTempSync('teamsync_studio_'),
+          store = Store(':memory:');
+      addTearDown(() {
+        store.close();
+        root.deleteSync(recursive: true);
+      });
+      final catalog = await tester.runAsync(() => MapCatalog.install(root));
+      await tester.runAsync(() async {
+        for (final map in catalog!.maps) {
+          for (final level in map['levels'] as List) {
+            await cacheImage(catalog.path(level['asset'] as String));
+          }
+          await cacheImage(catalog.thumbnail(map['key'] as String)!);
         }
-        await cacheImage(catalog.thumbnail(map['key'] as String)!);
-      }
-    });
-    final team = store.createTeam('TEAMSYNC / QA');
-    store.setSetting(
-      'account_identity',
-      jsonEncode(['https://fixture.example', 'qa']),
-    );
-    store.setSetting(
-      'account_team_$team',
-      jsonEncode({
-        'server': 'https://fixture.example',
-        'team': team,
-        'user': 'qa',
-      }),
-    );
-    catalog!.ensureTeam(store, team);
-    final member = store.addMember(team, 'QA captain', 'captain', 'IGL');
-    final mirage = store
-        .maps(team)
-        .singleWhere((m) => m['catalog_id'] == 'de_mirage');
-    UtilityLibrary(store).save(
-      team,
-      mirage['id'] as String,
-      'Командный смок: подготовка мида',
-      'T',
-      'Перед тренировкой проверьте точку прицеливания и согласуйте момент броска с первым игроком.',
-      {
-        'grenade': 'smoke',
-        'start': 'T spawn',
-        'target': 'Окно',
-        'throw_type': 'Jumpthrow',
-      },
-    );
-    final id = store.createStrategy(
-      mirage['id'] as String,
-      'Контроль мида → сплит A',
-      'T',
-    );
-    store.saveStrategy(
-      id,
-      'Дымы: окно и коннектор.\nEntry выходит после флешки. Support удерживает short.',
-      [
-        {'type': 'smoke', 'x': .48, 'y': .46},
-        {'type': 't', 'x': .63, 'y': .64},
-        {'type': 't', 'x': .69, 'y': .62},
-        {'type': 'ct', 'x': .43, 'y': .43},
-        {'type': 'arrow', 'x': .63, 'y': .64, 'x2': .52, 'y2': .53},
-      ],
-      1,
-    );
-    store.createTask(
-      team,
-      'Отработать синхронный выход через коннектор',
-      'Проверить тайминг дыма и флешки перед командной тренировкой.',
-      member: member,
-      strategyId: id,
-    );
-    await tester.pumpWidget(
-      RepaintBoundary(
-        key: const Key('native-shot'),
-        child: snapshotApp(store, LocalFiles(root)),
-      ),
-    );
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Карты').first);
-    await tester.pumpAndSettle();
-    expect(tester.takeException(), isNull);
-    await expectLater(
-      find.byKey(const Key('native-shot')),
-      matchesGoldenFile(
-        '../../artifacts/verification/studio-maps-08${Platform.isLinux ? '-linux' : ''}.png',
-      ),
-    );
-    await tester.pumpWidget(
-      RepaintBoundary(
-        key: const Key('native-shot'),
-        child: MaterialApp(
-          debugShowCheckedModeBanner: false,
-          theme: workspaceTheme(),
-          locale: const Locale('ru'),
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
-          supportedLocales: AppLocalizations.supportedLocales,
-          home: StrategyEditor(
-            store: store,
-            files: LocalFiles(root),
-            id: id,
-            onTask: () async {},
+      });
+      final team = store.createTeam('TEAMSYNC / QA');
+      store.setSetting(
+        'account_identity',
+        jsonEncode(['https://fixture.example', 'qa']),
+      );
+      store.setSetting(
+        'account_team_$team',
+        jsonEncode({
+          'server': 'https://fixture.example',
+          'team': team,
+          'user': 'qa',
+        }),
+      );
+      catalog!.ensureTeam(store, team);
+      final member = store.addMember(team, 'QA captain', 'captain', 'IGL');
+      final mirage = store
+          .maps(team)
+          .singleWhere((m) => m['catalog_id'] == 'de_mirage');
+      UtilityLibrary(store).save(
+        team,
+        mirage['id'] as String,
+        tr('Командный смок: подготовка мида', 'Team smoke: prepare mid'),
+        'T',
+        tr(
+          'Перед тренировкой проверьте точку прицеливания и согласуйте момент броска с первым игроком.',
+          'Check the aiming point and coordinate the throw with the first player before practice.',
+        ),
+        {
+          'grenade': 'smoke',
+          'start': 'T spawn',
+          'target': tr('Окно', 'Window'),
+          'throw_type': 'Jumpthrow',
+        },
+      );
+      final id = store.createStrategy(
+        mirage['id'] as String,
+        tr('Контроль мида → сплит A', 'Mid control → A split'),
+        'T',
+      );
+      store.saveStrategy(
+        id,
+        tr(
+          'Дымы: окно и коннектор.\nEntry выходит после флешки. Support удерживает short.',
+          'Smokes: window and connector.\nEntry moves after the flash. Support holds short.',
+        ),
+        [
+          {'type': 'smoke', 'x': .48, 'y': .46},
+          {'type': 't', 'x': .63, 'y': .64},
+          {'type': 't', 'x': .69, 'y': .62},
+          {'type': 'ct', 'x': .43, 'y': .43},
+          {'type': 'arrow', 'x': .63, 'y': .64, 'x2': .52, 'y2': .53},
+        ],
+        1,
+      );
+      store.createTask(
+        team,
+        tr(
+          'Отработать синхронный выход через коннектор',
+          'Practice a coordinated connector execute',
+        ),
+        tr(
+          'Проверить тайминг дыма и флешки перед командной тренировкой.',
+          'Check smoke and flash timings before team practice.',
+        ),
+        member: member,
+        strategyId: id,
+      );
+      await tester.pumpWidget(
+        RepaintBoundary(
+          key: const Key('native-shot'),
+          child: snapshotApp(store, LocalFiles(root), language: language),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.text(tr('Карты', 'Maps')).first);
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+      await expectLater(
+        find.byKey(const Key('native-shot')),
+        matchesGoldenFile(
+          'goldens/${Platform.isLinux ? 'linux' : 'windows'}/$language/maps.png',
+        ),
+      );
+      await tester.pumpWidget(
+        RepaintBoundary(
+          key: const Key('native-shot'),
+          child: MaterialApp(
+            debugShowCheckedModeBanner: false,
+            theme: workspaceTheme(),
+            locale: Locale(language),
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: StrategyEditor(
+              store: store,
+              files: LocalFiles(root),
+              id: id,
+              onTask: () async {},
+            ),
           ),
         ),
-      ),
-    );
-    await tester.pumpAndSettle();
-    expect(tester.takeException(), isNull);
-    await expectLater(
-      find.byKey(const Key('native-shot')),
-      matchesGoldenFile(
-        '../../artifacts/verification/studio-editor-08${Platform.isLinux ? '-linux' : ''}.png',
-      ),
-    );
-    tester.view.physicalSize = const Size(390, 844);
-    await tester.pumpWidget(
-      RepaintBoundary(
-        key: const Key('native-shot'),
-        child: snapshotApp(store, LocalFiles(root)),
-      ),
-    );
-    await tester.pumpAndSettle();
-    await tester.tap(find.byIcon(Icons.checklist).last);
-    await tester.pumpAndSettle();
-    expect(tester.takeException(), isNull);
-    await expectLater(
-      find.byKey(const Key('native-shot')),
-      matchesGoldenFile(
-        '../../artifacts/verification/studio-mobile-08${Platform.isLinux ? '-linux' : ''}.png',
-      ),
-    );
-    await tester.tap(find.text('Новое задание'));
-    // The workspace busy indicator animates while its modal action is open.
-    await tester.pump();
-    await tester.pump(const Duration(milliseconds: 400));
-    FocusManager.instance.primaryFocus?.unfocus();
-    await tester.pump(const Duration(milliseconds: 200));
-    expect(tester.takeException(), isNull);
-    await expectLater(
-      find.byKey(const Key('native-shot')),
-      matchesGoldenFile(
-        '../../artifacts/verification/studio-task-form-08${Platform.isLinux ? '-linux' : ''}.png',
-      ),
-    );
-    await tester.tap(find.text('Отмена').last);
-    await tester.pumpAndSettle();
-    await tester.tap(find.byIcon(Icons.more_horiz).last);
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Раскидки').last);
-    await tester.pumpAndSettle();
-    expect(tester.takeException(), isNull);
-    await expectLater(
-      find.byKey(const Key('native-shot')),
-      matchesGoldenFile(
-        '../../artifacts/verification/studio-utilities-08${Platform.isLinux ? '-linux' : ''}.png',
-      ),
-    );
-  });
+      );
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+      await expectLater(
+        find.byKey(const Key('native-shot')),
+        matchesGoldenFile(
+          'goldens/${Platform.isLinux ? 'linux' : 'windows'}/$language/editor.png',
+        ),
+      );
+      tester.view.physicalSize = const Size(390, 844);
+      await tester.pumpWidget(
+        RepaintBoundary(
+          key: const Key('native-shot'),
+          child: snapshotApp(store, LocalFiles(root), language: language),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.byIcon(Icons.checklist).last);
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+      await expectLater(
+        find.byKey(const Key('native-shot')),
+        matchesGoldenFile(
+          'goldens/${Platform.isLinux ? 'linux' : 'windows'}/$language/mobile.png',
+        ),
+      );
+      await tester.tap(find.text(tr('Новое задание', 'New task')));
+      // The workspace busy indicator animates while its modal action is open.
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 400));
+      FocusManager.instance.primaryFocus?.unfocus();
+      await tester.pump(const Duration(milliseconds: 200));
+      expect(tester.takeException(), isNull);
+      await expectLater(
+        find.byKey(const Key('native-shot')),
+        matchesGoldenFile(
+          'goldens/${Platform.isLinux ? 'linux' : 'windows'}/$language/task-form.png',
+        ),
+      );
+      await tester.tap(find.text(tr('Отмена', 'Cancel')).last);
+      await tester.pumpAndSettle();
+      await tester.tap(find.byIcon(Icons.more_horiz).last);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text(tr('Раскидки', 'Utilities')).last);
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+      await expectLater(
+        find.byKey(const Key('native-shot')),
+        matchesGoldenFile(
+          'goldens/${Platform.isLinux ? 'linux' : 'windows'}/$language/utilities.png',
+        ),
+      );
+    });
+  }
   final fixture = Directory('../.tools/demo-fixtures/parsed');
   testWidgets('real recorded positions render in native review', (
     tester,
@@ -298,7 +312,7 @@ void main() {
     await expectLater(
       find.byKey(const Key('native-shot')),
       matchesGoldenFile(
-        '../../artifacts/verification/studio-review-08${Platform.isLinux ? '-linux' : ''}.png',
+        'goldens/${Platform.isLinux ? 'linux' : 'windows'}/ru/review.png',
       ),
     );
     await tester.tap(find.byIcon(Icons.play_arrow_rounded));
@@ -330,7 +344,7 @@ void main() {
         await expectLater(
           find.byKey(const Key('native-shot')),
           matchesGoldenFile(
-            '../../artifacts/verification/studio-review-mobile-08${Platform.isLinux ? '-linux' : ''}.png',
+            'goldens/${Platform.isLinux ? 'linux' : 'windows'}/ru/review-mobile.png',
           ),
         );
       }

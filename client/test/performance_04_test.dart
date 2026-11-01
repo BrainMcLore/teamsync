@@ -165,7 +165,10 @@ void main() {
       'indexed_average_us': indexedWatch.elapsedMicroseconds / ticks.length,
       'note': 'CPU event-query benchmark in Flutter test; not an end-to-end GPU FPS measurement.',
     };
-    await File('../artifacts/verification/review-performance-04.json')
-        .writeAsString(const JsonEncoder.withIndent('  ').convert(output));
+    final report = File('../artifacts/verification/review-performance-04.json');
+    await report.parent.create(recursive: true);
+    await report.writeAsString(
+      const JsonEncoder.withIndent('  ').convert(output),
+    );
   }, skip: !source.existsSync());
 }

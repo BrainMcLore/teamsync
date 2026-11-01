@@ -279,8 +279,11 @@ void main() {
         final labels = await AppLocalizations.delegate.load(Locale(language)),
             pdf = await Playbook.generateDraft(attached, labels);
         expect(ascii.decode(pdf.take(4).toList()), '%PDF');
-        await File('../artifacts/verification/round-playbook-03-$language.pdf')
-            .writeAsBytes(pdf);
+        final output = File(
+          '../artifacts/verification/round-playbook-03-$language.pdf',
+        );
+        await output.parent.create(recursive: true);
+        await output.writeAsBytes(pdf);
       }
       expect(
         drafts.load().single['pages'][0]['attachments'][0]['notes'],

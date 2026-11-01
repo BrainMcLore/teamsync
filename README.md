@@ -1,109 +1,106 @@
-<p align="center"><img src="artifacts/app-icon.png" width="104" alt="TeamSync"></p>
-<h1 align="center">TeamSync</h1>
-<p align="center">Общая тактическая комната для команды CS2.<br>Native Windows & Android · Русский / English</p>
+<p align="center"><a href="README.md"><b>English</b></a> · <a href="README.ru.md">Русский</a></p>
+
+![TeamSync — plan, practice and review together](docs/images/hero.svg)
+
 <p align="center">
-  <a href="https://github.com/BrainMcLore/teamsync/actions/workflows/windows-release.yml"><img alt="Windows build" src="https://github.com/BrainMcLore/teamsync/actions/workflows/windows-release.yml/badge.svg"></a>
-  <a href="https://github.com/BrainMcLore/teamsync/actions/workflows/android.yml"><img alt="Android verification" src="https://github.com/BrainMcLore/teamsync/actions/workflows/android.yml/badge.svg"></a>
+<a href="https://github.com/BrainMcLore/teamsync/releases/tag/v0.95.0-beta"><img alt="0.95 Beta" src="https://img.shields.io/badge/release-0.95_Beta-98e8ce?style=flat-square&amp;labelColor=101923"></a>
+<a href="https://github.com/BrainMcLore/teamsync/actions/workflows/windows-release.yml"><img alt="Windows build" src="https://github.com/BrainMcLore/teamsync/actions/workflows/windows-release.yml/badge.svg"></a>
+<a href="https://github.com/BrainMcLore/teamsync/actions/workflows/android.yml"><img alt="Android verification" src="https://github.com/BrainMcLore/teamsync/actions/workflows/android.yml/badge.svg"></a>
+<img alt="English and Russian" src="https://img.shields.io/badge/languages-EN_%2F_RU-66b7e8?style=flat-square&amp;labelColor=101923">
 </p>
 
-Рисуйте выходы на готовых картах, разбирайте раунды, распределяйте задания и собирайте печатные плейбуки. TeamSync устанавливается на компьютер и телефон. Интерфейс работает на Flutter; веб-клиента нет. Linux используется для разработки.
+**Your team's CS2 preparation, in one place.** Draw tactics on ready-to-use maps, share utility lineups, assign personal practice plans, review demos and print LAN playbooks. TeamSync is an installable **Windows and Android application**, with English and Russian interfaces.
 
-![Тактическая библиотека TeamSync](artifacts/verification/studio-maps-08.png)
+<p align="center">
+<a href="https://github.com/BrainMcLore/teamsync/releases/download/v0.95.0-beta/TeamSync-0.95.0-beta-Windows-Setup.exe"><img alt="Download Windows installer" src="https://img.shields.io/badge/Download-Windows_x64-98e8ce?style=for-the-badge&amp;labelColor=101923"></a>
+<a href="https://github.com/BrainMcLore/teamsync/releases/download/v0.95.0-beta/TeamSync-0.95.0-beta-Android.apk"><img alt="Download Android APK" src="https://img.shields.io/badge/Download-Android_APK-66b7e8?style=for-the-badge&amp;labelColor=101923"></a>
+</p>
 
-**Проект в разработке.** Последний опубликованный установщик — [Windows 0.8.0](https://github.com/BrainMcLore/teamsync/releases/tag/v0.8.0). Изменения в `main` могут опережать релиз. Android проходит отдельную сборку и проверку на эмуляторе; тестовый APK не является магазинным выпуском. Полная приёмка исходного ТЗ ещё не завершена.
+<p align="center"><a href="https://github.com/BrainMcLore/teamsync/releases/tag/v0.95.0-beta">Release notes & checksums</a> · <a href="docs/user-guide.md">User guide</a> · <a href="docs/development.md">Build from source</a></p>
 
-| Возможность | Windows | Android |
+## A shared tactical room
+
+![TeamSync map library in English](docs/images/en/maps.png)
+
+| Plan | Practice | Review |
 | --- | --- | --- |
-| Steam / Discord, аккаунты, приглашения и состав | Да | Да |
-| Общие тактики, заметки, история и очередь изменений | Да | Да |
-| Готовые карты, Cache, T/CT, гранаты, этажи | Да | Да |
-| Командные задания и назначение по аккаунтам | В `main` | В `main` |
-| Раскидки, свои изображения/MP4, инструкции и проверка изучения | В `main` | В `main` |
-| Импорт DEM / ZIP / RAR и каталог HLTV | Да | Подготовленные разборы с ПК |
-| 2D-разбор и заметки к конкретным тикам | Да | Да |
-| PDF-плейбуки со снимками тактик | Да | Да |
-| Запуск демки в CS2, локальные CS2 / TeamSpeak | Да, нужна игровая приёмка | Управление сервером с телефона не выпущено |
+| Ready map library, including Cache and multi-level radars | Training types, deadlines and completion criteria | Demo library and native 2D review |
+| T/CT players, utility, arrows, notes and version history | Map-preparation wizard with per-tactic player assignments | Notes attached to ticks and rounds |
+| Team utility library with your own images and MP4 clips | Four templates: role study, dry run, execute and retake | PDF playbooks with tactic snapshots |
 
-**Общая работа.** Команда создаётся в онлайн-аккаунте. Приглашайте игроков по ID аккаунта, назначайте роли и открывайте общую библиотеку. Изменения тактик отправляются автоматически; при потере сети сохраняются в очереди. Сервер повторно проверяет доступ при отправке. Конкурирующие изменения сохраняются отдельными копиями. Локальный кеш разделён по серверу и пользователю; отдельные офлайн-аккаунты не создаются.
+**Built for a team.** Sign in through Steam or Discord, invite player accounts and choose roles. Tactics, maps, utility materials and assignments share a versioned team library. Saved changes queue on the device while disconnected; conflicts preserve a copy instead of silently replacing your work.
 
-**Демки.** Windows-компаньон скачивает архивы, распаковывает их и разбирает реальные события и позиции вне UI. HLTV может потребовать проверку в изолированном окне WebView2. На Android переносится подготовленный `.teamsync-review`; тяжёлый DEM-парсер остаётся на ПК. Заметки привязаны к раунду и тику. Запуск в CS2 выполняется через установленный Steam.
+## From a tactic to a personal plan
 
-**Буткемп.** Загрузка CS2 Dedicated Server через официальный SteamCMD, TeamSpeak и установка закреплённых версий серверных плагинов доступны в Windows. Лицензия TeamSpeak принимается пользователем. Полная установка CS2 и матч с реальными игроками ещё требуют проверки.
+Open a map → select tactics and players → choose a template and deadline → distribute assignments → review submitted work.
 
-В текущих исходниках задания проходят этапы «К выполнению → В процессе → На проверке → Подтверждено». Возврат требует комментария тренера; история сохраняет авторов и время, последние загруженные записи доступны без сети. Тип тренировки, срок и критерий выполнения задаются в форме задания. Мастер «Подготовить карту» распределяет задания по тактикам и аккаунтам; доступны четыре встроенных шаблона с редактируемыми критериями. Доказательства выполнения, отдельные комментарии и системные напоминания ещё в разработке.
+<p align="center">
+<img src="docs/images/en/mobile.png" width="280" alt="TeamSync personal training assignments">
+<img src="docs/images/en/task-form.png" width="280" alt="Training type, deadline and completion criteria">
+</p>
+
+Assignments move through **Assigned → In progress → Submitted → Approved**. Returning work requires a comment. History records the author and time; previously loaded history remains available offline. Deadlines appear in each device's local time.
 
 <details>
-<summary>Задания и план подготовки</summary>
-<p align="center">
-<img src="artifacts/verification/studio-mobile-08.png" width="270" alt="Командные задания">
-<img src="artifacts/verification/studio-task-form-08.png" width="270" alt="Тип задания, срок и критерий выполнения">
-</p>
+<summary><b>See the tactic editor and utility library</b></summary>
+
+![Native tactic editor](docs/images/en/editor.png)
+<p align="center"><img src="docs/images/en/utilities.png" width="320" alt="Shared utility library"></p>
 </details>
 
-### Начать работу
+## Windows and Android
 
-1. Установите Windows-сборку из [Releases](https://github.com/BrainMcLore/teamsync/releases). Сверьте SHA-256 с приложенным файлом контрольных сумм.
-2. Войдите через Steam или Discord. В сборке указан общий API; собственный HTTPS-сервер можно задать в настройках аккаунта.
-3. Создайте команду, пригласите игроков и откройте общую библиотеку.
-4. Выберите карту, создайте тактику и дождитесь подтверждения синхронизации.
+| Feature | Windows | Android |
+| --- | --- | --- |
+| Team accounts, invitations, roles and shared tactics | ✓ | ✓ |
+| Utility images/clips, training plans and PDF playbooks | ✓ | ✓ |
+| 2D demo review and tick-linked notes | ✓ | Prepared reviews imported from PC |
+| DEM / ZIP / RAR parsing and HLTV catalog | ✓ | Prepared reviews |
+| Open a demo in CS2 | ✓ — requires CS2 | — |
+| Local CS2 / TeamSpeak installation and bootcamp controls | ✓ | Remote server control is not released |
 
-Пользовательские материалы хранятся в системном каталоге приложения, путь доступен в настройках. Перед обновлением и экспериментами с данными сохраняйте резервную копию. Инструкция: [USER_GUIDE.md](USER_GUIDE.md).
+## Get started
 
-### Разработка
+1. Install the Windows package or Android APK from **[0.95 Beta](https://github.com/BrainMcLore/teamsync/releases/tag/v0.95.0-beta)**.
+2. Sign in, create a team or accept an invitation, and open its shared library.
+3. Pick a map, save a tactic and wait for the sync confirmation.
+4. Use **Prepare map** to turn tactics into assigned training plans.
 
-Закреплённый инструмент: **Flutter 3.47.8 / Dart 3.13.7**. Python-компаньон собирается на Python 3.10; backend проверяется на Python 3.12. Зависимости фиксируются в `pubspec.lock` и `requirements*.txt`.
+Release assets include SHA-256 checksums. Android releases use a persistent signing key; installing over an older build signed with a different test key requires a backup and reinstall. Export your materials before changing installations.
 
-```bash
+## Beta scope
+
+**0.95 is a beta**, with working Windows/Android builds and automated client, API, parser and Android integration checks. It is not a claim that every planned feature is finished.
+
+- HLTV/CDN access can require a verification window or change availability. External source links open the original; third-party videos are not copied for offline use.
+- Training evidence, independent comments, scheduling, push notifications and live joint review remain planned.
+- Remote server-agent control and complete offline review/history bundles remain planned.
+- Steam account linking, real CS2 playback, live PUG/TeamSpeak sessions and physical-device scenarios still need broader acceptance.
+- Hosted service limits and cold starts apply. [Self-hosting](docs/deployment.md) is supported; provider pricing and availability are not guaranteed.
+
+See the [roadmap](docs/roadmap.md), [verification scope](docs/verification.md) and [acceptance checklist](docs/acceptance.md).
+
+## Build & explore
+
+**Flutter 3.47.8 · Dart 3.13.7 · JDK 17 · Python 3.10/3.12**
+
+```sh
 cd client
 flutter pub get
 flutter analyze
 flutter test
 ```
 
-Windows: Visual Studio 2022 с C++ workload и Windows SDK, Python 3.10, Inno Setup. Из PowerShell в корне проекта:
+Windows builds require the Windows C++ toolchain and Inno Setup. Android builds require the Android SDK. Linux can be used for development and tests; it is not an application target. See the complete [development guide](docs/development.md).
 
-```powershell
-./tools/build-demo-worker.ps1
-./tools/build-windows.ps1 -Installer
-```
-
-Android: JDK 17, Android SDK и Flutter. Сборка из `client`:
-
-```bash
-flutter build apk --release \
-  --dart-define=TEAMSYNC_API_URL=https://teamsync-api-ui7n.onrender.com
-```
-
-Без переменных подписи Gradle собирает тестовый APK. В CI для основной ветки настроен отдельный постоянный ключ; сертификат сверяется с `packaging/android-signing.sha256`. Keystore и пароль хранятся в закрытых Actions secrets и не входят в Git. Переход с прежнего тестового APK на другую подпись требует предварительного экспорта материалов и переустановки; обновление поверх старой тестовой подписи невозможно. [Android CI](.github/workflows/android.yml) проверяет аккаунты и командные операции на Android 15, затем собирает APK и проверяет подпись. Windows собирается отдельно на Windows runner.
-
-```bash
-python -m venv .venv
-# Активируйте окружение подходящей для своей ОС командой.
-python -m pip install -r server/requirements.txt
-python -m pytest server/tests -q
-python -m unittest discover -s tools -p test_release.py -v
-```
-
-### Устройство проекта
-
-| Каталог | Содержимое |
+| Directory | Contents |
 | --- | --- |
-| `client/` | Flutter, SQLite, RU/EN, редактор, разбор, PDF |
-| `server/` | FastAPI, PostgreSQL, OAuth, роли и версионируемые документы |
-| `worker/` | Загрузки, безопасная распаковка и парсинг CS2 |
-| `native/` | Windows-компонент загрузки WebView2 |
-| `tools/`, `packaging/` | Проверки, воспроизводимые архивы и установщики |
+| `client/` | Native Flutter app, SQLite, localization and tests |
+| `server/` | API, identity, teams, media and versioned documents |
+| `worker/`, `native/` | Windows demo parser/download companion |
+| `docs/` | User, developer and self-hosting documentation |
+| `tools/`, `packaging/`, `.github/` | Builds, release packaging and CI |
 
-[Проверки](CHECKS.md) · [План](ROADMAP.md) · [Архитектура](ARCHITECTURE.md) · [Сервер](FREE_HOSTING.md) · [Релизы](RELEASE.md) · [Исходное ТЗ](TeamSync_requirements_RU_EN.md)
+## Third-party materials
 
-### English
-
-TeamSync is a native CS2 team workspace for Windows and Android, with Russian and English interfaces. Plan tactics on bundled maps, share drawings and notes with your roster, review prepared demos and export printable playbooks. Windows handles DEM parsing, HLTV downloads and local game servers. Own MP4 clips and aiming images are shared as protected team attachments; external videos remain links. Android opens prepared reviews and the shared tactical library.
-
-Current source includes training types, timezone-aware deadlines, completion criteria and a map-preparation wizard with per-tactic player assignments. Four built-in templates can be customized before creating personal tasks; progress and plans sync through the team account. Evidence uploads, independent comments, scheduling and notifications remain unfinished.
-
-This is an active development project. The published Windows release and the current source branch have different verification scopes; see the feature table and linked checks before deploying. Local builds without signing variables use a test key; main-branch CI uses a persistent release key and verifies its public certificate fingerprint. Linux is a development environment, not an application target.
-
-### Сторонние материалы
-
-TeamSync не связан с Valve, HLTV или TeamSpeak. Карты и изображения принадлежат их правообладателям; происхождение, закреплённая ревизия и контрольные суммы указаны в [манифесте карт](client/assets/maps/manifest.json). Лицензии шрифтов находятся рядом с файлами в `client/assets/fonts/`. Внешние источники могут менять доступность; скачивание материалов не предоставляет права на их перераспространение.
+TeamSync is not affiliated with Valve, HLTV or TeamSpeak. Maps, radars and other third-party materials retain their respective ownership and licenses. Sources and pinned revisions are recorded in the [map attribution](client/assets/maps/ATTRIBUTION.txt) and [manifest](client/assets/maps/manifest.json); font and bundled-component licenses remain with their files. A public repository does not grant additional rights to third-party media.

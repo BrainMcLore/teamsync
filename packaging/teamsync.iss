@@ -1,8 +1,10 @@
-#define AppVersion "0.8.0"
+#define AppVersion "0.95.0"
+#define ReleaseVersion "0.95.0-beta"
 [Setup]
 AppId={{7C263DB7-0143-4F56-A85E-5F28AC37E16D}
 AppName=TeamSync
 AppVersion={#AppVersion}
+AppVerName=TeamSync 0.95 Beta
 AppPublisher=TeamSync
 DefaultDirName={localappdata}\Programs\TeamSync
 DefaultGroupName=TeamSync
@@ -10,7 +12,7 @@ PrivilegesRequired=lowest
 ArchitecturesAllowed=x64compatible
 ArchitecturesInstallIn64BitMode=x64compatible
 OutputDir=..\dist
-OutputBaseFilename=TeamSync-0.8.0-Windows-Setup
+OutputBaseFilename=TeamSync-{#ReleaseVersion}-Windows-Setup
 SetupIconFile=..\client\windows\runner\resources\app_icon.ico
 UninstallDisplayIcon={app}\teamsync.exe
 Compression=lzma2
