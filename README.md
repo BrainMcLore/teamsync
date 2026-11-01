@@ -84,4 +84,6 @@ Android: `tools/build-android.ps1` собирает release-оптимизиро
 
 Исходники и серверный пакет можно упаковать командой `python3 tools/package-source.py` и `python3 tools/package-server.py`. Затем `python3 tools/release-checksums.py` создаёт SHA256SUMS и manifest, в котором явно перечислены отсутствующие бинарные файлы. Отсутствующие EXE/APK не считаются проверенными артефактами. Совместимый сервер сохраняет собственную версию 0.7.0.
 
-Установщик собирается на Windows проверенным скриптом или заданием Windows release в GitHub Actions (ручной запуск либо тег `v*`). Новое задание CI требует отдельной успешной проверки; предыдущие живые проверки 0.8 описаны в CHECKS.md. Android собирается `tools/build-android.ps1` на настроенной Windows-машине с прежним ключом подписи; ключ в Git не загружается. Подробности — RELEASE.md.
+Установщик собирается на Windows проверенным скриптом или заданием Windows release в GitHub Actions (ручной запуск либо тег `v*`). Windows CI успешно проверен 2026-11-01 ([запуск](https://github.com/BrainMcLore/teamsync/actions/runs/41259787893)); предыдущие живые проверки 0.8 описаны в CHECKS.md. Android собирается `tools/build-android.ps1` на настроенной Windows-машине с прежним ключом подписи; ключ в Git не загружается. Подробности — RELEASE.md.
+
+Полный проект хранится в [приватном репозитории](https://github.com/BrainMcLore/teamsync). Проверенный [Windows-релиз 0.8.0](https://github.com/BrainMcLore/teamsync/releases/tag/v0.8.0) содержит установщик, исходники, совместимый сервер и SHA-256.

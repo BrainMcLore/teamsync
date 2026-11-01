@@ -4,7 +4,7 @@
 
 ## Состояние
 
-Исправления 0.8 прошли живую проверку на Windows до переноса среды: синхронизация команды, каталог HLTV, скачивание и разбор двух карт. Windows-инсталлятор собран и установлен; Android APK собран с тестовой подписью v2. Эти готовые EXE/APK находятся на старом Windows-компьютере. Их наличие на Linux не подтверждено; здесь нельзя восстановить их SHA-256 по именам или размерам.
+Исправления 0.8 прошли живую проверку на Windows до переноса среды: синхронизация команды, каталог HLTV, скачивание и разбор двух карт. Windows-инсталлятор собран и установлен; Android APK собран с тестовой подписью v2. Исходные EXE/APK остались на старом Windows-компьютере. 2026-11-01 Windows-инсталлятор повторно собран в GitHub Actions, скачан в dist и проверен по SHA-256. Android APK в текущий пакет не перенесён; его наличие и контрольная сумма не выдумываются.
 
 ## Пакеты
 
@@ -27,6 +27,9 @@ python3 tools/release-checksums.py
 
 ## Повторная сборка Windows
 
-Workflow `.github/workflows/windows-release.yml`: Actions → Windows release → Run workflow. Задание также запускается по тегу v*. Оно использует Windows 2022, Python 3.10, Flutter 3.47.8, проверенный SHA-256 DEM fixture, собирает нативный загрузчик/worker и установщик, выполняет Python/Flutter-проверки, упаковывает исходники и сервер, прикладывает артефакты и SHA-256 к запуску Actions. Отсутствующий Android APK явно указывается в manifest. Это не Linux-сборка. До успешного запуска workflow новая CI-сборка не считается проверенной.
+Workflow `.github/workflows/windows-release.yml`: Actions → Windows release → Run workflow. Задание также запускается по тегу v*. Оно использует Windows 2022, Python 3.10, Flutter 3.47.8, проверенный SHA-256 DEM fixture, собирает нативный загрузчик/worker и установщик, выполняет Python/Flutter-проверки, упаковывает исходники и сервер, прикладывает артефакты и SHA-256 к запуску Actions. Отсутствующий Android APK явно указывается в manifest. Это не Linux-сборка. Проверенный запуск Windows CI: https://github.com/BrainMcLore/teamsync/actions/runs/41259787893 . 42 теста worker/сервера и 54 Flutter-теста прошли, 4 внешние/частные проверки пропущены; 2 теста упаковки прошли.
 
 Серверный репозиторий BrainMcLore/teamsync-api используется Render. Полный проект размещается отдельно, чтобы не менять существующий deploy. В Git и release-пакеты не включать секреты Render/Neon/Discord, пользовательские базы/демки, сессии, SDK, keystore и локальный конфиг GitHub CLI.
+
+
+Полный исходный проект: https://github.com/BrainMcLore/teamsync (Private). Windows-релиз: https://github.com/BrainMcLore/teamsync/releases/tag/v0.8.0. Исходный код релизных артефактов закреплён коммитом 626618797e64762aee89b657a2e2cb1a61caf7b7; последующие уточнения документации не изменяют эти бинарные файлы.
