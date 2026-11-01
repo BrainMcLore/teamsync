@@ -2845,6 +2845,144 @@ abstract class AppLocalizations {
   /// In ru, this message translates to:
   /// **'Сохранить план'**
   String get taskSavePlan;
+
+  /// No description provided for @prepareMap.
+  ///
+  /// In ru, this message translates to:
+  /// **'Подготовить карту'**
+  String get prepareMap;
+
+  /// No description provided for @prepNext.
+  ///
+  /// In ru, this message translates to:
+  /// **'Далее'**
+  String get prepNext;
+
+  /// No description provided for @prepCreate.
+  ///
+  /// In ru, this message translates to:
+  /// **'Создать планы'**
+  String get prepCreate;
+
+  /// No description provided for @prepStrategies.
+  ///
+  /// In ru, this message translates to:
+  /// **'Тактики'**
+  String get prepStrategies;
+
+  /// No description provided for @prepMembers.
+  ///
+  /// In ru, this message translates to:
+  /// **'Игроки'**
+  String get prepMembers;
+
+  /// No description provided for @prepPlan.
+  ///
+  /// In ru, this message translates to:
+  /// **'Шаблон и срок'**
+  String get prepPlan;
+
+  /// No description provided for @prepTemplate.
+  ///
+  /// In ru, this message translates to:
+  /// **'Шаблон тренировки'**
+  String get prepTemplate;
+
+  /// No description provided for @prepChooseStrategies.
+  ///
+  /// In ru, this message translates to:
+  /// **'Выберите хотя бы одну тактику.'**
+  String get prepChooseStrategies;
+
+  /// No description provided for @prepChooseMembers.
+  ///
+  /// In ru, this message translates to:
+  /// **'Выберите хотя бы одного игрока.'**
+  String get prepChooseMembers;
+
+  /// No description provided for @prepDeadlineRequired.
+  ///
+  /// In ru, this message translates to:
+  /// **'Укажите срок подготовки.'**
+  String get prepDeadlineRequired;
+
+  /// No description provided for @prepNoStrategies.
+  ///
+  /// In ru, this message translates to:
+  /// **'Сначала создайте тактику для этой карты.'**
+  String get prepNoStrategies;
+
+  /// No description provided for @prepNoMembers.
+  ///
+  /// In ru, this message translates to:
+  /// **'Загрузите состав онлайн-команды и добавьте аккаунты игроков.'**
+  String get prepNoMembers;
+
+  /// No description provided for @prepBatchLimit.
+  ///
+  /// In ru, this message translates to:
+  /// **'За один раз можно создать не более 500 заданий.'**
+  String get prepBatchLimit;
+
+  /// No description provided for @prepRosterChanged.
+  ///
+  /// In ru, this message translates to:
+  /// **'Состав или тактики изменились. Откройте мастер заново.'**
+  String get prepRosterChanged;
+
+  /// No description provided for @prepCount.
+  ///
+  /// In ru, this message translates to:
+  /// **'Будет создано заданий: {count}'**
+  String prepCount(int count);
+
+  /// No description provided for @prepCreated.
+  ///
+  /// In ru, this message translates to:
+  /// **'Создано заданий: {count}'**
+  String prepCreated(int count);
+
+  /// No description provided for @prepCriteriaRole.
+  ///
+  /// In ru, this message translates to:
+  /// **'Назвать стартовую позицию, маршрут, свои гранаты и действия после контакта.'**
+  String get prepCriteriaRole;
+
+  /// No description provided for @prepCriteriaDryRun.
+  ///
+  /// In ru, this message translates to:
+  /// **'Пройти тактику без противника, проверить тайминги и порядок гранат.'**
+  String get prepCriteriaDryRun;
+
+  /// No description provided for @prepCriteriaExecute.
+  ///
+  /// In ru, this message translates to:
+  /// **'Выполнить выход вместе с составом и разобрать ошибки после попытки.'**
+  String get prepCriteriaExecute;
+
+  /// No description provided for @prepCriteriaRetake.
+  ///
+  /// In ru, this message translates to:
+  /// **'Согласовать позиции, размены и порядок выхода при возврате точки.'**
+  String get prepCriteriaRetake;
+
+  /// No description provided for @prepAssignTactics.
+  ///
+  /// In ru, this message translates to:
+  /// **'Распределение по тактикам'**
+  String get prepAssignTactics;
+
+  /// No description provided for @prepAssigneeCount.
+  ///
+  /// In ru, this message translates to:
+  /// **'Исполнителей: {count}'**
+  String prepAssigneeCount(int count);
+
+  /// No description provided for @prepChooseAssignments.
+  ///
+  /// In ru, this message translates to:
+  /// **'Укажите исполнителя для каждой выбранной тактики.'**
+  String get prepChooseAssignments;
 }
 
 class _AppLocalizationsDelegate

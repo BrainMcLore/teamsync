@@ -74,3 +74,13 @@ Managers can change plans before submission. Submitted/approved plans require a
 return with a comment first. Player status updates cannot rewrite plan metadata.
 Older clients omitting these fields preserve the server values; explicit null clears
 a deadline. Offline packages carry the plan alongside progress and review reasons.
+
+### Map-preparation batches
+
+Preparation is a client-side transaction over ordinary versioned tasks. Each
+selected tactic has its own explicit set of current account members. The batch
+requires a deadline and criteria, permits four built-in training templates, and
+creates at most 500 personal assignments. Account binding, role, map ownership,
+strategy ownership and the current roster are revalidated before writing. A failed
+local transaction leaves no partial tasks. Network delivery uses the existing
+durable queue per task; the batch is not a new atomic server-side API operation.

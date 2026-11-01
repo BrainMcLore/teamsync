@@ -492,5 +492,49 @@
   "taskOverdue": "Overdue",
   "taskTypeGeneral": "General assignment",
   "taskCreate": "Create assignment",
-  "taskSavePlan": "Save plan"
+  "taskSavePlan": "Save plan",
+  "prepareMap": "Prepare map",
+  "prepNext": "Next",
+  "prepCreate": "Create plans",
+  "prepStrategies": "Tactics",
+  "prepMembers": "Players",
+  "prepPlan": "Template and deadline",
+  "prepTemplate": "Training template",
+  "prepChooseStrategies": "Select at least one tactic.",
+  "prepChooseMembers": "Select at least one player.",
+  "prepDeadlineRequired": "Choose a preparation deadline.",
+  "prepNoStrategies": "Create a tactic for this map first.",
+  "prepNoMembers": "Load the online team roster and add player accounts.",
+  "prepBatchLimit": "Create at most 500 assignments in one batch.",
+  "prepRosterChanged": "The roster or tactics changed. Reopen the wizard.",
+  "prepCount": "Assignments to create: {count}",
+  "prepCreated": "Created assignments: {count}",
+  "prepCriteriaRole": "Explain the starting position, route, your utility and actions after contact.",
+  "prepCriteriaDryRun": "Walk through the tactic without opponents and check timings and utility order.",
+  "prepCriteriaExecute": "Execute with the squad and review mistakes after the attempt.",
+  "prepCriteriaRetake": "Coordinate positions, trades and entry order when retaking the site.",
+  "@prepCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@prepCreated": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "prepAssignTactics": "Assignments by tactic",
+  "prepAssigneeCount": "Assigned players: {count}",
+  "prepChooseAssignments": "Assign at least one player to every selected tactic.",
+  "@prepAssigneeCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  }
 }

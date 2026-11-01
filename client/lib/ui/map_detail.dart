@@ -11,11 +11,13 @@ class MapDetailPage extends StatefulWidget {
   final RecordData map;
   final LocalFiles files;
   final ValueChanged<String> onStrategy;
+  final Future<void> Function()? onPrepare;
   const MapDetailPage({
     super.key,
     required this.map,
     required this.files,
     required this.onStrategy,
+    this.onPrepare,
   });
   @override
   State<MapDetailPage> createState() => _MapDetailPageState();
@@ -77,6 +79,17 @@ class _MapDetailPageState extends State<MapDetailPage> {
                 ],
               ),
               const SizedBox(height: 20),
+              if (widget.onPrepare != null) ...[
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: OutlinedButton.icon(
+                    onPressed: widget.onPrepare,
+                    icon: const Icon(Icons.assignment_outlined),
+                    label: Text(l.prepareMap),
+                  ),
+                ),
+                const SizedBox(height: 12),
+              ],
               Expanded(
                 child: StudioPanel(
                   padding: EdgeInsets.zero,

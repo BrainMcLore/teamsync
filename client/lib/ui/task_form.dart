@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../data/account_roster.dart';
 import '../data/store.dart';
 import '../l10n/app_localizations.dart';
+import 'deadline_picker.dart';
 
 const taskTypes = [
   'general',
@@ -53,6 +54,7 @@ class _TaskFormState extends State<TaskForm> {
   String type = 'tactic';
   String? member, strategy;
   DateTime? due;
+  bool saving = false;
   late final List<RecordData> members, strategies;
   String? accountBinding, accountIdentity;
   @override
@@ -81,38 +83,8 @@ class _TaskFormState extends State<TaskForm> {
   }
 
   Future<void> deadline() async {
-    final now = DateTime.now();
-    final first = DateTime(2000), last = DateTime(now.year + 20, 12, 31);
-    final preferred = due ?? now;
-    final initial = preferred.isBefore(first)
-        ? first
-        : preferred.isAfter(last)
-        ? last
-        : preferred;
-    final date = await showDatePicker(
-      context: context,
-      initialDate: initial,
-      firstDate: first,
-      lastDate: last,
-    );
-    if (date == null || !mounted) return;
-    final time = await showTimePicker(
-      context: context,
-      initialTime: due == null
-          ? const TimeOfDay(hour: 18, minute: 0)
-          : TimeOfDay.fromDateTime(due!),
-    );
-    if (time != null && mounted) {
-      setState(
-        () => due = DateTime(
-          date.year,
-          date.month,
-          date.day,
-          time.hour,
-          time.minute,
-        ),
-      );
-    }
+    final value = await pickTaskDeadline(context, due);
+    if (value != null && mounted) setState(() => due = value);
   }
 
   @override
@@ -256,57 +228,70 @@ class _TaskFormState extends State<TaskForm> {
         ),
         FilledButton(
           key: const ValueKey('task-save'),
-          onPressed: () {
-            if (!key.currentState!.validate()) return;
-            try {
-              if (accountBinding != null &&
-                  (accountIdentity == null ||
-                      accountBinding !=
-                          widget.store.setting('account_team_${widget.team}') ||
-                      accountIdentity !=
-                          widget.store.setting('account_identity') ||
-                      widget.store.setting('account_signed_out') == '1')) {
-                throw DomainError('readOnlyTeam');
-              }
-              if (widget.value == null &&
-                  member != null &&
-                  !accountAssignableMembers(
-                    widget.store,
-                    widget.team,
-                  ).any((m) => m['id'] == member)) {
-                throw DomainError('crossTeam');
-              }
-              if (widget.value != null) {
-                widget.store.updateTaskPlan(
-                  widget.value!['id'] as String,
-                  taskType: type,
-                  dueAt: due,
-                  criteria: criteria.text,
-                );
-                Navigator.pop(context, widget.value!['id']);
-                return;
-              }
-              final id = widget.store.createTask(
-                widget.team,
-                title.text,
-                notes.text,
-                member: member,
-                strategyId: strategy,
-                taskType: type,
-                dueAt: due,
-                criteria: criteria.text,
-              );
-              Navigator.pop(context, id);
-            } on DomainError catch (e) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(
-                    e.code == 'readOnlyTeam' ? l.readOnlyTeam : l.invalidText,
-                  ),
-                ),
-              );
-            }
-          },
+          onPressed: saving
+              ? null
+              : () {
+                  if (saving || !key.currentState!.validate()) return;
+                  setState(() => saving = true);
+                  try {
+                    if (accountBinding != null &&
+                        (accountIdentity == null ||
+                            accountBinding !=
+                                widget.store.setting(
+                                  'account_team_${widget.team}',
+                                ) ||
+                            accountIdentity !=
+                                widget.store.setting('account_identity') ||
+                            widget.store.setting('account_signed_out') ==
+                                '1')) {
+                      throw DomainError('readOnlyTeam');
+                    }
+                    if (widget.value == null &&
+                        member != null &&
+                        !accountAssignableMembers(
+                          widget.store,
+                          widget.team,
+                        ).any((m) => m['id'] == member)) {
+                      throw DomainError('crossTeam');
+                    }
+                    if (widget.value != null) {
+                      widget.store.updateTaskPlan(
+                        widget.value!['id'] as String,
+                        taskType: type,
+                        dueAt: due,
+                        criteria: criteria.text,
+                      );
+                      Navigator.pop(context, widget.value!['id']);
+                      return;
+                    }
+                    final id = widget.store.createTask(
+                      widget.team,
+                      title.text,
+                      notes.text,
+                      member: member,
+                      strategyId: strategy,
+                      taskType: type,
+                      dueAt: due,
+                      criteria: criteria.text,
+                    );
+                    Navigator.pop(context, id);
+                  } on DomainError catch (e) {
+                    setState(() => saving = false);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          e.code == 'readOnlyTeam'
+                              ? l.readOnlyTeam
+                              : l.invalidText,
+                        ),
+                      ),
+                    );
+                  } catch (_) {
+                    setState(() => saving = false);
+                    ScaffoldMessenger.of(context)
+                        .showSnackBar(SnackBar(content: Text(l.error)));
+                  }
+                },
           child: Text(widget.value == null ? l.taskCreate : l.taskSavePlan),
         ),
       ],

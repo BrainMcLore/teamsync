@@ -492,5 +492,49 @@
   "taskOverdue": "Просрочено",
   "taskTypeGeneral": "Общее задание",
   "taskCreate": "Создать задание",
-  "taskSavePlan": "Сохранить план"
+  "taskSavePlan": "Сохранить план",
+  "prepareMap": "Подготовить карту",
+  "prepNext": "Далее",
+  "prepCreate": "Создать планы",
+  "prepStrategies": "Тактики",
+  "prepMembers": "Игроки",
+  "prepPlan": "Шаблон и срок",
+  "prepTemplate": "Шаблон тренировки",
+  "prepChooseStrategies": "Выберите хотя бы одну тактику.",
+  "prepChooseMembers": "Выберите хотя бы одного игрока.",
+  "prepDeadlineRequired": "Укажите срок подготовки.",
+  "prepNoStrategies": "Сначала создайте тактику для этой карты.",
+  "prepNoMembers": "Загрузите состав онлайн-команды и добавьте аккаунты игроков.",
+  "prepBatchLimit": "За один раз можно создать не более 500 заданий.",
+  "prepRosterChanged": "Состав или тактики изменились. Откройте мастер заново.",
+  "prepCount": "Будет создано заданий: {count}",
+  "prepCreated": "Создано заданий: {count}",
+  "prepCriteriaRole": "Назвать стартовую позицию, маршрут, свои гранаты и действия после контакта.",
+  "prepCriteriaDryRun": "Пройти тактику без противника, проверить тайминги и порядок гранат.",
+  "prepCriteriaExecute": "Выполнить выход вместе с составом и разобрать ошибки после попытки.",
+  "prepCriteriaRetake": "Согласовать позиции, размены и порядок выхода при возврате точки.",
+  "@prepCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@prepCreated": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "prepAssignTactics": "Распределение по тактикам",
+  "prepAssigneeCount": "Исполнителей: {count}",
+  "prepChooseAssignments": "Укажите исполнителя для каждой выбранной тактики.",
+  "@prepAssigneeCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  }
 }

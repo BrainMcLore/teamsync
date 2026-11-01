@@ -1509,4 +1509,86 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get taskSavePlan => 'Save plan';
+
+  @override
+  String get prepareMap => 'Prepare map';
+
+  @override
+  String get prepNext => 'Next';
+
+  @override
+  String get prepCreate => 'Create plans';
+
+  @override
+  String get prepStrategies => 'Tactics';
+
+  @override
+  String get prepMembers => 'Players';
+
+  @override
+  String get prepPlan => 'Template and deadline';
+
+  @override
+  String get prepTemplate => 'Training template';
+
+  @override
+  String get prepChooseStrategies => 'Select at least one tactic.';
+
+  @override
+  String get prepChooseMembers => 'Select at least one player.';
+
+  @override
+  String get prepDeadlineRequired => 'Choose a preparation deadline.';
+
+  @override
+  String get prepNoStrategies => 'Create a tactic for this map first.';
+
+  @override
+  String get prepNoMembers =>
+      'Load the online team roster and add player accounts.';
+
+  @override
+  String get prepBatchLimit => 'Create at most 500 assignments in one batch.';
+
+  @override
+  String get prepRosterChanged =>
+      'The roster or tactics changed. Reopen the wizard.';
+
+  @override
+  String prepCount(int count) {
+    return 'Assignments to create: $count';
+  }
+
+  @override
+  String prepCreated(int count) {
+    return 'Created assignments: $count';
+  }
+
+  @override
+  String get prepCriteriaRole =>
+      'Explain the starting position, route, your utility and actions after contact.';
+
+  @override
+  String get prepCriteriaDryRun =>
+      'Walk through the tactic without opponents and check timings and utility order.';
+
+  @override
+  String get prepCriteriaExecute =>
+      'Execute with the squad and review mistakes after the attempt.';
+
+  @override
+  String get prepCriteriaRetake =>
+      'Coordinate positions, trades and entry order when retaking the site.';
+
+  @override
+  String get prepAssignTactics => 'Assignments by tactic';
+
+  @override
+  String prepAssigneeCount(int count) {
+    return 'Assigned players: $count';
+  }
+
+  @override
+  String get prepChooseAssignments =>
+      'Assign at least one player to every selected tactic.';
 }

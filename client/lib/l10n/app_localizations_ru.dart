@@ -1523,4 +1523,87 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get taskSavePlan => 'Сохранить план';
+
+  @override
+  String get prepareMap => 'Подготовить карту';
+
+  @override
+  String get prepNext => 'Далее';
+
+  @override
+  String get prepCreate => 'Создать планы';
+
+  @override
+  String get prepStrategies => 'Тактики';
+
+  @override
+  String get prepMembers => 'Игроки';
+
+  @override
+  String get prepPlan => 'Шаблон и срок';
+
+  @override
+  String get prepTemplate => 'Шаблон тренировки';
+
+  @override
+  String get prepChooseStrategies => 'Выберите хотя бы одну тактику.';
+
+  @override
+  String get prepChooseMembers => 'Выберите хотя бы одного игрока.';
+
+  @override
+  String get prepDeadlineRequired => 'Укажите срок подготовки.';
+
+  @override
+  String get prepNoStrategies => 'Сначала создайте тактику для этой карты.';
+
+  @override
+  String get prepNoMembers =>
+      'Загрузите состав онлайн-команды и добавьте аккаунты игроков.';
+
+  @override
+  String get prepBatchLimit =>
+      'За один раз можно создать не более 500 заданий.';
+
+  @override
+  String get prepRosterChanged =>
+      'Состав или тактики изменились. Откройте мастер заново.';
+
+  @override
+  String prepCount(int count) {
+    return 'Будет создано заданий: $count';
+  }
+
+  @override
+  String prepCreated(int count) {
+    return 'Создано заданий: $count';
+  }
+
+  @override
+  String get prepCriteriaRole =>
+      'Назвать стартовую позицию, маршрут, свои гранаты и действия после контакта.';
+
+  @override
+  String get prepCriteriaDryRun =>
+      'Пройти тактику без противника, проверить тайминги и порядок гранат.';
+
+  @override
+  String get prepCriteriaExecute =>
+      'Выполнить выход вместе с составом и разобрать ошибки после попытки.';
+
+  @override
+  String get prepCriteriaRetake =>
+      'Согласовать позиции, размены и порядок выхода при возврате точки.';
+
+  @override
+  String get prepAssignTactics => 'Распределение по тактикам';
+
+  @override
+  String prepAssigneeCount(int count) {
+    return 'Исполнителей: $count';
+  }
+
+  @override
+  String get prepChooseAssignments =>
+      'Укажите исполнителя для каждой выбранной тактики.';
 }

@@ -28,6 +28,7 @@ import 'account_page.dart';
 import 'utilities_page.dart';
 import 'task_history_dialog.dart';
 import 'task_form.dart';
+import 'preparation_wizard.dart';
 import '../data/task_history.dart';
 
 class Workspace extends StatefulWidget {
@@ -500,6 +501,22 @@ class _WorkspaceState extends State<Workspace> with WidgetsBindingObserver {
         builder: (_) => MapDetailPage(
           map: map,
           files: widget.files,
+          onPrepare: db.canEditTeam(map['team_id'] as String)
+              ? () async {
+                  final count = await showDialog<int>(
+                    context: context,
+                    builder: (_) => PreparationWizard(
+                      store: db,
+                      team: map['team_id'] as String,
+                      map: map['id'] as String,
+                    ),
+                  );
+                  if (count != null && mounted) {
+                    refresh();
+                    message(l.prepCreated(count));
+                  }
+                }
+              : null,
           onStrategy: (level) {
             Navigator.pop(context);
             act(() => createStrategy(map['id'] as String, level));

@@ -16,6 +16,7 @@ import 'package:teamsync/data/own_video.dart';
 import 'package:teamsync/data/utilities.dart';
 import 'package:teamsync/data/utility_skills.dart';
 import 'package:teamsync/data/task_history.dart';
+import 'package:teamsync/data/preparation_plan.dart';
 import 'package:path_provider/path_provider.dart';
 
 import '../test/fixtures/own_clip_data.dart';
@@ -320,6 +321,21 @@ void main() {
         );
         expect(versions.first['author_name'], isNotEmpty);
         expect(history.cached().first['version'], versions.first['version']);
+        PreparationPlan(a, ta, map).create(
+          strategies: {tactic},
+          members: {playerMember},
+          type: 'dry_run',
+          dueAt: DateTime.utc(2026, 11, 3, 18),
+          criteria: 'Walk the route together',
+        );
+        await sa.run(ta, conflictLabel: 'Conflict copy');
+        await sb.run(tb, conflictLabel: 'Conflict copy');
+        final prepared = b
+            .tasks(tb)
+            .singleWhere((t) => t['task_type'] == 'dry_run');
+        expect(prepared['criteria'], 'Walk the route together');
+        expect(prepared['strategy_id'], b.strategies(tb).single['id']);
+        expect(prepared['member_id'], b.setting('shared_user_member_$tb'));
       } finally {
         a.close();
         b.close();

@@ -159,3 +159,20 @@ parts of the full requirements; passing this milestone does not close full accep
   stored. Existing unbound legacy assignments still need an explicit migration path.
 - Last full client run: 75 passed, 5 skipped; server: 20 passed. New form screenshot
   and native build checks are being prepared. No final release/publication yet.
+
+Map preparation adds four built-in templates and explicit per-tactic account
+assignments. Service tests cover distributed plans, rollback after an injected
+failure, stale identity, revoked role, changed roster and foreign-map strategy IDs.
+RU/EN 320px wizard tests select a tactic/player, require a deadline and create the
+correct personal assignment. Android integration now also generates a preparation
+plan and verifies its delivery to the second account.
+
+Windows UI snapshots 41332887265 at c29c8cb passed; task/form PNGs were visually
+reviewed and accepted. The hosted OpenAPI confirms all three assignment-plan fields
+following backend deployment 74deb0b. Final native builds for this milestone remain
+pending at this checkpoint.
+
+After adding preparation: full Flutter suite 80 passed, 5 skipped; analysis clean.
+The backend suite remains 20 passed. Local form snapshots remain stable after
+extracting the shared deadline picker. No gameplay/voice-server acceptance is
+implied by these client/server tests.
