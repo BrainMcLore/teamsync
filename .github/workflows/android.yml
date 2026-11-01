@@ -17,17 +17,28 @@ concurrency:
 
 jobs:
   android:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 60
     defaults:
       run:
         shell: bash
     steps:
       - uses: actions/checkout@v7
+      - name: Free runner space for Android toolchains
+        run: |
+          sudo rm -rf /usr/share/dotnet /opt/ghc /usr/local/.ghcup /opt/hostedtoolcache/CodeQL
+          if [ -d "$ANDROID_HOME/ndk" ]; then
+            find "$ANDROID_HOME/ndk" -mindepth 1 -maxdepth 1 -type d ! -name '28.2.13676358' -exec sudo rm -rf -- {} +
+          fi
+          df -h .
       - uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: '17'
+          cache: gradle
+          cache-dependency-path: |
+            client/android/**/*.gradle.kts
+            client/android/gradle/wrapper/gradle-wrapper.properties
       - uses: actions/setup-python@v7
         with:
           python-version: '3.12'
@@ -67,6 +78,10 @@ jobs:
           script: |
             adb reverse tcp:8766 tcp:8766
             cd client && flutter test integration_test/accounts_android_test.dart -d emulator-5554
+      - name: Remove device-test build before release compilation
+        run: |
+          rm -rf client/build "$HOME/.android/avd"
+          df -h .
       - name: Build signed Android APK
         if: github.event_name != 'pull_request'
         env:
