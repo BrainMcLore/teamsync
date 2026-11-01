@@ -1,0 +1,12 @@
+{
+  "review_bytes": 17701144,
+  "frames": 12002,
+  "rounds": 24,
+  "load_and_index_ms": 842,
+  "queries": 300,
+  "original_active_query_us": 248958,
+  "indexed_active_and_recent_us": 1048,
+  "original_average_us": 829.86,
+  "indexed_average_us": 3.493333333333333,
+  "note": "CPU event-query benchmark in Flutter test; not an end-to-end GPU FPS measurement."
+}

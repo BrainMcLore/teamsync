@@ -1,0 +1,21 @@
+.tools/
+.venv/
+__pycache__/
+*.pyc
+.env
+/data/
+dist/
+*.sqlite*
+.pytest_cache/
+client/build-*.log
+
+# Generated diagnostics and personal/local build configuration.
+**/failures/
+*.log
+*.jks
+*.keystore
+**/key.properties
+**/local.properties
+artifacts/verification/*
+!artifacts/verification/studio-*-08.png
+!artifacts/verification/review-performance-04.json

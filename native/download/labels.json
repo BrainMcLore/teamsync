@@ -1,0 +1,10 @@
+{
+  "ru": {
+    "title": "TeamSync — проверка источника HLTV",
+    "message": "Если источник запросит проверку, подтвердите её. Загрузка продолжится в TeamSync автоматически."
+  },
+  "en": {
+    "title": "TeamSync — HLTV source verification",
+    "message": "Verify the source if asked. The download will continue inside TeamSync automatically."
+  }
+}

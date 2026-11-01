@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: teamsync-api
+    runtime: python
+    plan: free
+    region: frankfurt
+    buildCommand: pip install -r server/requirements.txt
+    startCommand: python -m server.hosted
+    healthCheckPath: /api/v1/health
+    envVars:
+      - key: DATABASE_URL
+        sync: false
+      - key: DISCORD_CLIENT_ID
+        value: ""
+      - key: DISCORD_CLIENT_SECRET
+        value: ""

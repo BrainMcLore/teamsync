@@ -1,0 +1,3 @@
+Map graphics and overview data © Valve Corporation. Not affiliated with Valve.
+https://github.com/MurkyYT/cs2-map-icons
+Revision: d84e5b19af6e17f25ce295545a01456c46acee5f

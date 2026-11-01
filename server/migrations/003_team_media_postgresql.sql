@@ -1,0 +1,8 @@
+CREATE TABLE IF NOT EXISTS team_media (
+  id VARCHAR(64) NOT NULL,
+  team_id VARCHAR(36) NOT NULL REFERENCES teams(id),
+  content BYTEA NOT NULL,
+  mime VARCHAR(32) NOT NULL,
+  size INTEGER NOT NULL,
+  PRIMARY KEY (id,team_id)
+);

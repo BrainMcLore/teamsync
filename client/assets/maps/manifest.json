@@ -1,0 +1,252 @@
+{
+  "revision": "d84e5b19af6e17f25ce295545a01456c46acee5f-cache-03",
+  "source": "https://github.com/MurkyYT/cs2-map-icons",
+  "copyright": "Map graphics and overview data © Valve Corporation. Not affiliated with Valve.",
+  "maps": [
+    {
+      "key": "de_mirage",
+      "name": "Mirage",
+      "calibration": {
+        "path": "https://raw.githubusercontent.com/MurkyYT/cs2-map-icons/main/data/radar_info/de_mirage.txt",
+        "pos_x": -3230,
+        "pos_y": 1713,
+        "scale": 5,
+        "rotate": 0,
+        "zoom": 0
+      },
+      "levels": [
+        {
+          "key": "default",
+          "asset": "assets/maps/de_mirage_radar_psd.png"
+        }
+      ],
+      "thumbnail": "assets/maps/de_mirage_1_png.png"
+    },
+    {
+      "key": "de_dust2",
+      "name": "Dust II",
+      "calibration": {
+        "path": "https://raw.githubusercontent.com/MurkyYT/cs2-map-icons/main/data/radar_info/de_dust2.txt",
+        "pos_x": -2476,
+        "pos_y": 3239,
+        "scale": 4.4,
+        "rotate": 1,
+        "zoom": 1.1
+      },
+      "levels": [
+        {
+          "key": "default",
+          "asset": "assets/maps/de_dust2_radar_psd.png"
+        }
+      ],
+      "thumbnail": "assets/maps/de_dust2_1_png.png"
+    },
+    {
+      "key": "de_inferno",
+      "name": "Inferno",
+      "calibration": {
+        "path": "https://raw.githubusercontent.com/MurkyYT/cs2-map-icons/main/data/radar_info/de_inferno.txt",
+        "pos_x": -2087,
+        "pos_y": 3870,
+        "scale": 4.9
+      },
+      "levels": [
+        {
+          "key": "default",
+          "asset": "assets/maps/de_inferno_radar_psd.png"
+        }
+      ],
+      "thumbnail": "assets/maps/de_inferno_1_png.png"
+    },
+    {
+      "key": "de_nuke",
+      "name": "Nuke",
+      "calibration": {
+        "path": "https://raw.githubusercontent.com/MurkyYT/cs2-map-icons/main/data/radar_info/de_nuke.txt",
+        "pos_x": -3453,
+        "pos_y": 2887,
+        "scale": 7,
+        "verticalsections": {
+          "default": {
+            "AltitudeMax": 10000,
+            "AltitudeMin": -495
+          },
+          "lower": {
+            "AltitudeMax": -495,
+            "AltitudeMin": -10000
+          }
+        }
+      },
+      "levels": [
+        {
+          "key": "default",
+          "asset": "assets/maps/de_nuke_radar_psd.png"
+        },
+        {
+          "key": "lower",
+          "asset": "assets/maps/de_nuke_lower_radar_psd.png"
+        }
+      ],
+      "thumbnail": "assets/maps/de_nuke_1_png.png"
+    },
+    {
+      "key": "de_ancient",
+      "name": "Ancient",
+      "calibration": {
+        "path": "https://raw.githubusercontent.com/MurkyYT/cs2-map-icons/main/data/radar_info/de_ancient.txt",
+        "pos_x": -2953,
+        "pos_y": 2164,
+        "scale": 5,
+        "rotate": 0,
+        "zoom": 0
+      },
+      "levels": [
+        {
+          "key": "default",
+          "asset": "assets/maps/de_ancient_radar_psd.png"
+        }
+      ],
+      "thumbnail": "assets/maps/de_ancient_1_png.png"
+    },
+    {
+      "key": "de_anubis",
+      "name": "Anubis",
+      "calibration": {
+        "path": "https://raw.githubusercontent.com/MurkyYT/cs2-map-icons/main/data/radar_info/de_anubis.txt",
+        "pos_x": -2796,
+        "pos_y": 3328,
+        "scale": 5.22
+      },
+      "levels": [
+        {
+          "key": "default",
+          "asset": "assets/maps/de_anubis_radar_psd.png"
+        }
+      ],
+      "thumbnail": "assets/maps/de_anubis_1_png.png"
+    },
+    {
+      "key": "de_train",
+      "name": "Train",
+      "calibration": {
+        "path": "https://raw.githubusercontent.com/MurkyYT/cs2-map-icons/main/data/radar_info/de_train.txt",
+        "pos_x": -2308,
+        "pos_y": 2078,
+        "scale": 4.082077,
+        "verticalsections": {
+          "default": {
+            "AltitudeMax": 20000,
+            "AltitudeMin": -50
+          },
+          "lower": {
+            "AltitudeMax": -50,
+            "AltitudeMin": -5000
+          }
+        }
+      },
+      "levels": [
+        {
+          "key": "default",
+          "asset": "assets/maps/de_train_radar_psd.png"
+        },
+        {
+          "key": "lower",
+          "asset": "assets/maps/de_train_lower_radar_psd.png"
+        }
+      ],
+      "thumbnail": "assets/maps/de_train_1_png.png"
+    },
+    {
+      "key": "de_overpass",
+      "name": "Overpass",
+      "calibration": {
+        "path": "https://raw.githubusercontent.com/MurkyYT/cs2-map-icons/main/data/radar_info/de_overpass.txt",
+        "pos_x": -4831,
+        "pos_y": 1781,
+        "scale": 5.2,
+        "rotate": 0,
+        "zoom": 0
+      },
+      "levels": [
+        {
+          "key": "default",
+          "asset": "assets/maps/de_overpass_radar_psd.png"
+        }
+      ],
+      "thumbnail": "assets/maps/de_overpass_1_png.png"
+    },
+    {
+      "key": "de_vertigo",
+      "name": "Vertigo",
+      "calibration": {
+        "path": "https://raw.githubusercontent.com/MurkyYT/cs2-map-icons/main/data/radar_info/de_vertigo.txt",
+        "pos_x": -3168,
+        "pos_y": 1762,
+        "scale": 4,
+        "verticalsections": {
+          "default": {
+            "AltitudeMax": 20000,
+            "AltitudeMin": 11700
+          },
+          "lower": {
+            "AltitudeMax": 11700,
+            "AltitudeMin": -10000
+          }
+        }
+      },
+      "levels": [
+        {
+          "key": "default",
+          "asset": "assets/maps/de_vertigo_radar_psd.png"
+        },
+        {
+          "key": "lower",
+          "asset": "assets/maps/de_vertigo_lower_radar_psd.png"
+        }
+      ],
+      "thumbnail": "assets/maps/de_vertigo_1_png.png"
+    },
+    {
+      "key": "de_cache",
+      "name": "Cache",
+      "calibration": {
+        "path": "https://raw.githubusercontent.com/MurkyYT/cs2-map-icons/main/data/radar_info/de_cache.txt",
+        "pos_x": -2000,
+        "pos_y": 3250,
+        "scale": 5.5
+      },
+      "levels": [
+        {
+          "key": "default",
+          "asset": "assets/maps/de_cache_radar_psd.png"
+        }
+      ],
+      "thumbnail": "assets/maps/de_cache_1_png.png"
+    }
+  ],
+  "sha256": {
+    "de_mirage_radar_psd.png": "5de1cc16362e538dc5f4561a24661cb1fb1c15c77ec289e32b44c0fc07bfb85b",
+    "de_mirage_1_png.png": "0bdf09e04135e22631192b0a31b88bdd2afbadf11d50745d19c0a1e31ae07fd4",
+    "de_dust2_radar_psd.png": "3be20317d1383da6f390a5bb245cabb65857ef08b1e2c5b82b5938a8cb3167bb",
+    "de_dust2_1_png.png": "21b370251067263a3089704000f7bba1744c5a5afef0a261cf1eec2be325dff2",
+    "de_inferno_radar_psd.png": "e4929829f8475d2edcb44ee3537ffad094dc8008b4d6f5aa81e66e77ddb077ba",
+    "de_inferno_1_png.png": "d481b9caa0f4604178f86f629b6c3dbbb46b7a5952c43b3ac9c9953a1aba0931",
+    "de_nuke_radar_psd.png": "6230346d3ce969006062fbd02220b083245f621ef366ce26a42dc27a80120bd0",
+    "de_nuke_lower_radar_psd.png": "040c958f141d0365ca9125388bc20228b0df0ac6abd1fe78d743ecfa1be4bb64",
+    "de_nuke_1_png.png": "6c56e85aeb3ad2107ab692e3a7402a8545b88eff80d319dfa0bf89493f007236",
+    "de_ancient_radar_psd.png": "88fe108f7cc54d89b9c6179155cc39f419aa02f79df1a3f36031049577fd1952",
+    "de_ancient_1_png.png": "574e464d5385795dbefa17e7d4003ac302029e80b06e537899d51c26c859bf1c",
+    "de_anubis_radar_psd.png": "7c9badbb4ecb655d3d789724ca9d615bb06abf721d776176018ee3263a8a7b94",
+    "de_anubis_1_png.png": "cb8d4ded519953859bc20e724f455fc3860d7c3cbfcb4fe8d5093be1adcc9625",
+    "de_train_radar_psd.png": "26007eea00d58e722058b11b96b16e08d4b28bf5494a4df141463a7dbcb0648a",
+    "de_train_lower_radar_psd.png": "c1852ca4d1f0ba7ccb426a853f57f203ab5431b32e59323b6bd5cd216d7b40ed",
+    "de_train_1_png.png": "c97dfa4a41306d7654ce9be93a1829f18901d419c071f005c7969f2e98207fcb",
+    "de_overpass_radar_psd.png": "ab3bfff1c3cc8da47eda921511b3eb34028e24b718b85709ac080f123fd4c108",
+    "de_overpass_1_png.png": "6ec96b62ccf0fa9051f7e4adc8cacf489fe5670564b0b428b485918f9fb99653",
+    "de_vertigo_radar_psd.png": "3cfa3f044ed5883098e78ab63939a3c9e39fc2c0c2100e59acf4e2c3fa09df43",
+    "de_vertigo_lower_radar_psd.png": "89ab966da946061906ab0d8876b9b45761291e8080149246611e12de526cd673",
+    "de_vertigo_1_png.png": "f63d0fdfef7825449f1f5ed3688a37d7845edc63c020a949834157447f119273",
+    "de_cache_radar_psd.png": "afa47fd3111f007cedfbb580f740780427531e8ce6b9dcc55a13d9104e2ed6a6",
+    "de_cache_1_png.png": "9fa28c1d41fad41374f70fb33c9c38919e5558ca56ee4fc6f027ec7e74e5bce1"
+  }
+}
