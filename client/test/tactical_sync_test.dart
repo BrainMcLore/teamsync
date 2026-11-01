@@ -132,7 +132,10 @@ class SyncAccount extends AccountClient {
           !(server.roles[user] == 'player' &&
               body?['kind'] == 'task' &&
               (body?['payload'] as Map)['assignee_user_id'] == user &&
-              (body?['payload'] as Map)['status'] == 'submitted')) {
+              [
+                'in_progress',
+                'submitted',
+              ].contains((body?['payload'] as Map)['status']))) {
         throw DomainError('forbidden');
       }
       final op = body!['operation_id'] as String;
@@ -543,6 +546,10 @@ void main() {
       );
       server.roles['bob'] = 'player';
       await sb.run(tb, conflictLabel: 'Conflict');
+      b.transitionTask(received['id'] as String, 'in_progress');
+      await sb.run(tb, conflictLabel: 'Conflict');
+      await sa.run(ta, conflictLabel: 'Conflict');
+      expect(a.tasks(ta).single['status'], 'in_progress');
       b.transitionTask(received['id'] as String, 'submitted');
       await sb.run(tb, conflictLabel: 'Conflict');
       await sa.run(ta, conflictLabel: 'Conflict');
@@ -551,6 +558,10 @@ void main() {
       await sa.run(ta, conflictLabel: 'Conflict');
       await sb.run(tb, conflictLabel: 'Conflict');
       expect(b.tasks(tb).single['status'], 'approved');
+      a.transitionTask(task, 'todo', reason: 'Repeat the flash timing');
+      await sa.run(ta, conflictLabel: 'Conflict');
+      await sb.run(tb, conflictLabel: 'Conflict');
+      expect(b.tasks(tb).single['review_reason'], 'Repeat the flash timing');
       expect(
         server.documents.values.where((d) => d['kind'] == 'task'),
         hasLength(1),

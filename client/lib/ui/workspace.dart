@@ -254,9 +254,13 @@ class _WorkspaceState extends State<Workspace> with WidgetsBindingObserver {
                         child: TextFormField(
                           controller: controllers[e.key],
                           autofocus: e.key == fields.keys.first,
-                          maxLength: e.key == 'notes' ? 20000 : 120,
-                          minLines: e.key == 'notes' ? 3 : 1,
-                          maxLines: e.key == 'notes' ? 5 : 1,
+                          maxLength: e.key == 'notes'
+                              ? 20000
+                              : e.key == 'reason'
+                              ? 2000
+                              : 120,
+                          minLines: ['notes', 'reason'].contains(e.key) ? 3 : 1,
+                          maxLines: ['notes', 'reason'].contains(e.key) ? 5 : 1,
                           decoration: InputDecoration(labelText: e.value),
                           validator: (v) =>
                               e.key != 'notes' &&
@@ -1013,6 +1017,7 @@ class _WorkspaceState extends State<Workspace> with WidgetsBindingObserver {
 
   String status(String value) => switch (value) {
     'todo' => l.todo,
+    'in_progress' => l.taskInProgress,
     'submitted' => l.submitted,
     _ => l.approved,
   };
@@ -1047,6 +1052,11 @@ class _WorkspaceState extends State<Workspace> with WidgetsBindingObserver {
               style: const TextStyle(fontSize: 12, color: Studio.muted),
             ),
           ],
+          if ((task['review_reason'] as String? ?? '').isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.only(top: 12),
+              child: Text('${l.taskReturnReason}: ${task['review_reason']}'),
+            ),
           if (task['strategy_id'] != null)
             TextButton.icon(
               onPressed: () => openStrategy(task['strategy_id'] as String),
@@ -1061,7 +1071,7 @@ class _WorkspaceState extends State<Workspace> with WidgetsBindingObserver {
             spacing: 8,
             runSpacing: 8,
             children: [
-              if (state == 'todo' &&
+              if (['todo', 'in_progress'].contains(state) &&
                   (db.canEditTeam(teamId!) ||
                       (db.setting('shared_role_$teamId') == 'player' &&
                           task['member_id'] ==
@@ -1070,9 +1080,12 @@ class _WorkspaceState extends State<Workspace> with WidgetsBindingObserver {
                   onPressed: busy
                       ? null
                       : () => act(() async {
-                          db.transitionTask(task['id'] as String, 'submitted');
+                          db.transitionTask(
+                            task['id'] as String,
+                            state == 'todo' ? 'in_progress' : 'submitted',
+                          );
                         }),
-                  child: Text(l.submit),
+                  child: Text(state == 'todo' ? l.taskStart : l.submit),
                 ),
               if (state == 'submitted' && db.canEditTeam(teamId!))
                 FilledButton(
@@ -1088,7 +1101,17 @@ class _WorkspaceState extends State<Workspace> with WidgetsBindingObserver {
                   onPressed: busy
                       ? null
                       : () => act(() async {
-                          db.transitionTask(task['id'] as String, 'todo');
+                          final v = await form(l.returnTask, {
+                            'reason': l.taskReturnReason,
+                          });
+                          if (v == null || (v['reason'] ?? '').trim().isEmpty) {
+                            return;
+                          }
+                          db.transitionTask(
+                            task['id'] as String,
+                            'todo',
+                            reason: v['reason']!,
+                          );
                         }),
                   child: Text(l.returnTask),
                 ),
@@ -1121,7 +1144,7 @@ class _WorkspaceState extends State<Workspace> with WidgetsBindingObserver {
               ? empty(l.emptyTasks, Icons.checklist)
               : LayoutBuilder(
                   builder: (context, c) {
-                    if (c.maxWidth < 950) {
+                    if (c.maxWidth < 1200) {
                       return ListView.separated(
                         itemCount: items.length,
                         separatorBuilder: (_, i) => const SizedBox(height: 14),
@@ -1131,7 +1154,12 @@ class _WorkspaceState extends State<Workspace> with WidgetsBindingObserver {
                     return Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        for (final state in ['todo', 'submitted', 'approved'])
+                        for (final state in [
+                          'todo',
+                          'in_progress',
+                          'submitted',
+                          'approved',
+                        ])
                           Expanded(
                             child: Padding(
                               padding: const EdgeInsets.only(right: 14),

@@ -298,11 +298,27 @@ class OfflinePackage {
             strategyId: strategyIds[t['strategy_id']],
           );
           final status = t['status'];
-          if (!['todo', 'submitted', 'approved'].contains(status)) {
+          if (![
+            'todo',
+            'in_progress',
+            'submitted',
+            'approved',
+          ].contains(status)) {
             throw DomainError('packageError');
           }
+          final reason = t['review_reason'] ?? '';
+          if (reason is! String || reason.length > 2000) {
+            throw DomainError('packageError');
+          }
+          store.db.execute('UPDATE tasks SET review_reason=? WHERE id=?', [
+            reason,
+            id,
+          ]);
           if (status != 'todo') {
-            store.transitionTask(id, 'submitted');
+            store.transitionTask(
+              id,
+              status == 'in_progress' ? 'in_progress' : 'submitted',
+            );
             if (status == 'approved') store.transitionTask(id, 'approved');
           }
         }

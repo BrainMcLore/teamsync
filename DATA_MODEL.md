@@ -50,3 +50,14 @@ only managers confirm a ready member. Returning another member to preparation
 requires a comment. An explicit material revision starts a new verification cycle;
 ordinary text edits preserve the current cycle. Progress history is currently kept
 on the server and in the local cache, and is not included in offline exports.
+
+### Task workflow (schema v6)
+
+The task table now accepts `in_progress` in addition to `todo`, `submitted` and
+`approved`, and stores `review_reason` (wire field `task_review_reason`). The
+migration backs up existing on-disk databases and rebuilds the table in one SQLite
+transaction, preserving task IDs, links and sync settings. Returning a task requires
+an explicit nonempty reason. Players can start and submit their own assignments;
+manager approval remains protected on the API. Existing three-stage clients may
+still submit directly from `todo`. Older task edits omitting the review field retain
+the saved comment. Offline exports retain both the new stage and review comment.

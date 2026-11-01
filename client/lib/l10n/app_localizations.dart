@@ -2701,6 +2701,24 @@ abstract class AppLocalizations {
   /// In ru, this message translates to:
   /// **'Укажите причину повторной проверки.'**
   String get skillReasonRequired;
+
+  /// No description provided for @taskInProgress.
+  ///
+  /// In ru, this message translates to:
+  /// **'В процессе'**
+  String get taskInProgress;
+
+  /// No description provided for @taskStart.
+  ///
+  /// In ru, this message translates to:
+  /// **'Начать задание'**
+  String get taskStart;
+
+  /// No description provided for @taskReturnReason.
+  ///
+  /// In ru, this message translates to:
+  /// **'Причина возврата задания'**
+  String get taskReturnReason;
 }
 
 class _AppLocalizationsDelegate

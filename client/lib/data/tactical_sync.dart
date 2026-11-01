@@ -68,6 +68,7 @@ class TacticalSync {
         'strategy_id': value['strategy_id'],
         'assignee_user_id': value['assignee_user_id'],
         'status': value['status'] ?? 'todo',
+        'task_review_reason': value['task_review_reason'] ?? '',
       };
     }
     if (kind == 'map') {
@@ -287,7 +288,7 @@ class TacticalSync {
           !(playerSubmission &&
               request['kind'] == 'task' &&
               payload['assignee_user_id'] == accountUser &&
-              payload['status'] == 'submitted')) {
+              ['in_progress', 'submitted'].contains(payload['status']))) {
         blockedByRole = true;
         continue;
       }
@@ -338,7 +339,7 @@ class TacticalSync {
                 e['version'] != 0 &&
                 row['member_id'] ==
                     store.setting('shared_user_member_$local') &&
-                row['status'] == 'submitted')) {
+                ['in_progress', 'submitted'].contains(row['status']))) {
           final seededMap =
               kind == 'map' &&
               e['version'] == 0 &&
@@ -495,6 +496,7 @@ class TacticalSync {
         'title': row['title'],
         'notes': row['notes'],
         'status': row['status'],
+        'task_review_reason': row['review_reason'] ?? '',
         'strategy_id': row['strategy_id'] == null
             ? null
             : entry('strategy', row['strategy_id'] as String)['remote'],
@@ -745,10 +747,10 @@ class TacticalSync {
               member: current['member_id'] as String?,
               strategyId: current['strategy_id'] as String?,
             );
-            store.db.execute('UPDATE tasks SET status=? WHERE id=?', [
-              current['status'],
-              copy,
-            ]);
+            store.db.execute(
+              'UPDATE tasks SET status=?,review_reason=? WHERE id=?',
+              [current['status'], current['review_reason'], copy],
+            );
             conflicts++;
           }
           final id =
@@ -761,7 +763,7 @@ class TacticalSync {
                 strategyId: parent?['local'] as String?,
               );
           store.db.execute(
-            'UPDATE tasks SET title=?,notes=?,status=?,member_id=?,strategy_id=?,updated_at=? WHERE id=?',
+            'UPDATE tasks SET title=?,notes=?,status=?,member_id=?,strategy_id=?,updated_at=?,review_reason=? WHERE id=?',
             [
               payload['title'],
               payload['notes'],
@@ -769,6 +771,7 @@ class TacticalSync {
               member,
               parent?['local'],
               store.now,
+              payload['task_review_reason'] ?? '',
               id,
             ],
           );

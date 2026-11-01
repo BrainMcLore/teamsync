@@ -99,3 +99,13 @@ utility panel was visually inspected and its Windows baseline accepted. The host
 API health endpoint now advertises `utility_skills` after backend deployment
 5826344. Client analysis is clean; the full suite passes 64 tests with 5 explicit
 skips. Progress history also exposes prior verification cycles after a recheck.
+
+### Four-stage assignments — development verification
+
+- Previous native builds at 0e48fba succeeded: Windows 41327479709 and signed
+  Android 41327466664, including player-ready / coach-confirmed utility progress.
+- New task migration v5 -> v6 preserves assignments, notes and durable sync settings;
+  a backup is created before migration. Store tests cover review comments after reopen.
+- Two-client tests cover starting a task, submitting, approval and synchronizing the
+  reason for return. Server: 19 tests pass, including old-client field preservation.
+- New task native builds remain pending; this is not a published release.

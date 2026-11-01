@@ -38,3 +38,31 @@ def test_player_can_submit_only_own_assignment_but_cannot_approve_or_rewrite(set
               'payload': {**foreign['payload'], 'status': 'submitted'}}
     assert client.post(base+'/documents', headers=player[1], json=forged).status_code == 403
     assert client.post(base+'/documents', headers=player[1], json={**body, 'document_id': uid(), 'operation_id': uid()}).status_code == 403
+
+
+def test_four_stage_task_return_requires_an_explicit_reason(setup):
+    _, client, (owner, player, _) = setup
+    team = client.post('/api/v1/teams', headers=owner[1], json={'name': 'Practice'}).json()['id']
+    base = f'/api/v1/teams/{team}'
+    code = client.post(base+'/invites', headers=owner[1], json={}).json()['code']
+    client.post('/api/v1/invites/join', headers=player[1], json={'code': code})
+    task = {'operation_id': uid(), 'document_id': uid(), 'expected_version': 0,
+            'kind': 'task', 'payload': {'title': 'Dry run', 'assignee_user_id': player[0]}}
+    assert client.post(base+'/documents', headers=owner[1], json=task).status_code == 200
+    for version, status in [(1, 'in_progress'), (2, 'submitted')]:
+        task = {**task, 'operation_id': uid(), 'expected_version': version,
+                'payload': {**task['payload'], 'status': status}}
+        assert client.post(base+'/documents', headers=player[1], json=task).status_code == 200
+    returned = {**task, 'operation_id': uid(), 'expected_version': 3,
+                'payload': {**task['payload'], 'status': 'todo'}}
+    assert client.post(base+'/documents', headers=owner[1], json=returned).status_code == 422
+    returned['payload']['task_review_reason'] = 'Redo the first flash timing'
+    response = client.post(base+'/documents', headers=owner[1], json=returned)
+    assert response.status_code == 200
+    # Older clients omitting the field retain the manager's review comment.
+    resumed = {**task, 'operation_id': uid(), 'expected_version': 4,
+               'payload': {**task['payload'], 'status': 'in_progress'}}
+    response = client.post(base+'/documents', headers=player[1], json=resumed)
+    assert response.status_code == 200
+    saved = next(r for r in client.get(base+'/documents', headers=player[1]).json()['items'] if r['id']==task['document_id'])
+    assert saved['payload']['task_review_reason'] == returned['payload']['task_review_reason']

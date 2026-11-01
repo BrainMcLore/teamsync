@@ -101,7 +101,8 @@ class DocumentPayload(StrictModel):
     strategy_id: str | None = Field(default=None,max_length=36)
     assignee_user_id: str | None = Field(default=None,max_length=36)
     side: Literal['T','CT'] | None = None
-    status: Literal['todo','submitted','approved']='todo'
+    status: Literal['todo','in_progress','submitted','approved']='todo'
+    task_review_reason: str = Field(default='',max_length=2000)
     objects: list[TacticalObject] = Field(default_factory=list,max_length=2000)
     catalog_id: str | None = Field(default=None,max_length=80)
     level: Literal['default','lower']='default'
@@ -509,6 +510,9 @@ def create_app(database_url=None, public_url=None):
             if body.payload.utility.training_revision==1: empty_new_fields.add('training_revision')
             if not body.payload.utility.review_reason: empty_new_fields.add('review_reason')
             excluded={'payload': {'utility': empty_new_fields}}
+        if not body.payload.task_review_reason:
+            if isinstance(excluded['payload'],set): excluded['payload'].add('task_review_reason')
+            else: excluded['payload']['task_review_reason']=True
         legacy_hash=hashlib.sha256(body.model_dump_json(exclude=excluded).encode()).hexdigest()
         provided=[] if body.payload.utility is None else sorted(
             f for f in ('image_ids','video_id') if f in body.payload.utility.model_fields_set)
@@ -541,13 +545,22 @@ def create_app(database_url=None, public_url=None):
                     if field not in body.payload.utility.model_fields_set and field in old_utility:
                         payload['utility'][field]=old_utility[field]
 
+            if current and body.kind=='task' and 'task_review_reason' not in body.payload.model_fields_set:
+                payload['task_review_reason']=current['payload'].get('task_review_reason','')
+            if current and body.kind=='task':
+                previous_status=current['payload'].get('status','todo')
+                allowed={'todo':('in_progress','submitted'),'in_progress':('submitted','todo'),'submitted':('approved','todo'),'approved':('todo',)}
+                if payload['status']!=previous_status and payload['status'] not in allowed[previous_status]: fail('invalid_transition',422)
+            if current and body.kind=='task' and payload['status']=='todo' and current['payload'].get('status')!='todo' and ('task_review_reason' not in body.payload.model_fields_set or not payload['task_review_reason']):
+                fail('review_reason_required',422)
+
             if not manager:
                 # Players may submit only their own existing assignment. Every
                 # other field is immutable; approval belongs to the coaching staff.
                 old=DocumentPayload.model_validate(current['payload']).model_dump() if current else {}
                 if not current or old.get('assignee_user_id')!=session['user_id']:
                     fail('forbidden',403)
-                if old.get('status')!='todo' or payload['status']!='submitted':
+                if (old.get('status'),payload['status']) not in (('todo','in_progress'),('todo','submitted'),('in_progress','submitted')):
                     fail('forbidden',403)
                 if {k:v for k,v in old.items() if k!='status'}!={k:v for k,v in payload.items() if k!='status'}:
                     fail('forbidden',403)

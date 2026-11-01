@@ -1436,4 +1436,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get skillReasonRequired => 'Enter the reason for re-verification.';
+
+  @override
+  String get taskInProgress => 'In progress';
+
+  @override
+  String get taskStart => 'Start task';
+
+  @override
+  String get taskReturnReason => 'Reason for returning the task';
 }

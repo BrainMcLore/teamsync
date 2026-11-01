@@ -468,5 +468,8 @@
   "skillMaterialChanged": "Раскидка обновилась. Закройте окно и откройте проверку заново.",
   "skillEmptyHistory": "Истории проверок пока нет.",
   "skillMember": "Участник команды",
-  "skillReasonRequired": "Укажите причину повторной проверки."
+  "skillReasonRequired": "Укажите причину повторной проверки.",
+  "taskInProgress": "В процессе",
+  "taskStart": "Начать задание",
+  "taskReturnReason": "Причина возврата задания"
 }

@@ -468,5 +468,8 @@
   "skillMaterialChanged": "The utility changed. Close this window and reopen the review.",
   "skillEmptyHistory": "No verification history yet.",
   "skillMember": "Team member",
-  "skillReasonRequired": "Enter the reason for re-verification."
+  "skillReasonRequired": "Enter the reason for re-verification.",
+  "taskInProgress": "In progress",
+  "taskStart": "Start task",
+  "taskReturnReason": "Reason for returning the task"
 }

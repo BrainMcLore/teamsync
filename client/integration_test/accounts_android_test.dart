@@ -267,6 +267,10 @@ void main() {
         await sb.run(tb, conflictLabel: 'Conflict copy');
         final receivedTask = b.tasks(tb).single;
         expect(receivedTask['strategy_id'], b.strategies(tb).single['id']);
+        b.transitionTask(receivedTask['id'] as String, 'in_progress');
+        await sb.run(tb, conflictLabel: 'Conflict copy');
+        await sa.run(ta, conflictLabel: 'Conflict copy');
+        expect(a.tasks(ta).single['status'], 'in_progress');
         b.transitionTask(receivedTask['id'] as String, 'submitted');
         await sb.run(tb, conflictLabel: 'Conflict copy');
         await sa.run(ta, conflictLabel: 'Conflict copy');

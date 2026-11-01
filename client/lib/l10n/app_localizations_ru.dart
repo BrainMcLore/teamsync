@@ -1450,4 +1450,13 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get skillReasonRequired => 'Укажите причину повторной проверки.';
+
+  @override
+  String get taskInProgress => 'В процессе';
+
+  @override
+  String get taskStart => 'Начать задание';
+
+  @override
+  String get taskReturnReason => 'Причина возврата задания';
 }

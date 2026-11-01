@@ -36,12 +36,12 @@ class Store {
     db.execute('PRAGMA foreign_keys = ON');
     db.execute('PRAGMA journal_mode = WAL');
     final version = db.select('PRAGMA user_version').first.values.first as int;
-    if (version > 0 && version < 5 && path != ':memory:') {
+    if (version > 0 && version < 6 && path != ':memory:') {
       final backup =
-          '$path.pre-v5-${DateTime.now().toUtc().millisecondsSinceEpoch}.sqlite';
+          '$path.pre-v6-${DateTime.now().toUtc().millisecondsSinceEpoch}.sqlite';
       db.execute("VACUUM INTO '${backup.replaceAll("'", "''")}'");
     }
-    if (version > 5) {
+    if (version > 6) {
       db.close();
       throw DomainError('newerDatabase');
     }
@@ -106,6 +106,18 @@ PRAGMA user_version=4;
 CREATE TABLE utility_progress_cache(team_id TEXT NOT NULL REFERENCES teams(id),document_id TEXT NOT NULL,user_id TEXT NOT NULL,revision INTEGER NOT NULL,remote TEXT NOT NULL,desired TEXT,pending TEXT,conflict INTEGER NOT NULL DEFAULT 0,archived INTEGER NOT NULL DEFAULT 0,PRIMARY KEY(team_id,document_id,user_id,revision));
 CREATE INDEX utility_progress_pending ON utility_progress_cache(team_id,archived);
 PRAGMA user_version=5;
+""");
+      });
+    }
+    if (version < 6) {
+      transaction(() {
+        db.execute("""
+CREATE TABLE tasks_v6(id TEXT PRIMARY KEY,team_id TEXT NOT NULL REFERENCES teams(id),strategy_id TEXT REFERENCES strategies(id),member_id TEXT REFERENCES members(id),title TEXT NOT NULL,notes TEXT NOT NULL,status TEXT NOT NULL CHECK(status IN ('todo','in_progress','submitted','approved')),updated_at TEXT NOT NULL,review_reason TEXT NOT NULL DEFAULT '');
+INSERT INTO tasks_v6 SELECT *,'' FROM tasks;
+DROP TABLE tasks;
+ALTER TABLE tasks_v6 RENAME TO tasks;
+CREATE INDEX tasks_team ON tasks(team_id);
+PRAGMA user_version=6;
 """);
       });
     }
@@ -327,44 +339,47 @@ PRAGMA user_version=5;
       throw DomainError('crossTeam');
     }
     final id = uuid.v4();
-    db.execute('INSERT INTO tasks VALUES(?,?,?,?,?,?,?,?)', [
-      id,
-      team,
-      strategyId,
-      member,
-      requiredText(title),
-      notes,
-      'todo',
-      now,
-    ]);
+    db.execute(
+      'INSERT INTO tasks(id,team_id,strategy_id,member_id,title,notes,status,updated_at) VALUES(?,?,?,?,?,?,?,?)',
+      [id, team, strategyId, member, requiredText(title), notes, 'todo', now],
+    );
     if (!applyingSync) onTacticalChange?.call();
     return id;
   }
 
-  void transitionTask(String id, String status) {
+  void transitionTask(String id, String status, {String reason = ''}) {
     final task = rows('SELECT * FROM tasks WHERE id=?', [id]).single;
     final team = task['team_id'] as String;
     if (!canEditTeam(team) &&
         !(setting('shared_role_$team') == 'player' &&
             task['member_id'] == setting('shared_user_member_$team') &&
-            task['status'] == 'todo' &&
-            status == 'submitted')) {
+            ['todo', 'in_progress'].contains(task['status']) &&
+            ['in_progress', 'submitted'].contains(status))) {
       throw DomainError('readOnlyTeam');
     }
     final current = task['status'];
     const allowed = {
-      'todo': ['submitted'],
+      'todo': ['in_progress', 'submitted'],
+      'in_progress': ['submitted', 'todo'],
       'submitted': ['approved', 'todo'],
       'approved': ['todo'],
     };
     if (!(allowed[current]?.contains(status) ?? false)) {
       throw DomainError('invalidTransition');
     }
-    db.execute('UPDATE tasks SET status=?,updated_at=? WHERE id=?', [
-      status,
-      now,
-      id,
-    ]);
+    if (status == 'todo' && current != 'todo' && reason.trim().isEmpty) {
+      throw DomainError('reviewReasonRequired');
+    }
+    if (reason.length > 2000) throw DomainError('limit');
+    db.execute(
+      'UPDATE tasks SET status=?,updated_at=?,review_reason=? WHERE id=?',
+      [
+        status,
+        now,
+        status == 'todo' ? reason.trim() : task['review_reason'],
+        id,
+      ],
+    );
     if (!applyingSync) onTacticalChange?.call();
   }
 
