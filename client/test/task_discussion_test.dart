@@ -178,6 +178,28 @@ void main() {
       );
       await tester.pumpAndSettle();
       expect(find.text('Saved message'), findsOneWidget);
+      addTearDown(tester.view.resetViewInsets);
+      tester.view.viewInsets = const FakeViewPadding(bottom: 300);
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+      tester.view.resetViewInsets();
+      await tester.pumpAndSettle();
+      api.offline = false;
+      await tester.scrollUntilVisible(
+        find.byType(TextField),
+        100,
+        scrollable: find.byType(Scrollable).first,
+      );
+      await tester.enterText(find.byType(TextField), 'New comment');
+      final l = AppLocalizations.of(
+        tester.element(find.byType(TaskDiscussionDialog)),
+      );
+      await tester.ensureVisible(find.text(l.discussionSend));
+      await tester.tap(find.text(l.discussionSend));
+      await tester.pumpAndSettle();
+      expect(api.saved, hasLength(2));
+      expect(discussion.pending(), isEmpty);
+
       expect(tester.takeException(), isNull);
       await tester.pumpWidget(const SizedBox.shrink());
     });

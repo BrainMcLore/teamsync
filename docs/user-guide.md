@@ -31,3 +31,9 @@ Windows provides local CS2/TeamSpeak installation and practice/PUG controls. Rem
 Раздел буткемпа предназначен для локальной установки и запуска на Windows. Удалённый серверный агент пока не выпущен.
 
 Export important local materials before reinstalling. See [beta limitations](../README.md#beta-scope).
+
+## Task discussion (development toward 1.0)
+
+Open **Discussion** on a synchronized assignment. Participants can post a comment; viewers can read. A pending message is saved on the current account's device. Opening the discussion or pressing **Refresh / retry** retries its delivery with the same ID, so a lost acknowledgement does not create a duplicate. Up to 200 previously loaded comments remain cached offline. Discussion is append-only; evidence attachments are a separate upcoming step.
+
+В разработке 1.0: кнопка **Обсуждение** открывает переписку к синхронизированному заданию. Участники могут писать, наблюдатели — читать. Очередь сохраняется на устройстве текущего аккаунта и отправляется при открытии обсуждения или нажатии **Обновить / повторить**. Загруженные комментарии доступны без связи; вложения-доказательства пока не подключены.

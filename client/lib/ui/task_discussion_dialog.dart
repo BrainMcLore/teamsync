@@ -76,42 +76,36 @@ class _TaskDiscussionDialogState extends State<TaskDiscussionDialog> {
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context);
     return AlertDialog(
+      insetPadding: const EdgeInsets.all(12),
       title: Text(l.taskDiscussion),
       content: SizedBox(
         width: 520,
         height: 440,
-        child: Column(
+        child: ListView(
           children: [
             if (loading) const LinearProgressIndicator(),
             if (offline) Text(l.discussionOffline),
             if (failed) Text(l.discussionFailed),
-            Expanded(
-              child: rows.isEmpty && pending.isEmpty && !loading
-                  ? Center(child: Text(l.noData))
-                  : ListView(
-                      children: [
-                        for (final row in pending.where(
-                          (r) => !rows.any((c) => c['id'] == r['id']),
-                        ))
-                          ListTile(
-                            title: Text(row['text'] as String),
-                            subtitle: Text(l.discussionPending),
-                          ),
-                        for (final row in rows)
-                          ListTile(
-                            title: SelectableText(row['text'] as String),
-                            subtitle: Text(
-                              '${row['author_name'] ?? row['author_id']} · ${DateTime.fromMillisecondsSinceEpoch(((row['created'] as num) * 1000).round()).toLocal()}',
-                            ),
-                          ),
-                        if (next != null && !loading)
-                          TextButton(
-                            onPressed: () => load(more: true),
-                            child: Text(l.historyMore),
-                          ),
-                      ],
-                    ),
-            ),
+            if (rows.isEmpty && pending.isEmpty && !loading) Text(l.noData),
+            for (final row in pending.where(
+              (r) => !rows.any((c) => c['id'] == r['id']),
+            ))
+              ListTile(
+                title: Text(row['text'] as String),
+                subtitle: Text(l.discussionPending),
+              ),
+            for (final row in rows)
+              ListTile(
+                title: SelectableText(row['text'] as String),
+                subtitle: Text(
+                  '${row['author_name'] ?? row['author_id']} · ${DateTime.fromMillisecondsSinceEpoch(((row['created'] as num) * 1000).round()).toLocal()}',
+                ),
+              ),
+            if (next != null && !loading)
+              TextButton(
+                onPressed: () => load(more: true),
+                child: Text(l.historyMore),
+              ),
             if (widget.discussion.canPost) ...[
               TextField(
                 controller: text,
