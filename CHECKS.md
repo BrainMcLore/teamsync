@@ -120,3 +120,27 @@ Windows UI run 41329837357 passed at c4fd8e2; the task card with Start and Histo
 was visually reviewed and its platform baseline accepted. Production OpenAPI now
 reports all four task states and `task_review_reason`. Final native task/history
 integration builds are still in progress at this checkpoint.
+
+### Native assignment/history candidates — verified
+
+- Android run 41329940368 succeeded at 6f674a1: emulator account/team integration,
+  four assignment stages, return reason, author-attributed history and offline cache;
+  signed release APK and pinned certificate verification succeeded.
+- Windows run 41330154853 succeeded at d3729ce: parser/worker/server verification,
+  Flutter checks, native build and installer packaging all passed.
+- Downloaded artifacts and checked every SHA-256 entry against the actual files.
+  Android APK: `ccea6bf85eef7477db420b162e63f8ff579a7e854318cdf4a8ef478d6150e735`.
+  Windows installer: `4f435a711f7b5d02d419acbf5a0103cda731c191ab7d857f916baec199faaa69`.
+  Source ZIP: `3f8992c637441390cfe007a9c77f4ce382f700941a769e32a7624dc956be4dd4`.
+  Backend ZIP: `cde85989850a414005eec12f06e8a166f3285a7f208a00cde0e77f204ad78644`.
+- These remain private CI candidates carrying the development 0.8.0 version;
+  the existing v0.8.0 release assets were not overwritten. Application sources match
+  across the candidates; the later Windows commit includes the accepted UI baseline.
+- Hosted backend d9607f7 includes the four-stage workflow and author names in history.
+  Gitleaks scan of the committed history found no secrets. Old UI capture branches
+  were removed after their changes and baselines reached main.
+
+Remaining training scope includes due dates, completion criteria, evidence,
+independent comments, templates and the map-preparation wizard. Schedule,
+notifications, joint review and the remote server agent remain separate unfinished
+parts of the full requirements; passing this milestone does not close full acceptance.
