@@ -90,3 +90,11 @@ durable queue per task; the batch is not a new atomic server-side API operation.
 `task_comments` stores immutable UUID, team, task document, author, text (1–5000 characters) and server time. The API verifies team membership and task kind; viewers read only. A repeated ID is accepted only for the same author, team, task and text. Pages use a stable `(created, id)` cursor. Per-task and per-author limits bound writes. PostgreSQL migration: `004_task_comments_postgresql.sql`.
 
 The client scopes cached comments and the pending queue to server/account/team/task. It caches up to 200 loaded comments and queues up to 50 sends. Opening or refreshing the discussion retries queued messages; there is no background-delivery promise. Account changes reject late responses before cache writes or queue acknowledgement. Text discussion does not yet include training evidence attachments.
+
+## Task evidence (development)
+
+`task_evidence` is an immutable receipt linking an ID, team, task document/version, author, SHA-256 media ID, MIME type, size and server time. Blob storage shares the existing 100 MiB team quota; files are bounded at 20 MiB and a task accepts at most 100 receipts. Upload and receipt commit in one transaction, with a task lock preventing acceptance/reassignment races and a team lock serializing quota checks. PostgreSQL migration: `005_task_evidence_postgresql.sql`.
+
+Players upload only to their own assignments; managers can upload to any team assignment. Approved tasks accept no new evidence until returned. Repeating an acknowledged upload with the same ID/content returns the same receipt, even if the task was subsequently approved. Viewers and other team players can read shared evidence. Outsiders and removed members cannot read it. Uploading does not transition the task.
+
+The client queues up to 10 local files per task, pins their hashes, and retries when the evidence dialog is opened/refreshed. Removing a local retry does not delete a receipt that may already have reached the server. Received files download only when opened; verified copies remain usable offline. Cache metadata and the retry queue are scoped to the same account binding as discussion.

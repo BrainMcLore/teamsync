@@ -1636,4 +1636,33 @@ class AppLocalizationsRu extends AppLocalizations {
   @override
   String get discussionFailed =>
       'Не удалось сохранить комментарий. Проверьте аккаунт, права и лимит очереди.';
+
+  @override
+  String get taskEvidence => 'Доказательства';
+
+  @override
+  String get evidenceImage => 'Скриншот';
+
+  @override
+  String get evidenceVideo => 'MP4';
+
+  @override
+  String get evidenceHelp =>
+      'Свои PNG/JPEG или MP4, до 20 МБ на файл. Загрузка не сдаёт и не принимает задание. Откройте полученный файл, чтобы сохранить локальную копию.';
+
+  @override
+  String get evidenceFailed =>
+      'Не удалось прикрепить или открыть файл. Проверьте файл, связь, права и квоту хранилища команды.';
+
+  @override
+  String get evidenceRemovePending => 'Убрать из очереди';
+
+  @override
+  String get evidenceLimits => 'Форматы и ограничения';
+
+  @override
+  String get evidenceImageType => 'Изображение';
+
+  @override
+  String get evidenceVideoType => 'Видео';
 }

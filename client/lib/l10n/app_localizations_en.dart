@@ -1621,4 +1621,33 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get discussionFailed =>
       'Could not save the comment. Check your account, permissions and queue limit.';
+
+  @override
+  String get taskEvidence => 'Evidence';
+
+  @override
+  String get evidenceImage => 'Add image';
+
+  @override
+  String get evidenceVideo => 'Add MP4';
+
+  @override
+  String get evidenceHelp =>
+      'Own PNG/JPEG or MP4, up to 20 MB per file. Uploading does not submit or approve the task. Open a received file to keep a local copy.';
+
+  @override
+  String get evidenceFailed =>
+      'Could not attach or open evidence. Check the file, connection, permissions and team storage quota.';
+
+  @override
+  String get evidenceRemovePending => 'Remove local retry';
+
+  @override
+  String get evidenceLimits => 'Formats and limits';
+
+  @override
+  String get evidenceImageType => 'Image';
+
+  @override
+  String get evidenceVideoType => 'Video';
 }

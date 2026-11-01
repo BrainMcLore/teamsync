@@ -545,5 +545,14 @@
   "discussionRefresh": "Refresh / retry",
   "discussionOffline": "Could not refresh the discussion. Cached comments and pending messages remain on this device. Open or refresh to retry.",
   "discussionPending": "Pending — saved on this device",
-  "discussionFailed": "Could not save the comment. Check your account, permissions and queue limit."
+  "discussionFailed": "Could not save the comment. Check your account, permissions and queue limit.",
+  "taskEvidence": "Evidence",
+  "evidenceImage": "Add image",
+  "evidenceVideo": "Add MP4",
+  "evidenceHelp": "Own PNG/JPEG or MP4, up to 20 MB per file. Uploading does not submit or approve the task. Open a received file to keep a local copy.",
+  "evidenceFailed": "Could not attach or open evidence. Check the file, connection, permissions and team storage quota.",
+  "evidenceRemovePending": "Remove local retry",
+  "evidenceLimits": "Formats and limits",
+  "evidenceImageType": "Image",
+  "evidenceVideoType": "Video"
 }

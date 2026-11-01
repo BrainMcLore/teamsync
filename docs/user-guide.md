@@ -37,3 +37,11 @@ Export important local materials before reinstalling. See [beta limitations](../
 Open **Discussion** on a synchronized assignment. Participants can post a comment; viewers can read. A pending message is saved on the current account's device. Opening the discussion or pressing **Refresh / retry** retries its delivery with the same ID, so a lost acknowledgement does not create a duplicate. Up to 200 previously loaded comments remain cached offline. Discussion is append-only; evidence attachments are a separate upcoming step.
 
 В разработке 1.0: кнопка **Обсуждение** открывает переписку к синхронизированному заданию. Участники могут писать, наблюдатели — читать. Очередь сохраняется на устройстве текущего аккаунта и отправляется при открытии обсуждения или нажатии **Обновить / повторить**. Загруженные комментарии доступны без связи; вложения-доказательства пока не подключены.
+
+## Training evidence (development toward 1.0)
+
+Use **Evidence** on a synchronized assignment to add your own PNG/JPEG screenshot or MP4 clip. A player uploads to their own task; managers can attach evidence across the team. The upload records the task version but does not submit or approve the assignment. Return an approved task to work before adding new evidence. Limits: 20 MiB/file, 100 MiB/team, 100 evidence receipts/task, 10 queued files/task.
+
+Files queued on the device retry when you open or refresh the evidence dialog. Open a received file to keep a verified offline copy. Removing a local retry only stops that retry; it cannot undo an upload already received by the server.
+
+В разделе **Доказательства** прикрепляйте свои PNG/JPEG или MP4. Игрок — к своему заданию, тренер — к заданиям команды. Файл связан с версией задания; загрузка не заменяет сдачу и проверку. Для нового вложения к принятому заданию сначала верните его в работу. Полученный файл нужно открыть для сохранения локальной копии. Очередь повторяется при открытии или обновлении раздела; удаление из очереди не удаляет уже принятое сервером вложение.

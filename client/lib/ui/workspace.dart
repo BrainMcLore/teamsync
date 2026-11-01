@@ -1,3 +1,5 @@
+import '../data/task_evidence.dart';
+import 'task_evidence_dialog.dart';
 import '../data/task_discussion.dart';
 import 'task_discussion_dialog.dart';
 
@@ -1141,6 +1143,22 @@ class _WorkspaceState extends State<Workspace> with WidgetsBindingObserver {
                         }),
                   icon: const Icon(Icons.edit_outlined),
                   label: Text(l.editTaskPlan),
+                ),
+              if (db.setting('account_team_$teamId') != null)
+                TextButton.icon(
+                  onPressed: () => showDialog<void>(
+                    context: context,
+                    builder: (_) => TaskEvidenceDialog(
+                      evidence: TaskEvidence(
+                        db,
+                        teamId!,
+                        task['id'] as String,
+                        widget.files,
+                      ),
+                    ),
+                  ),
+                  icon: const Icon(Icons.attach_file),
+                  label: Text(l.taskEvidence),
                 ),
               if (db.setting('account_team_$teamId') != null)
                 TextButton.icon(

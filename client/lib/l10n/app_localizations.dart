@@ -3037,6 +3037,60 @@ abstract class AppLocalizations {
   /// In ru, this message translates to:
   /// **'Не удалось сохранить комментарий. Проверьте аккаунт, права и лимит очереди.'**
   String get discussionFailed;
+
+  /// No description provided for @taskEvidence.
+  ///
+  /// In ru, this message translates to:
+  /// **'Доказательства'**
+  String get taskEvidence;
+
+  /// No description provided for @evidenceImage.
+  ///
+  /// In ru, this message translates to:
+  /// **'Скриншот'**
+  String get evidenceImage;
+
+  /// No description provided for @evidenceVideo.
+  ///
+  /// In ru, this message translates to:
+  /// **'MP4'**
+  String get evidenceVideo;
+
+  /// No description provided for @evidenceHelp.
+  ///
+  /// In ru, this message translates to:
+  /// **'Свои PNG/JPEG или MP4, до 20 МБ на файл. Загрузка не сдаёт и не принимает задание. Откройте полученный файл, чтобы сохранить локальную копию.'**
+  String get evidenceHelp;
+
+  /// No description provided for @evidenceFailed.
+  ///
+  /// In ru, this message translates to:
+  /// **'Не удалось прикрепить или открыть файл. Проверьте файл, связь, права и квоту хранилища команды.'**
+  String get evidenceFailed;
+
+  /// No description provided for @evidenceRemovePending.
+  ///
+  /// In ru, this message translates to:
+  /// **'Убрать из очереди'**
+  String get evidenceRemovePending;
+
+  /// No description provided for @evidenceLimits.
+  ///
+  /// In ru, this message translates to:
+  /// **'Форматы и ограничения'**
+  String get evidenceLimits;
+
+  /// No description provided for @evidenceImageType.
+  ///
+  /// In ru, this message translates to:
+  /// **'Изображение'**
+  String get evidenceImageType;
+
+  /// No description provided for @evidenceVideoType.
+  ///
+  /// In ru, this message translates to:
+  /// **'Видео'**
+  String get evidenceVideoType;
 }
 
 class _AppLocalizationsDelegate

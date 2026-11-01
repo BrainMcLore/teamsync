@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Added task evidence: own PNG/JPEG/MP4, task/version receipts, assignee/coach permissions, offline retries and verified local copies.
+
 - Added per-task discussion with author/time, team permissions, stable cursor pagination and an account-scoped offline cache.
 - Unsent comments have a persistent queue; opening or refreshing the discussion retries with the same ID.
 

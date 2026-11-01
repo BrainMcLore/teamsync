@@ -55,3 +55,65 @@ def media_type(content: bytes) -> str | None:
     if content.startswith(b'\xff\xd8\xff'):
         return 'image/jpeg'
     return 'video/mp4' if valid_mp4(content) else None
+
+
+def valid_evidence_image(content: bytes) -> bool:
+    """Bound image containers and dimensions; full decoding stays on the client."""
+    import zlib
+    if len(content) > MAX_MEDIA:
+        return False
+    if content.startswith(b'\x89PNG\r\n\x1a\n'):
+        pos, count, image_data = 8, 0, False
+        while pos+12 <= len(content):
+            size = int.from_bytes(content[pos:pos+4], 'big')
+            end = pos+12+size
+            if end > len(content) or count > 4096:
+                return False
+            kind = content[pos+4:pos+8]
+            data = content[pos+8:pos+8+size]
+            if zlib.crc32(kind+data) != int.from_bytes(content[pos+8+size:end], 'big'):
+                return False
+            if count == 0:
+                if kind != b'IHDR' or size != 13:
+                    return False
+                width, height = struct.unpack_from('>II', data)
+                if not (1 <= width <= 8192 and 1 <= height <= 8192):
+                    return False
+            elif kind == b'IHDR':
+                return False
+            if kind == b'IDAT' and size:
+                image_data = True
+            if kind == b'IEND':
+                return size == 0 and end == len(content) and image_data
+            pos, count = end, count+1
+        return False
+    if not content.startswith(b'\xff\xd8') or not content.endswith(b'\xff\xd9'):
+        return False
+    pos, dimensions = 2, False
+    while pos+4 <= len(content):
+        if content[pos] != 255:
+            return False
+        while pos < len(content) and content[pos] == 255:
+            pos += 1
+        if pos >= len(content):
+            return False
+        marker = content[pos]
+        pos += 1
+        if marker == 0xDA:
+            return dimensions and pos+2 <= len(content) and 2 <= int.from_bytes(content[pos:pos+2], 'big') <= len(content)-pos
+        if marker in (0xD8, 0xD9, 0x00) or 0xD0 <= marker <= 0xD7:
+            return False
+        if pos+2 > len(content):
+            return False
+        size = int.from_bytes(content[pos:pos+2], 'big')
+        if size < 2 or pos+size > len(content):
+            return False
+        if marker in (0xC0, 0xC1, 0xC2):
+            if size < 8:
+                return False
+            height, width = struct.unpack_from('>HH', content, pos+3)
+            dimensions = 1 <= width <= 8192 and 1 <= height <= 8192
+            if not dimensions:
+                return False
+        pos += size
+    return False
