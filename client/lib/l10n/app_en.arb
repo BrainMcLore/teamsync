@@ -471,5 +471,6 @@
   "skillReasonRequired": "Enter the reason for re-verification.",
   "taskInProgress": "In progress",
   "taskStart": "Start task",
-  "taskReturnReason": "Reason for returning the task"
+  "taskReturnReason": "Reason for returning the task",
+  "historyMore": "Load more"
 }

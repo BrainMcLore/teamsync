@@ -2719,6 +2719,12 @@ abstract class AppLocalizations {
   /// In ru, this message translates to:
   /// **'Причина возврата задания'**
   String get taskReturnReason;
+
+  /// No description provided for @historyMore.
+  ///
+  /// In ru, this message translates to:
+  /// **'Загрузить ещё'**
+  String get historyMore;
 }
 
 class _AppLocalizationsDelegate

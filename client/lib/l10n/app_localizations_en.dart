@@ -1445,4 +1445,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get taskReturnReason => 'Reason for returning the task';
+
+  @override
+  String get historyMore => 'Load more';
 }

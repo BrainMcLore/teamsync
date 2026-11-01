@@ -26,6 +26,8 @@ import '../l10n/app_localizations.dart';
 import 'editor.dart';
 import 'account_page.dart';
 import 'utilities_page.dart';
+import 'task_history_dialog.dart';
+import '../data/task_history.dart';
 
 class Workspace extends StatefulWidget {
   final Store store;
@@ -1095,6 +1097,17 @@ class _WorkspaceState extends State<Workspace> with WidgetsBindingObserver {
                           db.transitionTask(task['id'] as String, 'approved');
                         }),
                   child: Text(l.approve),
+                ),
+              if (db.setting('account_team_$teamId') != null)
+                TextButton.icon(
+                  onPressed: () => showDialog<void>(
+                    context: context,
+                    builder: (_) => TaskHistoryDialog(
+                      history: TaskHistory(db, teamId!, task['id'] as String),
+                    ),
+                  ),
+                  icon: const Icon(Icons.history),
+                  label: Text(l.history),
                 ),
               if (state != 'todo' && db.canEditTeam(teamId!))
                 TextButton(

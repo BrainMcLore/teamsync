@@ -1459,4 +1459,7 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get taskReturnReason => 'Причина возврата задания';
+
+  @override
+  String get historyMore => 'Загрузить ещё';
 }

@@ -471,5 +471,6 @@
   "skillReasonRequired": "Укажите причину повторной проверки.",
   "taskInProgress": "В процессе",
   "taskStart": "Начать задание",
-  "taskReturnReason": "Причина возврата задания"
+  "taskReturnReason": "Причина возврата задания",
+  "historyMore": "Загрузить ещё"
 }

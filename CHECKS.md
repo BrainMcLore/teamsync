@@ -109,3 +109,9 @@ skips. Progress history also exposes prior verification cycles after a recheck.
 - Two-client tests cover starting a task, submitting, approval and synchronizing the
   reason for return. Server: 19 tests pass, including old-client field preservation.
 - New task native builds remain pending; this is not a published release.
+
+Task history now supports paged server reads, author names and a bounded offline
+cache. A regression test switches accounts while a request is pending and confirms
+that neither the old response nor the old cache becomes available to the new user.
+The offline-package test preserves an in-progress assignment and a returned task's
+review comment. Full client suite: 67 passed, 5 skipped. Server suite: 19 passed.

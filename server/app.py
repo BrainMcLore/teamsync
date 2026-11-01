@@ -611,7 +611,7 @@ def create_app(database_url=None, public_url=None):
             member(conn,team,session['user_id'])
             if not conn.execute(select(documents.c.id).where(documents.c.id==document,documents.c.team_id==team)).first():
                 fail('not_found',404)
-            return {'items':[dict(row) for row in conn.execute(select(document_versions).where(document_versions.c.document_id==document).order_by(document_versions.c.version.desc()).offset(offset).limit(limit)).mappings()]}
+            return {'items':[dict(row) for row in conn.execute(select(document_versions,users.c.name.label('author_name')).join(users,users.c.id==document_versions.c.author_id).where(document_versions.c.document_id==document).order_by(document_versions.c.version.desc()).offset(offset).limit(limit)).mappings()]}
 
     @app.get('/api/v1/teams/{team}/audit')
     def audit_log(team:str,session=Depends(authenticated),offset:int=Query(0,ge=0),limit:int=Query(50,ge=1,le=100)):

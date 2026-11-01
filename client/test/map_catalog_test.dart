@@ -76,10 +76,36 @@ void main() {
       );
       store.saveStrategy(strategy, 'B site', [], 1, level: 'lower');
       expect(store.strategy(strategy)['image_path'], contains('_lower_'));
+      final activeTask = store.createTask(
+        team,
+        'Active practice',
+        '',
+        strategyId: strategy,
+      );
+      store.transitionTask(activeTask, 'in_progress');
+      final returnedTask = store.createTask(team, 'Needs review', '');
+      store.transitionTask(returnedTask, 'submitted');
+      store.transitionTask(
+        returnedTask,
+        'todo',
+        reason: 'Repeat the smoke timing',
+      );
       final imported = await OfflinePackage.restore(
         store,
         root,
         OfflinePackage.export(store, team, 'ru'),
+      );
+      expect(
+        store
+            .tasks(imported)
+            .singleWhere((t) => t['title'] == 'Active practice')['status'],
+        'in_progress',
+      );
+      expect(
+        store
+            .tasks(imported)
+            .singleWhere((t) => t['title'] == 'Needs review')['review_reason'],
+        'Repeat the smoke timing',
       );
       final copy = store.strategies(imported).single;
       expect(copy['level'], 'lower');
