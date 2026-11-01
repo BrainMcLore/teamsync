@@ -10,6 +10,8 @@ import 'package:teamsync/main.dart';
 import 'package:teamsync/data/store.dart';
 import 'package:teamsync/data/utilities.dart';
 import 'package:teamsync/data/tactical_sync.dart';
+import 'package:teamsync/data/team_schedule.dart';
+import 'package:teamsync/ui/schedule_page.dart';
 import 'package:teamsync/ui/workspace.dart';
 import 'package:teamsync/data/files.dart';
 import 'package:teamsync/data/map_catalog.dart';
@@ -23,6 +25,20 @@ class SnapshotSync extends TacticalSync {
   SnapshotSync(super.store, super.files);
   @override
   Future<void> run(String localTeam, {required String conflictLabel}) async {}
+}
+
+class SnapshotSchedule extends TeamSchedule {
+  final Map<String, dynamic> sample;
+  final List<Map<String, dynamic>> roster;
+  SnapshotSchedule(super.store, super.team, this.sample, this.roster);
+  @override
+  Future<void> flush() async {}
+  @override
+  Future<
+    ({Map<String, dynamic> event, List<Map<String, dynamic>> people, int? next})
+  >
+  people(String event, {int offset = 0}) async =>
+      (event: sample, people: roster, next: null);
 }
 
 Widget snapshotApp(Store store, LocalFiles files, {String language = 'ru'}) =>
@@ -251,6 +267,71 @@ void main() {
           'goldens/${Platform.isLinux ? 'linux' : 'windows'}/$language/utilities.png',
         ),
       );
+      store.setSetting('shared_role_$team', 'owner');
+      final session = <String, dynamic>{
+        'id': 'session',
+        'title': tr('Командная тренировка: Mirage', 'Team practice: Mirage'),
+        'starts_at': '2026-10-31T18:00:00Z',
+        'ends_at': '2026-10-31T20:00:00Z',
+        'kind': 'practice',
+        'status': 'scheduled',
+        'version': 1,
+      };
+      final attendance = SnapshotSchedule(store, team, session, [
+        {
+          'user_id': 'qa',
+          'name': 'QA captain',
+          'role': 'owner',
+          'active': true,
+          'version': 2,
+          'rsvp': 'going',
+          'attendance': 'present',
+          'reason': '',
+          'recorded_by_name': 'QA captain',
+          'recorded_at':
+              DateTime.utc(2026, 10, 31, 18, 5).millisecondsSinceEpoch / 1000,
+        },
+        {
+          'user_id': 'peer',
+          'name': 'Player 2',
+          'role': 'player',
+          'active': true,
+          'version': 2,
+          'rsvp': 'declined',
+          'attendance': 'excused',
+          'reason': tr(
+            'Заранее согласованное отсутствие',
+            'Absence agreed in advance',
+          ),
+          'recorded_by_name': 'QA captain',
+          'recorded_at':
+              DateTime.utc(2026, 10, 31, 17).millisecondsSinceEpoch / 1000,
+        },
+      ]);
+      await tester.pumpWidget(
+        RepaintBoundary(
+          key: const Key('native-shot'),
+          child: MaterialApp(
+            debugShowCheckedModeBanner: false,
+            theme: workspaceTheme(),
+            locale: Locale(language),
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: Scaffold(
+              body: ScheduleAttendance(schedule: attendance, event: session),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+      await expectLater(
+        find.byKey(const Key('native-shot')),
+        matchesGoldenFile(
+          'goldens/${Platform.isLinux ? 'linux' : 'windows'}/$language/attendance.png',
+        ),
+      );
+      await tester.pumpWidget(const SizedBox.shrink());
     });
   }
   final fixture = Directory('../.tools/demo-fixtures/parsed');

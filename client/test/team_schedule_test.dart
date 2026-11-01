@@ -40,6 +40,7 @@ class ScheduleApi extends AccountClient {
   final operations = <String, Map<String, dynamic>>{},
       events = <String, Map<String, dynamic>>{};
   bool offline = false, loseAck = false;
+  List<Map<String, dynamic>> historyRows = [];
   Completer<Map<String, dynamic>>? held;
   final entered = Completer<void>();
   @override
@@ -60,7 +61,7 @@ class ScheduleApi extends AccountClient {
       return held!.future;
     }
     if (method == 'GET') {
-      if (path.contains('/history')) return {'items': []};
+      if (path.contains('/history')) return {'items': historyRows};
       if (path.contains('/participation?')) {
         return {
           'event': events.values.first,
@@ -332,6 +333,51 @@ void main() {
       expect(tester.takeException(), isNull);
       await tester.pumpWidget(const SizedBox.shrink());
     });
+    testWidgets(
+      'history identifies RSVP author without attributing coach facts to the player $lang',
+      (tester) async {
+        final (s, team) = fixture();
+        addTearDown(s.close);
+        final api = ScheduleApi();
+        api.historyRows = [
+          {
+            'id': 'history',
+            'kind': 'rsvp',
+            'version': 3,
+            'author_name': 'Alice',
+            'target_name': 'Alice',
+            'created': 123,
+            'payload': {
+              'rsvp': 'declined',
+              'attendance': 'present',
+              'reason': 'Coach-only note',
+            },
+          },
+        ];
+        final service = TeamSchedule(s, team, clientFactory: (_) => api);
+        await tester.pumpWidget(
+          MaterialApp(
+            locale: Locale(lang),
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: Scaffold(
+              body: ScheduleHistory(schedule: service, event: 'e'),
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+        final l = AppLocalizations.of(
+          tester.element(find.byType(ScheduleHistory)),
+        );
+        expect(
+          find.text('Alice · ${l.scheduleReply}: ${l.rsvpDeclined}'),
+          findsOneWidget,
+        );
+        expect(find.textContaining('Coach-only note'), findsNothing);
+        expect(tester.takeException(), isNull);
+        await tester.pumpWidget(const SizedBox.shrink());
+      },
+    );
     testWidgets('attendance shows RSVP separately from factual status $lang', (
       tester,
     ) async {

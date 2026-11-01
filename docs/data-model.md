@@ -101,7 +101,7 @@ The client queues up to 10 local files per task, pins their hashes, and retries 
 
 ## Schedule and attendance (development)
 
-`schedule_events` stores versioned fixed-time events with UTC ISO timestamps in the payload and an indexed start epoch. `schedule_participation` keeps separate RSVP and attendance per event/account. `schedule_history` retains authored event/participation snapshots, including cancelled events and former-member records. Explicit PostgreSQL migration: `006_schedule_postgresql.sql`.
+`schedule_events` stores versioned fixed-time events with UTC ISO timestamps in the payload and an indexed start epoch. `schedule_participation` keeps separate RSVP and attendance per event/account. `schedule_history` retains authored event/RSVP/attendance snapshots, including cancelled events and former-member records. Explicit PostgreSQL migration: `006_schedule_postgresql.sql`.
 
 Only managers create/edit/cancel events. RSVP always belongs to the acting account. Only managers record attendance; a changed factual mark requires a reason. Factual presence/late/absence cannot be recorded before the start; an excused absence may be recorded early. Events with recorded attendance cannot silently move to another time. Cancellations require a reason. Mutations use an operation UUID and expected version, with retry-safe receipts in the existing operation table.
 

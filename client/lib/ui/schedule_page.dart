@@ -997,10 +997,14 @@ class _ScheduleHistoryState extends State<ScheduleHistory> {
                 title: Text(
                   row['kind'] == 'event'
                       ? (row['payload'] as Map)['title'] as String
+                      : row['kind'] == 'rsvp'
+                      ? '${row['target_name']} · ${l.scheduleReply}: ${rsvpLabel(l, (row['payload'] as Map)['rsvp'] as String)}'
+                      : row['kind'] == 'attendance'
+                      ? '${row['target_name']} · ${l.scheduleRecord}: ${attendanceLabel(l, (row['payload'] as Map)['attendance'] as String)}'
                       : '${row['target_name']} · ${rsvpLabel(l, (row['payload'] as Map)['rsvp'] as String)} · ${attendanceLabel(l, (row['payload'] as Map)['attendance'] as String)}',
                 ),
                 subtitle: Text(
-                  '${l.version(row['version'] as int)} · ${row['author_name']} · ${DateTime.fromMillisecondsSinceEpoch(((row['created'] as num) * 1000).round()).toLocal()}\n${row['kind'] == 'event' ? '${scheduleTime(context, (row['payload'] as Map)['starts_at'] as String)} → ${scheduleTime(context, (row['payload'] as Map)['ends_at'] as String)}\n${(row['payload'] as Map)['status'] == 'cancelled' ? l.scheduleCancelled : eventKind(l, (row['payload'] as Map)['kind'] as String)}\n' : ''}${(row['payload'] as Map)['reason'] ?? ''}',
+                  '${l.version(row['version'] as int)} · ${row['author_name']} · ${DateTime.fromMillisecondsSinceEpoch(((row['created'] as num) * 1000).round()).toLocal()}\n${row['kind'] == 'event' ? '${scheduleTime(context, (row['payload'] as Map)['starts_at'] as String)} → ${scheduleTime(context, (row['payload'] as Map)['ends_at'] as String)}\n${(row['payload'] as Map)['status'] == 'cancelled' ? l.scheduleCancelled : eventKind(l, (row['payload'] as Map)['kind'] as String)}\n' : ''}${row['kind'] == 'rsvp' ? '' : (row['payload'] as Map)['reason'] ?? ''}',
                 ),
               ),
             if (more && !busy)

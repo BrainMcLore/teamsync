@@ -91,7 +91,7 @@ def attach_schedule_routes(app, engine, authenticated, member):
         conn.execute(operations.insert().values(id=body.operation_id, team_id=team, user_id=session['user_id'],
             request_hash=request_hash, response=result, created=timestamp))
         conn.execute(history.insert().values(id=uid(), event_id=identifier, user_id=target,
-            author_id=session['user_id'], kind='event' if target is None else 'participation',
+            author_id=session['user_id'], kind='event' if target is None else ('rsvp' if body.rsvp is not None else 'attendance'),
             version=result['version'], payload=result, created=timestamp))
         record(conn, team, session['user_id'], 'schedule.saved' if target is None else 'schedule.participation', identifier)
         return result

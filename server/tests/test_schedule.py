@@ -76,6 +76,7 @@ def test_rsvp_is_separate_from_coach_attendance_and_corrections_are_audited(setu
     assert row['recorded_by_name']=='Owner' and row['active']
     hist=c.get(path+'/history',headers=player[1]).json()['items']
     assert len(hist)==5 and hist[0]['target_name']=='Player'
+    assert hist[0]['kind']=='rsvp' and hist[1]['kind']=='attendance'
     assert c.get(path+'/history',headers=stranger[1]).status_code==404
     c.delete(base+'/members/'+player[0],headers=owner[1])
     former=next(r for r in c.get(path+'/participation',headers=owner[1]).json()['items'] if r['user_id']==player[0])
