@@ -11,6 +11,7 @@ import '../data/pc_services.dart';
 import '../data/server_install_job.dart';
 import '../data/demo_jobs.dart';
 import '../data/tactical_sync.dart';
+import '../data/account_roster.dart';
 
 import 'package:file_selector/file_selector.dart';
 import 'package:share_plus/share_plus.dart';
@@ -55,11 +56,7 @@ class _WorkspaceState extends State<Workspace> with WidgetsBindingObserver {
   Timer? syncTimer, syncDebounce;
   bool syncing = false;
   String? syncError;
-  List<RecordData> get onlineTeams => db.setting('account_signed_out') == '1'
-      ? []
-      : db.teams
-            .where((t) => db.setting('account_team_${t['id']}') != null)
-            .toList();
+  List<RecordData> get onlineTeams => visibleAccountTeams(db);
   bool get shared =>
       teamId != null && db.setting('account_team_$teamId') != null;
   String get syncLabel => syncing
@@ -92,7 +89,7 @@ class _WorkspaceState extends State<Workspace> with WidgetsBindingObserver {
     });
     try {
       await tacticalSync.run(selected, conflictLabel: l.syncConflictCopy);
-      if (mounted) {
+      if (mounted && teamId == selected) {
         syncError = tacticalSync.conflicts > 0
             ? 'conflicts'
             : tacticalSync.deferred
@@ -100,7 +97,9 @@ class _WorkspaceState extends State<Workspace> with WidgetsBindingObserver {
             : null;
       }
     } catch (e) {
-      if (mounted) syncError = e is DomainError ? e.code : 'offline';
+      if (mounted && teamId == selected) {
+        syncError = e is DomainError ? e.code : 'offline';
+      }
     } finally {
       if (mounted) setState(() => syncing = false);
     }
@@ -119,7 +118,9 @@ class _WorkspaceState extends State<Workspace> with WidgetsBindingObserver {
     db.onTeamChange = () {
       if (!mounted) return;
       final selected = db.setting('team');
-      if (selected == null) return;
+      if (selected == null || !onlineTeams.any((t) => t['id'] == selected)) {
+        return;
+      }
       widget.files.catalog?.ensureTeam(db, selected);
       setState(() => teamId = selected);
       syncNow();

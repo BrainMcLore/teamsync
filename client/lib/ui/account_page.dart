@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../data/account.dart';
+import '../data/account_roster.dart';
 import '../data/store.dart';
 import '../l10n/app_localizations.dart';
 import 'online_team_page.dart';
@@ -81,6 +82,7 @@ class _AccountPageState extends State<AccountPage> with WidgetsBindingObserver {
       await fn();
     } catch (e) {
       if (e is DomainError && e.code == 'unauthorized') {
+        widget.store.setSetting('account_signed_out', '1');
         await api?.storage.delete(key: api!.storageKey);
         api?.token = null;
         if (mounted) {
@@ -131,7 +133,11 @@ class _AccountPageState extends State<AccountPage> with WidgetsBindingObserver {
 
   Future<void> reload() async {
     final me = await api!.request('GET', '/api/v1/me');
-    widget.store.setSetting('account_signed_out', '0');
+    rememberAccountIdentity(
+      widget.store,
+      api!.base.toString(),
+      me['id'] as String,
+    );
     final all = await api!.request('GET', '/api/v1/teams');
     final sessions = await api!.request('GET', '/api/v1/me/sessions');
     final inbox = await api!.request('GET', '/api/v1/me/invitations');

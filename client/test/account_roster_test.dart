@@ -3,6 +3,28 @@ import 'package:teamsync/data/account_roster.dart';
 import 'package:teamsync/data/store.dart';
 
 void main() {
+  test('cached teams are isolated across account switches and logout', () {
+    final store = Store(':memory:');
+    addTearDown(store.close);
+    final a = saveAccountRoster(store, 'https://one.example', 'alice', {
+      'id': 'remote',
+      'name': 'Alice',
+    }, []);
+    expect(visibleAccountTeams(store).single['id'], a);
+    final b = saveAccountRoster(store, 'https://one.example', 'bob', {
+      'id': 'remote',
+      'name': 'Bob',
+    }, []);
+    expect(visibleAccountTeams(store).single['id'], b);
+    rememberAccountIdentity(store, 'https://two.example', 'alice');
+    expect(visibleAccountTeams(store), isEmpty);
+    rememberAccountIdentity(store, 'https://one.example', 'alice');
+    expect(visibleAccountTeams(store).single['id'], a);
+    store.setSetting('account_signed_out', '1');
+    expect(visibleAccountTeams(store), isEmpty);
+    expect(store.teams, hasLength(2));
+  });
+
   test(
     'account roster keeps stable member ids and separates servers and users',
     () {

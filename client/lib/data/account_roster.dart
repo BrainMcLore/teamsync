@@ -4,6 +4,31 @@ import 'package:crypto/crypto.dart';
 
 import 'store.dart';
 
+/// Only expose cached teams belonging to the last authenticated identity.
+/// A legacy cache without an identity must be rebound after signing in.
+List<RecordData> visibleAccountTeams(Store store) {
+  if (store.setting('account_signed_out') == '1') return [];
+  final active = store.setting('account_identity');
+  if (active == null) return [];
+  return store.teams.where((team) {
+    final raw = store.setting('account_team_${team['id']}');
+    if (raw == null) return false;
+    try {
+      final binding = jsonDecode(raw) as Map;
+      return jsonEncode([binding['server'], binding['user']]) == active;
+    } on FormatException {
+      return false;
+    } on TypeError {
+      return false;
+    }
+  }).toList();
+}
+
+void rememberAccountIdentity(Store store, String server, String user) {
+  store.setSetting('account_identity', jsonEncode([server, user]));
+  store.setSetting('account_signed_out', '0');
+}
+
 /// Server roster snapshots are namespaced by server and signed-in account.
 /// Tactical sync uses this binding to the authenticated remote team.
 String saveAccountRoster(
@@ -78,7 +103,7 @@ String saveAccountRoster(
     }
     store.setSetting(key, jsonEncode({'team': local, 'members': current}));
     store.setSetting('team', local);
-    store.setSetting('account_signed_out', '0');
+    rememberAccountIdentity(store, server, user);
     store.setSetting('shared_role_$local', team['role'] as String? ?? 'player');
     store.setSetting(
       'account_team_$local',

@@ -76,6 +76,10 @@ void main() {
     });
     final team = store.createTeam('TEAMSYNC / QA');
     store.setSetting(
+      'account_identity',
+      jsonEncode(['https://fixture.example', 'qa']),
+    );
+    store.setSetting(
       'account_team_$team',
       jsonEncode({
         'server': 'https://fixture.example',
