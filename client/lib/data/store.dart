@@ -421,6 +421,8 @@ PRAGMA user_version=7;
     required String taskType,
     DateTime? dueAt,
     required String criteria,
+    bool replaceAssignee = false,
+    String? member,
   }) {
     final task = rows('SELECT * FROM tasks WHERE id=?', [id]).single;
     if (!canEditTeam(task['team_id'] as String)) {
@@ -429,10 +431,26 @@ PRAGMA user_version=7;
     if (!['todo', 'in_progress'].contains(task['status'])) {
       throw DomainError('invalidTransition');
     }
+    if (replaceAssignee &&
+        member != null &&
+        rows('SELECT id FROM members WHERE id=? AND team_id=?', [
+          member,
+          task['team_id'],
+        ]).isEmpty) {
+      throw DomainError('crossTeam');
+    }
     validateTaskPlan(taskType, dueAt, criteria);
     db.execute(
-      'UPDATE tasks SET task_type=?,due_at=?,criteria=?,updated_at=? WHERE id=?',
-      [taskType, dueAt?.toUtc().toIso8601String(), criteria.trim(), now, id],
+      'UPDATE tasks SET task_type=?,due_at=?,criteria=?,member_id=CASE WHEN ? THEN ? ELSE member_id END,updated_at=? WHERE id=?',
+      [
+        taskType,
+        dueAt?.toUtc().toIso8601String(),
+        criteria.trim(),
+        replaceAssignee ? 1 : 0,
+        member,
+        now,
+        id,
+      ],
     );
     if (!applyingSync) onTacticalChange?.call();
   }

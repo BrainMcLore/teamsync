@@ -8,6 +8,61 @@ import 'package:teamsync/ui/task_form.dart';
 void main() {
   for (final lang in ['ru', 'en']) {
     testWidgets(
+      'legacy assignment can select an account without losing task data $lang',
+      (tester) async {
+        final store = Store(':memory:');
+        addTearDown(store.close);
+        final team = saveAccountRoster(
+          store,
+          'https://fixture.example',
+          'alice',
+          {'id': Store.uuid.v4(), 'name': 'Five', 'role': 'owner'},
+          [
+            {'id': 'alice', 'name': 'Alice', 'role': 'owner'},
+          ],
+        );
+        final legacy = store.addMember(team, 'Old player', 'player', 'entry');
+        final task = store.createTask(
+          team,
+          'Legacy task',
+          'Preserved',
+          member: legacy,
+        );
+        await tester.pumpWidget(
+          MaterialApp(
+            locale: Locale(lang),
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: Scaffold(
+              body: TaskForm(
+                store: store,
+                team: team,
+                value: store.tasks(team).single,
+              ),
+            ),
+          ),
+        );
+        final l = AppLocalizations.of(tester.element(find.byType(TaskForm)));
+        expect(find.text(l.taskUnlinkedAssignee), findsOneWidget);
+        await tester.tap(find.byKey(const ValueKey('task-member')));
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Alice').last);
+        await tester.pumpAndSettle();
+        await tester.ensureVisible(find.byKey(const ValueKey('task-save')));
+        await tester.tap(find.byKey(const ValueKey('task-save')));
+        await tester.pumpAndSettle();
+        final saved = store.tasks(team).single;
+        expect(saved['id'], task);
+        expect(saved['notes'], 'Preserved');
+        expect(
+          saved['member_id'],
+          accountAssignableMembers(store, team).single['id'],
+        );
+        expect(tester.takeException(), isNull);
+        await tester.pumpWidget(const SizedBox.shrink());
+      },
+    );
+    testWidgets(
       'assignment form saves criteria and a picked deadline at 320px $lang',
       (tester) async {
         tester.view.physicalSize = const Size(320, 640);

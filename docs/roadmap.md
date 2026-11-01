@@ -4,6 +4,10 @@
 
 Windows and Android clients; English/Russian UI; account-based teams and roles; shared tactics, maps and utility materials; durable synchronization queue; task review history; typed training plans, deadlines and criteria; map preparation templates; Windows demo tools and PDF playbooks.
 
+## Development toward 1.0
+
+See the [full release acceptance plan](full-release.md). Legacy-assignment isolation and account reassignment are implemented in development; they are not part of the immutable 0.95 download.
+
 ## Next
 
 - Training evidence and independent comments / доказательства выполнения и отдельные комментарии.

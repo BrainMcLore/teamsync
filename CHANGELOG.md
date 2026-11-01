@@ -1,5 +1,11 @@
 # Changelog / Изменения
 
+## Unreleased
+
+- Legacy assignees no longer stop synchronization of unrelated tactics and tasks.
+- Managers can repair an assignment through the task plan editor; task data is preserved.
+- Added English/Russian synchronization guidance and regression coverage.
+
 ## 0.95 Beta
 
 **English**

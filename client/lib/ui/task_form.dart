@@ -67,6 +67,7 @@ class _TaskFormState extends State<TaskForm> {
     accountIdentity = widget.store.setting('account_identity');
     final value = widget.value;
     if (value != null) {
+      member = value['member_id'] as String?;
       title.text = value['title'] as String;
       type = value['task_type'] as String? ?? 'general';
       due = DateTime.tryParse(value['due_at'] as String? ?? '')?.toLocal();
@@ -128,25 +129,31 @@ class _TaskFormState extends State<TaskForm> {
                   onChanged: (v) => setState(() => type = v!),
                 ),
                 const SizedBox(height: 12),
-                if (widget.value == null)
-                  DropdownButtonFormField<String>(
-                    key: const ValueKey('task-member'),
-                    initialValue: member ?? '',
-                    isExpanded: true,
-                    decoration: InputDecoration(labelText: l.assignee),
-                    items: [
-                      DropdownMenuItem(value: '', child: Text(l.unassigned)),
-                      for (final item in members)
-                        DropdownMenuItem(
-                          value: item['id'] as String,
-                          child: Text(
-                            item['name'] as String,
-                            overflow: TextOverflow.ellipsis,
-                          ),
+                DropdownButtonFormField<String>(
+                  key: const ValueKey('task-member'),
+                  initialValue: member ?? '',
+                  isExpanded: true,
+                  decoration: InputDecoration(labelText: l.assignee),
+                  items: [
+                    DropdownMenuItem(value: '', child: Text(l.unassigned)),
+                    if (member != null &&
+                        !members.any((m) => m['id'] == member))
+                      DropdownMenuItem(
+                        value: member,
+                        enabled: false,
+                        child: Text(l.taskUnlinkedAssignee),
+                      ),
+                    for (final item in members)
+                      DropdownMenuItem(
+                        value: item['id'] as String,
+                        child: Text(
+                          item['name'] as String,
+                          overflow: TextOverflow.ellipsis,
                         ),
-                    ],
-                    onChanged: (v) => member = v == '' ? null : v,
-                  ),
+                      ),
+                  ],
+                  onChanged: (v) => member = v == '' ? null : v,
+                ),
                 if (widget.value == null && widget.strategy == null) ...[
                   const SizedBox(height: 12),
                   DropdownButtonFormField<String>(
@@ -246,8 +253,7 @@ class _TaskFormState extends State<TaskForm> {
                                 '1')) {
                       throw DomainError('readOnlyTeam');
                     }
-                    if (widget.value == null &&
-                        member != null &&
+                    if (member != null &&
                         !accountAssignableMembers(
                           widget.store,
                           widget.team,
@@ -260,6 +266,8 @@ class _TaskFormState extends State<TaskForm> {
                         taskType: type,
                         dueAt: due,
                         criteria: criteria.text,
+                        replaceAssignee: true,
+                        member: member,
                       );
                       Navigator.pop(context, widget.value!['id']);
                       return;

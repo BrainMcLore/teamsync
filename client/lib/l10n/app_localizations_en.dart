@@ -1591,4 +1591,11 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get prepChooseAssignments =>
       'Assign at least one player to every selected tactic.';
+
+  @override
+  String get syncUnlinkedTasks =>
+      'Other data is synced. Some tasks need an account assignee: open Training and edit their plans.';
+
+  @override
+  String get taskUnlinkedAssignee => 'Previous player — choose an account';
 }

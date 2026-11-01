@@ -2983,6 +2983,18 @@ abstract class AppLocalizations {
   /// In ru, this message translates to:
   /// **'Укажите исполнителя для каждой выбранной тактики.'**
   String get prepChooseAssignments;
+
+  /// No description provided for @syncUnlinkedTasks.
+  ///
+  /// In ru, this message translates to:
+  /// **'Остальные данные синхронизированы. У части заданий нет аккаунта исполнителя: откройте тренировки и измените их планы.'**
+  String get syncUnlinkedTasks;
+
+  /// No description provided for @taskUnlinkedAssignee.
+  ///
+  /// In ru, this message translates to:
+  /// **'Прежний игрок — выберите аккаунт'**
+  String get taskUnlinkedAssignee;
 }
 
 class _AppLocalizationsDelegate

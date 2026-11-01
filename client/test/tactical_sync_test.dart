@@ -176,6 +176,96 @@ class HeldSync extends TacticalSync {
 
 void main() {
   test(
+    'legacy assignee cannot block tactics or valid tasks and can be repaired',
+    () async {
+      final root = Directory.systemTemp.createTempSync('teamsync_legacy_');
+      final store = Store(':memory:'), server = SharedFixture();
+      addTearDown(() {
+        store.close();
+        root.deleteSync(recursive: true);
+      });
+      final team = saveAccountRoster(
+        store,
+        'https://fixture.example',
+        'alice',
+        {'id': Store.uuid.v4(), 'name': 'Five', 'role': 'owner'},
+        [
+          {'id': 'alice', 'name': 'Alice', 'role': 'owner'},
+        ],
+      );
+      final legacy = store.addMember(team, 'Old player', 'player', 'entry');
+      final map = store.addMap(team, 'Mirage');
+      store.createStrategy(map, 'Shared tactic', 'T');
+      final blocked = store.createTask(
+        team,
+        'Legacy task',
+        'Keep these notes',
+        member: legacy,
+      );
+      store.createTask(team, 'Valid task', '');
+      final sync = TacticalSync(
+        store,
+        LocalFiles(root),
+        clientFactory: (_) => SyncAccount(server, 'alice'),
+      );
+      await sync.run(team, conflictLabel: 'Copy');
+      expect(sync.unlinkedTasks, {blocked});
+      expect(
+        server.documents.values.where((d) => d['kind'] == 'strategy').length,
+        1,
+      );
+      expect(
+        server.documents.values.where((d) => d['kind'] == 'task').length,
+        1,
+      );
+      expect(
+        store.tasks(team).singleWhere((t) => t['id'] == blocked)['member_id'],
+        legacy,
+      );
+      store.updateTaskPlan(
+        blocked,
+        taskType: 'general',
+        criteria: '',
+        replaceAssignee: true,
+        member: null,
+      );
+      await sync.run(team, conflictLabel: 'Copy');
+      expect(sync.unlinkedTasks, isEmpty);
+      expect(
+        server.documents.values.where((d) => d['kind'] == 'task').length,
+        2,
+      );
+      expect(
+        store.tasks(team).singleWhere((t) => t['id'] == blocked)['notes'],
+        'Keep these notes',
+      );
+      final other = store.createTeam('Other');
+      final foreign = store.addMember(other, 'Foreign', 'player', 'entry');
+      expect(
+        () => store.updateTaskPlan(
+          blocked,
+          taskType: 'general',
+          criteria: '',
+          replaceAssignee: true,
+          member: foreign,
+        ),
+        throwsA(isA<DomainError>()),
+      );
+      store.setSetting('shared_role_$team', 'player');
+      expect(
+        () => store.updateTaskPlan(
+          blocked,
+          taskType: 'general',
+          criteria: '',
+          replaceAssignee: true,
+          member: legacy,
+        ),
+        throwsA(isA<DomainError>()),
+      );
+    },
+  );
+
+  test(
     'utility progress survives a lost acknowledgement and coach confirmation',
     () async {
       final root = Directory.systemTemp.createTempSync('teamsync_skills_');

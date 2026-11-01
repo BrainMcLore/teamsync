@@ -536,5 +536,7 @@
         "type": "int"
       }
     }
-  }
+  },
+  "syncUnlinkedTasks": "Other data is synced. Some tasks need an account assignee: open Training and edit their plans.",
+  "taskUnlinkedAssignee": "Previous player — choose an account"
 }

@@ -1606,4 +1606,11 @@ class AppLocalizationsRu extends AppLocalizations {
   @override
   String get prepChooseAssignments =>
       'Укажите исполнителя для каждой выбранной тактики.';
+
+  @override
+  String get syncUnlinkedTasks =>
+      'Остальные данные синхронизированы. У части заданий нет аккаунта исполнителя: откройте тренировки и измените их планы.';
+
+  @override
+  String get taskUnlinkedAssignee => 'Прежний игрок — выберите аккаунт';
 }

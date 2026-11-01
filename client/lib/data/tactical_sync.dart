@@ -21,6 +21,7 @@ class TacticalSync {
   bool running = false;
   bool deferred = false;
   int conflicts = 0, uploaded = 0, downloaded = 0;
+  final unlinkedTasks = <String>{};
   TacticalSync(this.store, this.files, {this.clientFactory});
   late AccountClient api;
   late String team, local, key;
@@ -176,6 +177,7 @@ class TacticalSync {
     running = true;
     deferred = false;
     blockedByRole = false;
+    unlinkedTasks.clear();
     conflicts = 0;
     uploaded = 0;
     downloaded = 0;
@@ -332,6 +334,13 @@ class TacticalSync {
     for (final kind in ['map', 'strategy', 'utility', 'task']) {
       for (final row in records(kind)) {
         final id = row['id'] as String;
+        // Preserve legacy assignments locally without blocking unrelated data.
+        if (kind == 'task' &&
+            row['member_id'] != null &&
+            !rosterIds.values.contains(row['member_id'])) {
+          unlinkedTasks.add(id);
+          continue;
+        }
         final e = entry(kind, id);
         final payload = await localPayload(kind, row, uploadMedia: writable);
         final fingerprint = hash(payload);

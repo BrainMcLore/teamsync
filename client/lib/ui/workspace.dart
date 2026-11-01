@@ -70,6 +70,8 @@ class _WorkspaceState extends State<Workspace> with WidgetsBindingObserver {
       ? l.syncConflict
       : syncError == 'readOnlyPending'
       ? l.syncReadOnlyPending
+      : syncError == 'unlinkedTasks'
+      ? l.syncUnlinkedTasks
       : syncError == 'media_quota'
       ? l.syncMediaQuota
       : syncError == 'fileMissing'
@@ -110,6 +112,8 @@ class _WorkspaceState extends State<Workspace> with WidgetsBindingObserver {
             ? 'conflicts'
             : tacticalSync.blockedByRole
             ? 'readOnlyPending'
+            : tacticalSync.unlinkedTasks.isNotEmpty
+            ? 'unlinkedTasks'
             : tacticalSync.deferred
             ? 'pending'
             : null;
