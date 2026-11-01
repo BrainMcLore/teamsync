@@ -24,6 +24,18 @@ def test_team_utility_sources_and_foreign_map_are_validated(setup):
     missing_tactic = {**utility, 'document_id': uid(), 'operation_id': uid(), 'payload': {
         **utility['payload'], 'utility': {**utility['payload']['utility'], 'strategy_ids': [uid()]}}}
     assert client.post(base+'/documents', headers=owner[1], json=missing_tactic).status_code == 422
+    missing_image = {**utility, 'document_id': uid(), 'operation_id': uid(), 'payload': {
+        **utility['payload'], 'utility': {**utility['payload']['utility'], 'image_ids': ['0'*64]}}}
+    assert client.post(base+'/documents', headers=owner[1], json=missing_image).status_code == 422
+    from pathlib import Path
+    import hashlib
+    image = (Path(__file__).resolve().parents[2]/'client/test/fixtures/radar.png').read_bytes()
+    image_id = hashlib.sha256(image).hexdigest()
+    assert client.put(base+'/media/'+image_id, headers=owner[1], content=image).status_code == 200
+    with_image = {**missing_image, 'operation_id': uid(), 'payload': {
+        **utility['payload'], 'utility': {**utility['payload']['utility'], 'image_ids': [image_id]}}}
+    assert client.post(base+'/documents', headers=owner[1], json=with_image).status_code == 200
+
 
     assert client.get(base+'/documents', headers=stranger[1]).status_code == 404
     invite = client.post(base+'/invites', headers=owner[1], json={}).json()['code']

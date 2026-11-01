@@ -39,3 +39,14 @@ def write_archive(target: Path, files: dict[str, bytes]) -> None:
         partial.replace(target)
     finally:
         partial.unlink(missing_ok=True)
+
+
+def verify_android_certificate(report: str, expected: str) -> bool:
+    """Support both `Signer #1` and newer `V2 Signer` output formats."""
+    import re
+    if not re.fullmatch(r'[0-9a-fA-F]{64}', expected):
+        return False
+    found = {digest.lower() for digest in re.findall(
+        r'^.*?certificate SHA-256 digest:\s*([0-9a-fA-F]{64})\s*$',
+        report, flags=re.MULTILINE)}
+    return found == {expected.lower()}

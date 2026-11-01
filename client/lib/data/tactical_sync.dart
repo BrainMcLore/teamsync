@@ -48,6 +48,7 @@ class TacticalSync {
           ])
             key: details[key] ?? '',
           'source_url': details['source_url'],
+          'image_ids': List<String>.from(details['image_ids'] as List? ?? []),
           'strategy_ids': List<String>.from(
             details['strategy_ids'] as List? ?? [],
           ),
@@ -340,6 +341,10 @@ class TacticalSync {
       final details = Map<String, dynamic>.from(
         jsonDecode(row['details'] as String) as Map,
       );
+      details['image_ids'] = [
+        for (final file in details['screenshot_paths'] as List? ?? [])
+          await imageId(file as String, upload: uploadMedia),
+      ];
       details['strategy_ids'] = [
         for (final id in details['strategy_ids'] as List? ?? [])
           entry('strategy', id as String)['remote'],
@@ -468,9 +473,15 @@ class TacticalSync {
         }
       }
       RecordData? current;
+      var currentDirty = false;
       if (e != null) {
         final rows = records(kind);
         current = rows.where((r) => r['id'] == e!['local']).firstOrNull;
+        if (current != null &&
+            kind == 'utility' &&
+            store.editingUtilities.contains(e['local'])) {
+          continue;
+        }
         if (current != null &&
             kind == 'strategy' &&
             store.editingStrategies.contains(e['local'])) {
@@ -485,6 +496,7 @@ class TacticalSync {
             continue;
           }
           final dirty = fingerprint != e['hash'];
+          currentDirty = dirty;
           if (dirty && e['version'] == document['version']) continue;
           if (dirty && (e['version'] as int) > 0 && kind == 'strategy') {
             store.applyingSync = true;
@@ -514,13 +526,35 @@ class TacticalSync {
       if (kind == 'utility') {
         final parent = byRemote(payload['map_id'] as String);
         if (parent == null) throw DomainError('invalid_link');
+        final details = Map<String, dynamic>.from(payload['utility'] as Map);
+        details['screenshot_paths'] = [
+          for (final image in details['image_ids'] as List? ?? [])
+            await downloadImage(image as String),
+        ];
+        details.remove('image_ids');
+
+        details['strategy_ids'] = [
+          for (final remote in details['strategy_ids'] as List? ?? [])
+            byRemote(remote as String)?['local'] ??
+                (throw DomainError('invalid_link')),
+        ];
+        if (current != null &&
+            (store.editingUtilities.contains(current['id']) ||
+                jsonEncode(
+                      records(kind)
+                          .where((r) => r['id'] == current!['id'])
+                          .firstOrNull,
+                    ) !=
+                    jsonEncode(current))) {
+          continue;
+        }
         store.applyingSync = true;
         try {
           final library = UtilityLibrary(store);
           if (current != null &&
               e != null &&
               e['version'] != document['version'] &&
-              hash(await localPayload(kind, current)) != e['hash']) {
+              currentDirty) {
             final title = current['title'] as String;
             library.save(
               local,
@@ -534,12 +568,6 @@ class TacticalSync {
             );
             conflicts++;
           }
-          final details = Map<String, dynamic>.from(payload['utility'] as Map);
-          details['strategy_ids'] = [
-            for (final remote in details['strategy_ids'] as List? ?? [])
-              byRemote(remote as String)?['local'] ??
-                  (throw DomainError('invalid_link')),
-          ];
           final id = library.save(
             local,
             parent['local'] as String,
@@ -566,7 +594,7 @@ class TacticalSync {
           if (current != null &&
               e != null &&
               e['version'] != document['version'] &&
-              hash(await localPayload(kind, current)) != e['hash']) {
+              currentDirty) {
             final copy = store.createTask(
               local,
               '${(current['title'] as String).substring(0, (current['title'] as String).length.clamp(0, 75))} · $conflictLabel',

@@ -436,5 +436,8 @@
   "grenadeHe": "Осколочная",
   "grenadeDecoy": "Ложная",
   "editMaterial": "Изменить",
-  "utilityTactics": "Связанные тактики"
+  "utilityTactics": "Связанные тактики",
+  "utilityScreenshots": "Скриншоты прицеливания",
+  "utilityAddImage": "Своё изображение",
+  "utilityRemoveImage": "Убрать изображение"
 }

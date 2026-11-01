@@ -1554,6 +1554,7 @@ class _WorkspaceState extends State<Workspace> with WidgetsBindingObserver {
       9 => UtilitiesPage(
         key: ValueKey('utilities:$teamId'),
         store: db,
+        files: widget.files,
         team: teamId!,
         filter: query,
         onStrategy: openStrategy,

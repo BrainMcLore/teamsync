@@ -2509,6 +2509,24 @@ abstract class AppLocalizations {
   /// In ru, this message translates to:
   /// **'Связанные тактики'**
   String get utilityTactics;
+
+  /// No description provided for @utilityScreenshots.
+  ///
+  /// In ru, this message translates to:
+  /// **'Скриншоты прицеливания'**
+  String get utilityScreenshots;
+
+  /// No description provided for @utilityAddImage.
+  ///
+  /// In ru, this message translates to:
+  /// **'Своё изображение'**
+  String get utilityAddImage;
+
+  /// No description provided for @utilityRemoveImage.
+  ///
+  /// In ru, this message translates to:
+  /// **'Убрать изображение'**
+  String get utilityRemoveImage;
 }
 
 class _AppLocalizationsDelegate

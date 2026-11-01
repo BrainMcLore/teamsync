@@ -1350,4 +1350,13 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get utilityTactics => 'Связанные тактики';
+
+  @override
+  String get utilityScreenshots => 'Скриншоты прицеливания';
+
+  @override
+  String get utilityAddImage => 'Своё изображение';
+
+  @override
+  String get utilityRemoveImage => 'Убрать изображение';
 }

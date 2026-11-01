@@ -1,9 +1,11 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:teamsync/data/store.dart';
 import 'package:teamsync/data/utilities.dart';
+import 'package:teamsync/data/files.dart';
 import 'package:teamsync/l10n/app_localizations.dart';
 import 'package:teamsync/main.dart';
 import 'package:teamsync/ui/utilities_page.dart';
@@ -57,6 +59,10 @@ void main() {
         tester.view.devicePixelRatio = 1;
         addTearDown(tester.view.resetPhysicalSize);
         addTearDown(tester.view.resetDevicePixelRatio);
+        final root = Directory.systemTemp.createTempSync(
+          'teamsync_utility_ui_',
+        );
+        addTearDown(() => root.deleteSync(recursive: true));
         final store = Store(':memory:');
         addTearDown(store.close);
         final team = store.createTeam('Five');
@@ -70,7 +76,11 @@ void main() {
             home: Scaffold(
               body: Padding(
                 padding: const EdgeInsets.all(16),
-                child: UtilitiesPage(store: store, team: team),
+                child: UtilitiesPage(
+                  store: store,
+                  files: LocalFiles(root),
+                  team: team,
+                ),
               ),
             ),
           ),

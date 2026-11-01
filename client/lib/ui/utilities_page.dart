@@ -1,21 +1,66 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../data/store.dart';
+import '../data/files.dart';
 import '../data/utilities.dart';
 import '../l10n/app_localizations.dart';
 import 'kit.dart';
 
+Widget aimImage(BuildContext context, String path) {
+  final l = AppLocalizations.of(context);
+  return InkWell(
+    onTap: () => showDialog<void>(
+      context: context,
+      builder: (ctx) => Dialog(
+        child: Stack(
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: InteractiveViewer(
+                child: Image.file(
+                  File(path),
+                  cacheWidth: 2048,
+                  fit: BoxFit.contain,
+                  errorBuilder: (_, error, stack) => Text(l.fileMissing),
+                ),
+              ),
+            ),
+            Positioned(
+              top: 4,
+              right: 4,
+              child: IconButton(
+                tooltip: l.cancel,
+                onPressed: () => Navigator.pop(ctx),
+                icon: const Icon(Icons.close),
+              ),
+            ),
+          ],
+        ),
+      ),
+    ),
+    child: Image.file(
+      File(path),
+      cacheWidth: 512,
+      fit: BoxFit.contain,
+      errorBuilder: (_, error, stack) => Text(l.fileMissing),
+    ),
+  );
+}
+
 class UtilitiesPage extends StatefulWidget {
   final Store store;
+  final LocalFiles? files;
   final String team;
   final String filter;
   final Future<void> Function(String)? onStrategy;
   const UtilitiesPage({
     super.key,
     required this.store,
+    this.files,
     required this.team,
     this.filter = '',
     this.onStrategy,
@@ -39,8 +84,12 @@ class _UtilitiesPageState extends State<UtilitiesPage> {
   Future<void> edit([RecordData? value]) async {
     final saved = await showDialog<bool>(
       context: context,
-      builder: (_) =>
-          _UtilityForm(store: widget.store, team: widget.team, value: value),
+      builder: (_) => _UtilityForm(
+        store: widget.store,
+        files: widget.files,
+        team: widget.team,
+        value: value,
+      ),
     );
     if (saved == true && mounted) setState(() {});
   }
@@ -157,6 +206,31 @@ class _UtilitiesPageState extends State<UtilitiesPage> {
                                     '${field.$1}: ${details[field.$2]}',
                                   ),
                                 ),
+                            if ((details['screenshot_paths'] as List? ?? [])
+                                .isNotEmpty)
+                              Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 12,
+                                ),
+                                child: Wrap(
+                                  spacing: 8,
+                                  runSpacing: 8,
+                                  children: [
+                                    for (final path
+                                        in details['screenshot_paths']
+                                                as List? ??
+                                            [])
+                                      SizedBox(
+                                        width: 160,
+                                        height: 120,
+                                        child: aimImage(
+                                          context,
+                                          path as String,
+                                        ),
+                                      ),
+                                  ],
+                                ),
+                              ),
                             for (final id
                                 in details['strategy_ids'] as List? ?? [])
                               TextButton.icon(
@@ -212,7 +286,13 @@ class _UtilityForm extends StatefulWidget {
   final Store store;
   final String team;
   final RecordData? value;
-  const _UtilityForm({required this.store, required this.team, this.value});
+  final LocalFiles? files;
+  const _UtilityForm({
+    required this.store,
+    required this.team,
+    this.value,
+    this.files,
+  });
   @override
   State<_UtilityForm> createState() => _UtilityFormState();
 }
@@ -222,6 +302,8 @@ class _UtilityFormState extends State<_UtilityForm> {
   late String? map;
   String side = 'T', grenade = 'smoke';
   final selectedStrategies = <String>{};
+  final screenshots = <String>[], newImages = <String>[];
+  bool importing = false, saved = false;
   String? failure;
   @override
   void initState() {
@@ -235,6 +317,11 @@ class _UtilityFormState extends State<_UtilityForm> {
         widget.store.maps(widget.team).firstOrNull?['id'] as String?;
     side = row?['side'] as String? ?? 'T';
     grenade = details['grenade'] as String? ?? 'smoke';
+    screenshots.addAll(
+      List<String>.from(details['screenshot_paths'] as List? ?? []),
+    );
+    if (row != null) widget.store.editingUtilities.add(row['id'] as String);
+
     selectedStrategies.addAll(
       List<String>.from(details['strategy_ids'] as List? ?? []),
     );
@@ -262,10 +349,47 @@ class _UtilityFormState extends State<_UtilityForm> {
 
   @override
   void dispose() {
+    widget.store.editingUtilities.remove(widget.value?['id']);
+    for (final path in newImages.where(
+      (p) => !saved || !screenshots.contains(p),
+    )) {
+      try {
+        File(path).deleteSync();
+      } on FileSystemException {
+        /* Already removed. */
+      }
+    }
     for (final field in fields.values) {
       field.dispose();
     }
     super.dispose();
+  }
+
+  Future<void> addImage() async {
+    if (importing || widget.files == null || screenshots.length >= 10) return;
+    setState(() => importing = true);
+    try {
+      final path = await widget.files!.importRadar();
+      if (path == null) return;
+      if (!mounted) {
+        try {
+          File(path).deleteSync();
+        } on FileSystemException {
+          /* Cancelled. */
+        }
+        return;
+      }
+      setState(() {
+        screenshots.add(path);
+        newImages.add(path);
+      });
+    } catch (_) {
+      if (mounted) {
+        setState(() => failure = AppLocalizations.of(context).invalidImage);
+      }
+    } finally {
+      if (mounted) setState(() => importing = false);
+    }
   }
 
   @override
@@ -341,6 +465,39 @@ class _UtilityFormState extends State<_UtilityForm> {
                     decoration: InputDecoration(labelText: item.$2),
                   ),
                 ),
+              if (widget.files != null) ...[
+                const SizedBox(height: 14),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    '${l.utilityScreenshots} (${screenshots.length}/10)',
+                  ),
+                ),
+                for (final path in screenshots)
+                  Row(
+                    children: [
+                      Expanded(
+                        child: SizedBox(
+                          height: 110,
+                          child: aimImage(context, path),
+                        ),
+                      ),
+                      IconButton(
+                        tooltip: l.utilityRemoveImage,
+                        icon: const Icon(Icons.close),
+                        onPressed: () =>
+                            setState(() => screenshots.remove(path)),
+                      ),
+                    ],
+                  ),
+                OutlinedButton.icon(
+                  onPressed: importing || screenshots.length >= 10
+                      ? null
+                      : addImage,
+                  icon: const Icon(Icons.add_photo_alternate_outlined),
+                  label: Text(l.utilityAddImage),
+                ),
+              ],
               const SizedBox(height: 14),
               Align(
                 alignment: Alignment.centerLeft,
@@ -383,7 +540,7 @@ class _UtilityFormState extends State<_UtilityForm> {
           child: Text(l.cancel),
         ),
         FilledButton(
-          onPressed: map == null
+          onPressed: map == null || importing
               ? null
               : () {
                   try {
@@ -396,6 +553,7 @@ class _UtilityFormState extends State<_UtilityForm> {
                       {
                         'grenade': grenade,
                         'strategy_ids': selectedStrategies.toList(),
+                        'screenshot_paths': screenshots,
                         for (final entry in fields.entries.where(
                           (e) => !['title', 'notes'].contains(e.key),
                         ))
@@ -403,6 +561,7 @@ class _UtilityFormState extends State<_UtilityForm> {
                       },
                       id: widget.value?['id'] as String?,
                     );
+                    saved = true;
                     Navigator.pop(context, true);
                   } on DomainError catch (e) {
                     setState(

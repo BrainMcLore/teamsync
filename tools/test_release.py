@@ -7,10 +7,20 @@ import subprocess
 import sys
 import tempfile
 import unittest
+from release_utils import verify_android_certificate
 from zipfile import ZipFile
 
 
 class ReleaseChecks(unittest.TestCase):
+    def test_apksigner_old_and_new_labels_require_exact_public_certificate(self):
+        expected = '1' * 64
+        for prefix in ['Signer #1', 'V2 Signer:']:
+            report = f'Number of signers: 1\n{prefix} certificate SHA-256 digest: {expected}\n'
+            self.assertTrue(verify_android_certificate(report, expected))
+            self.assertFalse(verify_android_certificate(report, '2' * 64))
+            self.assertFalse(verify_android_certificate(report + f'V3 Signer: certificate SHA-256 digest: {"2" * 64}\n', expected))
+        self.assertFalse(verify_android_certificate('Verifies\n', expected))
+
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory()
         self.addCleanup(self.temp.cleanup)

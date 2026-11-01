@@ -19,6 +19,7 @@ class Store {
   void Function()? onTacticalChange;
   void Function()? onTeamChange;
   bool applyingSync = false;
+  final editingUtilities = <String>{};
   bool canEditTeam(String team) =>
       applyingSync ||
       !['player', 'viewer'].contains(setting('shared_role_$team'));

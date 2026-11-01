@@ -22,6 +22,7 @@ try {
     $certificate | Write-Output
     if(-not $suffix){
         $expected=(Get-Content (Join-Path $projectRoot 'packaging\android-signing.sha256') -Raw).Trim()
-        if(-not (($certificate -join "`n").Contains("Signer #1 certificate SHA-256 digest: $expected"))){throw 'Unexpected Android signing certificate.'}
+        $digests=@([regex]::Matches(($certificate -join "`n"),'(?im)^.*?certificate SHA-256 digest:\s*([0-9a-f]{64})\s*$') | ForEach-Object {$_.Groups[1].Value.ToLowerInvariant()} | Sort-Object -Unique)
+        if($digests.Count -ne 1 -or $digests[0] -ne $expected){throw 'Unexpected Android signing certificate.'}
     }
 } finally {Pop-Location}

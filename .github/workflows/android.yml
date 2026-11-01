@@ -111,8 +111,7 @@ jobs:
           signer=$(find "$ANDROID_HOME/build-tools" -name apksigner | sort -V | tail -1)
           "$signer" verify --verbose --print-certs "dist/$target" | tee "$RUNNER_TEMP/apk-signature.txt"
           if [ -z "$suffix" ]; then
-            expected=$(cat packaging/android-signing.sha256)
-            grep -F "Signer #1 certificate SHA-256 digest: $expected" "$RUNNER_TEMP/apk-signature.txt"
+            python tools/verify-android-signature.py "$RUNNER_TEMP/apk-signature.txt" --certificate packaging/android-signing.sha256
           fi
           cd dist && sha256sum "$target" > "SHA256SUMS-Android.txt"
       - uses: actions/upload-artifact@v7

@@ -21,6 +21,7 @@ class SharedFixture {
   final images = <String, Uint8List>{};
   final roles = <String, String>{'alice': 'owner', 'bob': 'coach'};
   bool loseAck = false;
+  void Function(String user, String method)? checkMedia;
 }
 
 class SyncAccount extends AccountClient {
@@ -38,6 +39,7 @@ class SyncAccount extends AccountClient {
     String path, {
     Uint8List? bytes,
   }) async {
+    server.checkMedia?.call(user, method);
     final id = path.split('/').last;
     if (method == 'PUT') {
       server.images[id] = bytes!;
@@ -141,6 +143,9 @@ void main() {
         team,
         roster,
       );
+      server.checkMedia = (user, method) {
+        if (user == 'bob') expect(b.applyingSync, isFalse);
+      };
       final map = a.addMap(ta, 'Mirage');
 
       final tactic = a.createStrategy(map, 'Выход B', 'T');
@@ -149,6 +154,7 @@ void main() {
             'grenade': 'smoke',
             'strategy_ids': [tactic],
             'source_url': 'https://cs2tricks.com/lineup/window',
+            'screenshot_paths': [File('test/fixtures/radar.png').absolute.path],
             'author': 'Source author',
           });
       final task = a.createTask(
@@ -185,6 +191,17 @@ void main() {
           UtilityLibrary(b).list(tb).single['details'] as String,
         )['strategy_ids'],
         [b.strategies(tb).single['id']],
+      );
+      final screenshot =
+          (jsonDecode(
+                        UtilityLibrary(b).list(tb).single['details'] as String,
+                      )['screenshot_paths']
+                      as List)
+                  .single
+              as String;
+      expect(
+        await File(screenshot).readAsBytes(),
+        await File('test/fixtures/radar.png').readAsBytes(),
       );
       final received = b.tasks(tb).single;
       expect(received['title'], 'Выучить выход');

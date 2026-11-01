@@ -1336,4 +1336,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get utilityTactics => 'Linked tactics';
+
+  @override
+  String get utilityScreenshots => 'Aim screenshots';
+
+  @override
+  String get utilityAddImage => 'Add own image';
+
+  @override
+  String get utilityRemoveImage => 'Remove image';
 }

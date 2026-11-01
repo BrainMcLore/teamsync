@@ -74,6 +74,7 @@ class UtilityDetails(StrictModel):
     source_url: str | None = Field(default=None,max_length=2000)
     verified_at: str = Field(default='',max_length=40)
     map_revision: str = Field(default='',max_length=120)
+    image_ids: list[Annotated[str,StringConstraints(pattern=r'^[0-9a-f]{64}$')]] = Field(default_factory=list,max_length=10)
 
     @field_validator('source_url')
     @classmethod
@@ -491,7 +492,8 @@ def create_app(database_url=None, public_url=None):
     def write_document(team:str,body:DocumentWrite,session=Depends(authenticated)):
         # Preserve the canonical request bytes of pre-utility clients so an
         # acknowledged operation can still be retried after a server upgrade.
-        excluded={'payload': {'utility'}} if body.payload.utility is None else None
+        excluded={'payload': {'utility'}} if body.payload.utility is None else (
+            {'payload': {'utility': {'image_ids'}}} if not body.payload.utility.image_ids else None)
         request_hash=hashlib.sha256(body.model_dump_json(exclude=excluded).encode()).hexdigest()
         with engine.begin() as conn:
             caller=member(conn,team,session['user_id'])
@@ -529,6 +531,9 @@ def create_app(database_url=None, public_url=None):
                     if not linked:
                         fail('invalid_link',422)
             if payload['utility']:
+                for image_id in payload['utility']['image_ids']:
+                    if not conn.execute(select(media.c.id).where(media.c.id==image_id,media.c.team_id==team)).first():
+                        fail('invalid_media',422)
                 for linked_id in payload['utility']['strategy_ids']:
                     if not conn.execute(select(documents.c.id).where(documents.c.id==linked_id,documents.c.team_id==team,documents.c.kind=='strategy')).first():
                         fail('invalid_link',422)

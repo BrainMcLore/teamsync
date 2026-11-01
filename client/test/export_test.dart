@@ -31,6 +31,7 @@ void main() {
       'grenade': 'smoke',
       'strategy_ids': [strategy],
       'source_url': 'https://youtu.be/example?t=12',
+      'screenshot_paths': [File('test/fixtures/radar.png').absolute.path],
     });
     store.saveStrategy(strategy, 'Smoke CT', [
       {'type': 'smoke', 'x': 0.3, 'y': 0.4},
@@ -53,6 +54,19 @@ void main() {
       store.maps(clone).single['id'],
     );
     expect(UtilityLibrary(store).list(clone).single['notes'], 'Инструкция');
+    final screenshot =
+        (jsonDecode(
+                      UtilityLibrary(store).list(clone).single['details']
+                          as String,
+                    )['screenshot_paths']
+                    as List)
+                .single
+            as String;
+    expect(screenshot, isNot(File('test/fixtures/radar.png').absolute.path));
+    expect(
+      await File(screenshot).readAsBytes(),
+      await File('test/fixtures/radar.png').readAsBytes(),
+    );
     expect(
       jsonDecode(
         UtilityLibrary(store).list(clone).single['details'] as String,

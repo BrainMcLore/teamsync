@@ -436,5 +436,8 @@
   "grenadeHe": "HE grenade",
   "grenadeDecoy": "Decoy",
   "editMaterial": "Edit",
-  "utilityTactics": "Linked tactics"
+  "utilityTactics": "Linked tactics",
+  "utilityScreenshots": "Aim screenshots",
+  "utilityAddImage": "Add own image",
+  "utilityRemoveImage": "Remove image"
 }

@@ -30,6 +30,25 @@ class OfflinePackage {
         }
       }
     }
+    final utilities = UtilityLibrary(store)
+        .list(team)
+        .map((u) => Map<String, Object?>.from(u))
+        .toList();
+    for (final utility in utilities) {
+      final details = Map<String, dynamic>.from(
+        jsonDecode(utility['details'] as String) as Map,
+      );
+      final images = <String>[];
+      for (final path in details.remove('screenshot_paths') as List? ?? []) {
+        final file = File(path as String);
+        if (!file.existsSync()) throw DomainError('fileMissing');
+        total += file.lengthSync();
+        if (total > limit ~/ 2) throw DomainError('packageError');
+        images.add(base64Encode(file.readAsBytesSync()));
+      }
+      details['screenshot_images'] = images;
+      utility['details'] = jsonEncode(details);
+    }
     final value = {
       'format': 'teamsync-offline',
       'schema': 1,
@@ -48,7 +67,7 @@ class OfflinePackage {
           )
           .toList(),
       'tasks': store.tasks(team),
-      'utilities': UtilityLibrary(store).list(team),
+      'utilities': utilities,
       'excluded': [
         'demo_files',
         'external_videos',
@@ -111,6 +130,41 @@ class OfflinePackage {
             images['${map['id']}:$field'] = file.path;
           }
         }
+      }
+      for (final raw in utilities) {
+        final utility = raw as Map;
+        final details = Map<String, dynamic>.from(
+          jsonDecode(utility['details'] as String) as Map,
+        );
+        if (details.containsKey('screenshot_paths')) {
+          throw DomainError('packageError');
+        }
+        final images = details.remove('screenshot_images') as List? ?? [];
+        if (images.length > 10) throw DomainError('packageError');
+        final paths = <String>[];
+        for (final encoded in images) {
+          final image = base64Decode(encoded as String);
+          if (image.length < 8 || image.length > 20 * 1024 * 1024) {
+            throw DomainError('packageError');
+          }
+          final png =
+              image[0] == 137 &&
+              image[1] == 80 &&
+              image[2] == 78 &&
+              image[3] == 71;
+          final jpg = image[0] == 255 && image[1] == 216 && image[2] == 255;
+          if (!png && !jpg) throw DomainError('packageError');
+          await LocalFiles.validateRadar(image);
+          final file = File(
+            '${root.path}/media/${Store.uuid.v4()}.${png ? 'png' : 'jpg'}',
+          );
+          await file.parent.create(recursive: true);
+          created.add(file);
+          await file.writeAsBytes(image, flush: true);
+          paths.add(file.path);
+        }
+        details['screenshot_paths'] = paths;
+        utility['details'] = jsonEncode(details);
       }
       return store.transaction<String>(() {
         final team = store.createTeam((data['team'] as Map)['name'] as String);

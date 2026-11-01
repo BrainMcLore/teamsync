@@ -69,7 +69,10 @@ class UtilityLibrary {
       'map_revision': 120,
     };
     if (details.keys.any(
-      (key) => !limits.containsKey(key) && key != 'strategy_ids',
+      (key) =>
+          !limits.containsKey(key) &&
+          key != 'strategy_ids' &&
+          key != 'screenshot_paths',
     )) {
       throw DomainError('invalidText');
     }
@@ -88,6 +91,12 @@ class UtilityLibrary {
       throw DomainError('crossTeam');
     }
     value['strategy_ids'] = links.toSet().toList();
+    final screenshots = details['screenshot_paths'] as List? ?? [];
+    if (screenshots.length > 10 ||
+        screenshots.any((p) => p is! String || p.length > 4096)) {
+      throw DomainError('invalidImage');
+    }
+    value['screenshot_paths'] = screenshots.toSet().toList();
 
     if (id != null && !list(team).any((u) => u['id'] == id)) {
       throw DomainError('crossTeam');
