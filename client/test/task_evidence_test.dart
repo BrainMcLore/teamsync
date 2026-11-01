@@ -20,6 +20,7 @@ class EvidenceApi extends AccountClient {
   bool offline = false, loseAck = false;
   int uploads = 0;
   Completer<Uint8List>? held;
+  final started = Completer<void>();
   @override
   Future<void> loadToken() async {
     token = 'fixture';
@@ -43,7 +44,10 @@ class EvidenceApi extends AccountClient {
     Uint8List? bytes,
   }) async {
     if (offline) throw DomainError('offline');
-    if (held != null) return held!.future;
+    if (held != null) {
+      if (!started.isCompleted) started.complete();
+      return held!.future;
+    }
     final id = path.split('/').last;
     if (method == 'GET') return blobs[id]!;
     uploads++;
@@ -207,7 +211,7 @@ void main() {
       await evidence.enqueueFile('test/fixtures/radar.png');
       final key = evidence.queueKey;
       final upload = evidence.flush();
-      await Future<void>.delayed(const Duration(milliseconds: 100));
+      await api.started.future;
       s.setSetting(
         'account_identity',
         jsonEncode(['https://fixture.example', 'bob']),

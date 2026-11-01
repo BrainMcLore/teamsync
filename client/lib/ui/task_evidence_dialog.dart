@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../data/task_evidence.dart';
+import '../data/store.dart';
 import '../data/own_video.dart';
 import '../l10n/app_localizations.dart';
 
@@ -14,16 +15,22 @@ class TaskEvidenceDialog extends StatefulWidget {
 class _TaskEvidenceDialogState extends State<TaskEvidenceDialog> {
   List<Map<String, dynamic>> rows = [], pending = [];
   bool busy = false, offline = false, failed = false;
-  String? next;
+  String? next, failureCode;
   @override
   void initState() {
     super.initState();
     load();
   }
 
-  Future<void> load({bool more = false}) async {
+  Future<void> load({bool more = false, bool keepFailure = false}) async {
     if (busy) return;
-    setState(() => busy = true);
+    setState(() {
+      busy = true;
+      if (!keepFailure) {
+        failed = false;
+        failureCode = null;
+      }
+    });
     try {
       await widget.evidence.flush();
       final page = await widget.evidence.comments(before: more ? next : null);
@@ -31,7 +38,16 @@ class _TaskEvidenceDialogState extends State<TaskEvidenceDialog> {
       rows = more ? [...rows, ...page.items] : page.items;
       next = page.next;
       offline = false;
-    } catch (_) {
+    } catch (error) {
+      failureCode = error is DomainError ? error.code : null;
+      failed = [
+        'media_quota',
+        'fileMissing',
+        'invalid_media',
+        'invalid_transition',
+        'forbidden',
+        'limit',
+      ].contains(failureCode);
       if (!mounted) return;
       try {
         rows = widget.evidence.cached();
@@ -58,6 +74,7 @@ class _TaskEvidenceDialogState extends State<TaskEvidenceDialog> {
     setState(() {
       busy = true;
       failed = false;
+      failureCode = null;
     });
     try {
       final path = video
@@ -69,7 +86,7 @@ class _TaskEvidenceDialogState extends State<TaskEvidenceDialog> {
     }
     if (!mounted) return;
     setState(() => busy = false);
-    await load();
+    await load(keepFailure: failed);
   }
 
   Future<void> open(Map row) async {
@@ -77,6 +94,7 @@ class _TaskEvidenceDialogState extends State<TaskEvidenceDialog> {
     setState(() {
       busy = true;
       failed = false;
+      failureCode = null;
     });
     try {
       final file = await widget.evidence.openFile(row);
@@ -120,7 +138,14 @@ class _TaskEvidenceDialogState extends State<TaskEvidenceDialog> {
             ),
             if (busy) const LinearProgressIndicator(),
             if (offline) Text(l.discussionOffline),
-            if (failed) Text(l.evidenceFailed),
+            if (failed)
+              Text(
+                failureCode == 'media_quota'
+                    ? l.syncMediaQuota
+                    : failureCode == 'fileMissing'
+                    ? l.fileMissing
+                    : l.evidenceFailed,
+              ),
             for (final row in pending.where(
               (r) => !rows.any((e) => e['id'] == r['id']),
             ))
