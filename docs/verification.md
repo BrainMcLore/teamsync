@@ -1,5 +1,7 @@
 # Verification
 
+Local release preparation: **81 Flutter tests passed, 5 external/private checks skipped; 20 API tests and 4 release-packaging tests passed. Static analysis reported no issues.**
+
 Release CI checks the native Windows installer and signed Android APK from the release source revision.
 
 - Flutter static analysis and unit/widget tests, including English/Russian UI snapshots.

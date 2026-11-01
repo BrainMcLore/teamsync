@@ -3,7 +3,7 @@ from pathlib import Path
 from release_utils import client_version, write_archive
 
 root=Path(__file__).resolve().parents[1]
-excluded={'build','failures','.dart_tool','.gradle','ephemeral','Pods','.symlinks','__pycache__','.pytest_cache','.git','.idea','.tools','.venv','.codex','.aws','.agents'}
+excluded={'ios','build','failures','.dart_tool','.gradle','ephemeral','Pods','.symlinks','__pycache__','.pytest_cache','.git','.idea','.tools','.venv','.codex','.aws','.agents'}
 files=[*root.glob('*.md'),root/'compose.yaml',root/'.gitignore',root/'.gitattributes',root/'render.yaml',root/'.python-version']
 for folder in ['client','server','worker','tools','packaging','native','.github','docs']:
     for file in (root/folder).rglob('*'):

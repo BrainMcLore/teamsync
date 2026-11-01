@@ -39,7 +39,7 @@ class ReleaseChecks(unittest.TestCase):
     def test_source_is_reproducible_and_omits_credentials_and_generated_files(self):
         for relative in ['client/.env.local', 'client/local.properties', 'client/user.sqlite-wal',
                          'tools/auth.json', 'client/build/session.txt', 'client/.codex/auth.json',
-                         'client/debug.keystore', 'docs/private.p12', 'client/private.pfx', 'client/failures/screenshot.png']:
+                         'client/ios/Flutter/Generated.xcconfig', 'client/debug.keystore', 'docs/private.p12', 'client/private.pfx', 'client/failures/screenshot.png']:
             path = self.root / relative
             path.parent.mkdir(parents=True, exist_ok=True)
             path.write_text('private fixture')
