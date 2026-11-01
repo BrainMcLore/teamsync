@@ -6,11 +6,11 @@ Windows and Android clients; English/Russian UI; account-based teams and roles; 
 
 ## Development toward 1.0
 
-See the [full release acceptance plan](full-release.md). Legacy-assignment isolation, account reassignment, task discussion and evidence uploads are implemented in development; they are not part of the immutable 0.95 download.
+See the [full release acceptance plan](full-release.md). Legacy-assignment isolation, account reassignment, task discussion evidence uploads, and scheduling/attendance are implemented in development; they are not part of the immutable 0.95 download.
 
 ## Next
 
-- Scheduling, attendance and push notifications / расписание, посещаемость и уведомления.
+- Reminders and push notifications / напоминания и push-уведомления.
 - Live joint review / совместный живой разбор.
 - Remote bootcamp agent / удалённый серверный агент.
 - Complete offline review/history bundles / полные офлайн-пакеты.

@@ -24,6 +24,7 @@ from .media_types import media_type
 from .skills import attach_skill_routes
 from .discussion import attach_discussion_routes
 from .evidence import attach_evidence_routes
+from .schedule import attach_schedule_routes
 from .auth import (fail, digest, start_auth, verified_identity, finish_auth, exchange_code)
 
 class StrictModel(BaseModel):
@@ -224,10 +225,11 @@ def create_app(database_url=None, public_url=None):
     attach_skill_routes(app,engine,authenticated,member)
     attach_discussion_routes(app,engine,authenticated,member)
     attach_evidence_routes(app,engine,authenticated,member)
+    attach_schedule_routes(app,engine,authenticated,member)
 
     @app.get('/api/v1/health')
     def health():
-        return {'status':'ok','version':'0.95.0-beta','providers':{'steam':True,'discord':bool(discord_id and discord_secret)},'capabilities':['identity','teams','account_invites','roster','tactical_sync','training_sync','utilities','utility_skills','team_media','versioned_documents','task_discussion','task_evidence'],'native_client_required':True}
+        return {'status':'ok','version':'0.95.0-beta','providers':{'steam':True,'discord':bool(discord_id and discord_secret)},'capabilities':['identity','teams','account_invites','roster','tactical_sync','training_sync','utilities','utility_skills','team_media','versioned_documents','task_discussion','task_evidence','team_schedule'],'native_client_required':True}
 
     @app.post('/api/v1/auth/{provider}/start')
     def auth_start(provider:str,body:AuthStart):

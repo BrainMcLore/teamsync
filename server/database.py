@@ -77,6 +77,23 @@ task_evidence = Table('task_evidence', metadata,
     Column('mime', String(32), nullable=False), Column('size', Integer, nullable=False),
     Column('task_version', Integer, nullable=False), Column('created', Float, nullable=False),
     Index('ix_task_evidence_document_cursor', 'document_id', 'created', 'id'))
+schedule_events = Table('schedule_events', metadata,
+    Column('id', String(36), primary_key=True), Column('team_id', ForeignKey('teams.id'), nullable=False),
+    Column('payload', JSON, nullable=False), Column('starts', Float, nullable=False),
+    Column('version', Integer, nullable=False), Column('updated', Float, nullable=False),
+    Column('created_by', ForeignKey('users.id'), nullable=False),
+    Index('ix_schedule_events_team_starts', 'team_id', 'starts', 'id'))
+schedule_participation = Table('schedule_participation', metadata,
+    Column('id', String(36), primary_key=True), Column('event_id', ForeignKey('schedule_events.id'), nullable=False),
+    Column('user_id', ForeignKey('users.id'), nullable=False), Column('payload', JSON, nullable=False),
+    Column('version', Integer, nullable=False), Column('updated', Float, nullable=False),
+    UniqueConstraint('event_id', 'user_id'))
+schedule_history = Table('schedule_history', metadata,
+    Column('id', String(36), primary_key=True), Column('event_id', ForeignKey('schedule_events.id'), nullable=False),
+    Column('user_id', ForeignKey('users.id')), Column('author_id', ForeignKey('users.id'), nullable=False),
+    Column('kind', String(24), nullable=False), Column('version', Integer, nullable=False),
+    Column('payload', JSON, nullable=False), Column('created', Float, nullable=False),
+    Index('ix_schedule_history_event_created', 'event_id', 'created', 'id'))
 operations = Table('sync_operations', metadata,
     Column('id', String(36), primary_key=True), Column('team_id', ForeignKey('teams.id'), nullable=False),
     Column('user_id', ForeignKey('users.id'), nullable=False), Column('request_hash', String(64), nullable=False),

@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Added shared fixed-time events, self RSVP and separate coach attendance, with audited corrections and retained former-member records.
+- Added account-scoped offline schedule caches and durable versioned mutations; open views refresh every 30 seconds.
+
 - Added task evidence: own PNG/JPEG/MP4, task/version receipts, assignee/coach permissions, offline retries and verified local copies.
 
 - Added per-task discussion with author/time, team permissions, stable cursor pagination and an account-scoped offline cache.

@@ -3091,6 +3091,240 @@ abstract class AppLocalizations {
   /// In ru, this message translates to:
   /// **'Видео'**
   String get evidenceVideoType;
+
+  /// No description provided for @scheduleTitle.
+  ///
+  /// In ru, this message translates to:
+  /// **'Расписание'**
+  String get scheduleTitle;
+
+  /// No description provided for @schedulePractice.
+  ///
+  /// In ru, this message translates to:
+  /// **'Тренировка'**
+  String get schedulePractice;
+
+  /// No description provided for @scheduleScrim.
+  ///
+  /// In ru, this message translates to:
+  /// **'Прак'**
+  String get scheduleScrim;
+
+  /// No description provided for @scheduleReview.
+  ///
+  /// In ru, this message translates to:
+  /// **'Разбор'**
+  String get scheduleReview;
+
+  /// No description provided for @scheduleNew.
+  ///
+  /// In ru, this message translates to:
+  /// **'Новое событие'**
+  String get scheduleNew;
+
+  /// No description provided for @scheduleEdit.
+  ///
+  /// In ru, this message translates to:
+  /// **'Изменить событие'**
+  String get scheduleEdit;
+
+  /// No description provided for @scheduleZone.
+  ///
+  /// In ru, this message translates to:
+  /// **'Время указано в часовом поясе устройства'**
+  String get scheduleZone;
+
+  /// No description provided for @scheduleInvalidTime.
+  ///
+  /// In ru, this message translates to:
+  /// **'Укажите название, длительность от минуты до 7 дней и причину отмены.'**
+  String get scheduleInvalidTime;
+
+  /// No description provided for @scheduleRangeLimit.
+  ///
+  /// In ru, this message translates to:
+  /// **'Выберите период до 366 дней.'**
+  String get scheduleRangeLimit;
+
+  /// No description provided for @scheduleOffline.
+  ///
+  /// In ru, this message translates to:
+  /// **'Не удалось обновить. Ранее загруженные данные расписания сохранены на устройстве.'**
+  String get scheduleOffline;
+
+  /// No description provided for @schedulePending.
+  ///
+  /// In ru, this message translates to:
+  /// **'Сохранено на устройстве. Откройте или обновите расписание для повторной отправки.'**
+  String get schedulePending;
+
+  /// No description provided for @scheduleConflict.
+  ///
+  /// In ru, this message translates to:
+  /// **'На сервере другая версия. Локальное изменение сохранено. Сверьте актуальные данные перед отменой и повторным вводом.'**
+  String get scheduleConflict;
+
+  /// No description provided for @scheduleDiscard.
+  ///
+  /// In ru, this message translates to:
+  /// **'Отменить это локальное изменение'**
+  String get scheduleDiscard;
+
+  /// No description provided for @scheduleParticipants.
+  ///
+  /// In ru, this message translates to:
+  /// **'Участие и посещаемость'**
+  String get scheduleParticipants;
+
+  /// No description provided for @scheduleCancelled.
+  ///
+  /// In ru, this message translates to:
+  /// **'Отменено'**
+  String get scheduleCancelled;
+
+  /// No description provided for @scheduleCancelEvent.
+  ///
+  /// In ru, this message translates to:
+  /// **'Отменить событие'**
+  String get scheduleCancelEvent;
+
+  /// No description provided for @scheduleCancelReason.
+  ///
+  /// In ru, this message translates to:
+  /// **'Причина отмены'**
+  String get scheduleCancelReason;
+
+  /// No description provided for @scheduleSave.
+  ///
+  /// In ru, this message translates to:
+  /// **'Сохранить'**
+  String get scheduleSave;
+
+  /// No description provided for @scheduleUnavailable.
+  ///
+  /// In ru, this message translates to:
+  /// **'Не удалось выполнить действие. Проверьте аккаунт, права и связь.'**
+  String get scheduleUnavailable;
+
+  /// No description provided for @scheduleRecord.
+  ///
+  /// In ru, this message translates to:
+  /// **'Присутствие'**
+  String get scheduleRecord;
+
+  /// No description provided for @scheduleReply.
+  ///
+  /// In ru, this message translates to:
+  /// **'Ответ игрока'**
+  String get scheduleReply;
+
+  /// No description provided for @rsvpUnknown.
+  ///
+  /// In ru, this message translates to:
+  /// **'Нет ответа'**
+  String get rsvpUnknown;
+
+  /// No description provided for @rsvpGoing.
+  ///
+  /// In ru, this message translates to:
+  /// **'Буду'**
+  String get rsvpGoing;
+
+  /// No description provided for @rsvpMaybe.
+  ///
+  /// In ru, this message translates to:
+  /// **'Возможно'**
+  String get rsvpMaybe;
+
+  /// No description provided for @rsvpDeclined.
+  ///
+  /// In ru, this message translates to:
+  /// **'Не буду'**
+  String get rsvpDeclined;
+
+  /// No description provided for @attendanceUnmarked.
+  ///
+  /// In ru, this message translates to:
+  /// **'Не отмечено'**
+  String get attendanceUnmarked;
+
+  /// No description provided for @attendancePresent.
+  ///
+  /// In ru, this message translates to:
+  /// **'Присутствовал'**
+  String get attendancePresent;
+
+  /// No description provided for @attendanceLate.
+  ///
+  /// In ru, this message translates to:
+  /// **'Опоздал'**
+  String get attendanceLate;
+
+  /// No description provided for @attendanceAbsent.
+  ///
+  /// In ru, this message translates to:
+  /// **'Отсутствовал'**
+  String get attendanceAbsent;
+
+  /// No description provided for @attendanceExcused.
+  ///
+  /// In ru, this message translates to:
+  /// **'Уважительная причина'**
+  String get attendanceExcused;
+
+  /// No description provided for @scheduleFormer.
+  ///
+  /// In ru, this message translates to:
+  /// **'Бывший участник'**
+  String get scheduleFormer;
+
+  /// No description provided for @scheduleReason.
+  ///
+  /// In ru, this message translates to:
+  /// **'Причина / примечание'**
+  String get scheduleReason;
+
+  /// No description provided for @scheduleCorrectReason.
+  ///
+  /// In ru, this message translates to:
+  /// **'Укажите причину изменения отметки присутствия.'**
+  String get scheduleCorrectReason;
+
+  /// No description provided for @scheduleNotStarted.
+  ///
+  /// In ru, this message translates to:
+  /// **'Присутствие отмечается после начала события. Уважительную причину можно указать заранее.'**
+  String get scheduleNotStarted;
+
+  /// No description provided for @scheduleTimeLocked.
+  ///
+  /// In ru, this message translates to:
+  /// **'У события уже отмечена посещаемость. Изменить время нельзя.'**
+  String get scheduleTimeLocked;
+
+  /// No description provided for @scheduleStart.
+  ///
+  /// In ru, this message translates to:
+  /// **'Начало'**
+  String get scheduleStart;
+
+  /// No description provided for @scheduleEnd.
+  ///
+  /// In ru, this message translates to:
+  /// **'Окончание'**
+  String get scheduleEnd;
+
+  /// No description provided for @scheduleLocation.
+  ///
+  /// In ru, this message translates to:
+  /// **'Место / сервер'**
+  String get scheduleLocation;
+
+  /// No description provided for @scheduleType.
+  ///
+  /// In ru, this message translates to:
+  /// **'Тип события'**
+  String get scheduleType;
 }
 
 class _AppLocalizationsDelegate

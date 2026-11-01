@@ -1,24 +1,13 @@
 import 'dart:convert';
 
 import 'account.dart';
-import 'store.dart';
+import 'account_scope.dart';
 
 /// History is scoped to the same account binding as the task's sync queue.
-class TaskHistory {
-  final Store store;
-  final String team, task;
+class TaskHistory extends TeamAccountScope {
+  final String task;
   final AccountClient Function(String)? clientFactory;
-  final Map binding;
-  TaskHistory(this.store, this.team, this.task, {this.clientFactory})
-    : binding = jsonDecode(store.setting('account_team_$team')!) as Map;
-  void assertActive() {
-    if (store.setting('account_team_$team') != jsonEncode(binding) ||
-        store.setting('account_signed_out') == '1' ||
-        store.setting('account_identity') !=
-            jsonEncode([binding['server'], binding['user']])) {
-      throw DomainError('syncAccountMismatch');
-    }
-  }
+  TaskHistory(super.store, super.team, this.task, {this.clientFactory});
 
   String get cacheKey =>
       'task_history_${jsonEncode([binding['server'], binding['user'], binding['team'], task])}';

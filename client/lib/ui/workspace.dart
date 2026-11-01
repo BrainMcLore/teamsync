@@ -1,3 +1,4 @@
+import 'schedule_page.dart';
 import '../data/task_evidence.dart';
 import 'task_evidence_dialog.dart';
 import '../data/task_discussion.dart';
@@ -459,6 +460,7 @@ class _WorkspaceState extends State<Workspace> with WidgetsBindingObserver {
     (l.playbooks, Icons.picture_as_pdf_outlined),
     (l.bootcamp, Icons.dns_outlined),
     (l.utilityLibrary, Icons.sports_baseball_outlined),
+    (l.scheduleTitle, Icons.calendar_month_outlined),
   ];
   Widget empty(String text, IconData icon) => Center(
     child: ConstrainedBox(
@@ -1532,20 +1534,26 @@ class _WorkspaceState extends State<Workspace> with WidgetsBindingObserver {
   Future<void> mobileMore() async {
     await showModalBottomSheet<void>(
       context: context,
+      isScrollControlled: true,
       builder: (ctx) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            for (final i in [2, 9, 4, 7, 8, 6])
-              ListTile(
-                leading: Icon(destinations[i].$2),
-                title: Text(destinations[i].$1),
-                onTap: () {
-                  setState(() => page = i);
-                  Navigator.pop(ctx);
-                },
-              ),
-          ],
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            maxHeight: MediaQuery.sizeOf(ctx).height * .8,
+          ),
+          child: ListView(
+            shrinkWrap: true,
+            children: [
+              for (final i in [10, 2, 9, 4, 7, 8, 6])
+                ListTile(
+                  leading: Icon(destinations[i].$2),
+                  title: Text(destinations[i].$1),
+                  onTap: () {
+                    setState(() => page = i);
+                    Navigator.pop(ctx);
+                  },
+                ),
+            ],
+          ),
         ),
       ),
     );
@@ -1694,6 +1702,12 @@ class _WorkspaceState extends State<Workspace> with WidgetsBindingObserver {
         team: teamId!,
         filter: query,
         onStrategy: openStrategy,
+      ),
+      10 => SchedulePage(
+        key: ValueKey('schedule:$teamId'),
+        filter: query,
+        store: db,
+        team: teamId!,
       ),
       _ => settingsPage(),
     };

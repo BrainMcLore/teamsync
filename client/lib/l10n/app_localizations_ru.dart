@@ -1665,4 +1665,129 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get evidenceVideoType => 'Видео';
+
+  @override
+  String get scheduleTitle => 'Расписание';
+
+  @override
+  String get schedulePractice => 'Тренировка';
+
+  @override
+  String get scheduleScrim => 'Прак';
+
+  @override
+  String get scheduleReview => 'Разбор';
+
+  @override
+  String get scheduleNew => 'Новое событие';
+
+  @override
+  String get scheduleEdit => 'Изменить событие';
+
+  @override
+  String get scheduleZone => 'Время указано в часовом поясе устройства';
+
+  @override
+  String get scheduleInvalidTime =>
+      'Укажите название, длительность от минуты до 7 дней и причину отмены.';
+
+  @override
+  String get scheduleRangeLimit => 'Выберите период до 366 дней.';
+
+  @override
+  String get scheduleOffline =>
+      'Не удалось обновить. Ранее загруженные данные расписания сохранены на устройстве.';
+
+  @override
+  String get schedulePending =>
+      'Сохранено на устройстве. Откройте или обновите расписание для повторной отправки.';
+
+  @override
+  String get scheduleConflict =>
+      'На сервере другая версия. Локальное изменение сохранено. Сверьте актуальные данные перед отменой и повторным вводом.';
+
+  @override
+  String get scheduleDiscard => 'Отменить это локальное изменение';
+
+  @override
+  String get scheduleParticipants => 'Участие и посещаемость';
+
+  @override
+  String get scheduleCancelled => 'Отменено';
+
+  @override
+  String get scheduleCancelEvent => 'Отменить событие';
+
+  @override
+  String get scheduleCancelReason => 'Причина отмены';
+
+  @override
+  String get scheduleSave => 'Сохранить';
+
+  @override
+  String get scheduleUnavailable =>
+      'Не удалось выполнить действие. Проверьте аккаунт, права и связь.';
+
+  @override
+  String get scheduleRecord => 'Присутствие';
+
+  @override
+  String get scheduleReply => 'Ответ игрока';
+
+  @override
+  String get rsvpUnknown => 'Нет ответа';
+
+  @override
+  String get rsvpGoing => 'Буду';
+
+  @override
+  String get rsvpMaybe => 'Возможно';
+
+  @override
+  String get rsvpDeclined => 'Не буду';
+
+  @override
+  String get attendanceUnmarked => 'Не отмечено';
+
+  @override
+  String get attendancePresent => 'Присутствовал';
+
+  @override
+  String get attendanceLate => 'Опоздал';
+
+  @override
+  String get attendanceAbsent => 'Отсутствовал';
+
+  @override
+  String get attendanceExcused => 'Уважительная причина';
+
+  @override
+  String get scheduleFormer => 'Бывший участник';
+
+  @override
+  String get scheduleReason => 'Причина / примечание';
+
+  @override
+  String get scheduleCorrectReason =>
+      'Укажите причину изменения отметки присутствия.';
+
+  @override
+  String get scheduleNotStarted =>
+      'Присутствие отмечается после начала события. Уважительную причину можно указать заранее.';
+
+  @override
+  String get scheduleTimeLocked =>
+      'У события уже отмечена посещаемость. Изменить время нельзя.';
+
+  @override
+  String get scheduleStart => 'Начало';
+
+  @override
+  String get scheduleEnd => 'Окончание';
+
+  @override
+  String get scheduleLocation => 'Место / сервер';
+
+  @override
+  String get scheduleType => 'Тип события';
 }

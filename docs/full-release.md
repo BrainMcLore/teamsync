@@ -13,7 +13,8 @@ The published 0.95 Beta remains immutable. Development continues in a separate b
 
 - [x] Task discussion with authorship, permissions, cursor pagination and offline cache (development branch).
 - [x] Training evidence attached to the correct task/version with bounded media storage (development branch).
-- [ ] Scheduling, attendance and reminders; explicit delivery/offline behavior.
+- [x] Shared fixed-time events, self RSVP and coach attendance with history and durable retries (development branch).
+- [ ] Reminders and push notifications with explicit delivery/offline behavior.
 - [ ] Team progress views that derive from real assignments and reviewed work.
 
 ## 3. Demo and offline acceptance

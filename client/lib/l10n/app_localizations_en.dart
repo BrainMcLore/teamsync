@@ -1650,4 +1650,129 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get evidenceVideoType => 'Video';
+
+  @override
+  String get scheduleTitle => 'Schedule';
+
+  @override
+  String get schedulePractice => 'Practice';
+
+  @override
+  String get scheduleScrim => 'Scrim';
+
+  @override
+  String get scheduleReview => 'Review';
+
+  @override
+  String get scheduleNew => 'New event';
+
+  @override
+  String get scheduleEdit => 'Edit event';
+
+  @override
+  String get scheduleZone => 'Times use this device’s time zone';
+
+  @override
+  String get scheduleInvalidTime =>
+      'Enter a title, a duration of 1 minute to 7 days, and a reason when cancelling.';
+
+  @override
+  String get scheduleRangeLimit => 'Select a range of up to 366 days.';
+
+  @override
+  String get scheduleOffline =>
+      'Could not refresh. Previously loaded schedule data remains on this device.';
+
+  @override
+  String get schedulePending =>
+      'Saved on this device. Open or refresh Schedule to retry.';
+
+  @override
+  String get scheduleConflict =>
+      'The server has a newer version. Your local change is preserved below. Review the current data before removing and re-entering it.';
+
+  @override
+  String get scheduleDiscard => 'Discard this local change';
+
+  @override
+  String get scheduleParticipants => 'Participation & attendance';
+
+  @override
+  String get scheduleCancelled => 'Cancelled';
+
+  @override
+  String get scheduleCancelEvent => 'Cancel this event';
+
+  @override
+  String get scheduleCancelReason => 'Cancellation reason';
+
+  @override
+  String get scheduleSave => 'Save';
+
+  @override
+  String get scheduleUnavailable =>
+      'Could not complete the action. Check your account, permissions and connection.';
+
+  @override
+  String get scheduleRecord => 'Attendance';
+
+  @override
+  String get scheduleReply => 'RSVP';
+
+  @override
+  String get rsvpUnknown => 'No response';
+
+  @override
+  String get rsvpGoing => 'Going';
+
+  @override
+  String get rsvpMaybe => 'Maybe';
+
+  @override
+  String get rsvpDeclined => 'Not going';
+
+  @override
+  String get attendanceUnmarked => 'Not recorded';
+
+  @override
+  String get attendancePresent => 'Present';
+
+  @override
+  String get attendanceLate => 'Late';
+
+  @override
+  String get attendanceAbsent => 'Absent';
+
+  @override
+  String get attendanceExcused => 'Excused';
+
+  @override
+  String get scheduleFormer => 'Former member';
+
+  @override
+  String get scheduleReason => 'Reason / note';
+
+  @override
+  String get scheduleCorrectReason =>
+      'Explain why the recorded attendance is changing.';
+
+  @override
+  String get scheduleNotStarted =>
+      'Attendance can be recorded after the event starts. An excused absence may be recorded in advance.';
+
+  @override
+  String get scheduleTimeLocked =>
+      'This event has recorded attendance. Its time cannot be changed.';
+
+  @override
+  String get scheduleStart => 'Starts';
+
+  @override
+  String get scheduleEnd => 'Ends';
+
+  @override
+  String get scheduleLocation => 'Location / server';
+
+  @override
+  String get scheduleType => 'Event type';
 }

@@ -45,3 +45,13 @@ Use **Evidence** on a synchronized assignment to add your own PNG/JPEG screensho
 Files queued on the device retry when you open or refresh the evidence dialog. Open a received file to keep a verified offline copy. Removing a local retry only stops that retry; it cannot undo an upload already received by the server.
 
 В разделе **Доказательства** прикрепляйте свои PNG/JPEG или MP4. Игрок — к своему заданию, тренер — к заданиям команды. Файл связан с версией задания; загрузка не заменяет сдачу и проверку. Для нового вложения к принятому заданию сначала верните его в работу. Полученный файл нужно открыть для сохранения локальной копии. Очередь повторяется при открытии или обновлении раздела; удаление из очереди не удаляет уже принятое сервером вложение.
+
+## Schedule & attendance (development toward 1.0)
+
+Open **Schedule** in the sidebar or the mobile **More** menu. Managers create practice, scrim, review and bootcamp events, set their start/end, location/server and notes. Choose dates/times in the device zone; teammates see the same UTC instant converted to their own local time. Use the date-range selector for other periods.
+
+Open **Participation & attendance** to answer Going/Maybe/Not going for yourself. This does not mark actual attendance. A manager records Present/Late/Absent/Excused; changing a recorded mark requires a reason. Event/attendance history identifies the author and preserves former members. Cancellation requires a reason and blocks new responses.
+
+Saved operations retry while an open foreground view refreshes, or on manual refresh. A version conflict keeps your local copy: compare it with current data, discard the superseded local operation explicitly, then re-enter the intended change. Offline views contain previously loaded records. Fixed events are supported; recurring events, reminders and push notifications remain planned.
+
+Раздел **Расписание** доступен в боковом меню и в мобильном **Ещё**. Тренер создаёт событие с датой, временем, сервером и заметками. Время выбирается в часовом поясе устройства и отображается у каждого участника в его местном времени. Ответ игрока **Буду / Возможно / Не буду** отделён от отметки тренера о фактическом присутствии. Исправление отметки и отмена события требуют причины; история сохраняет автора, время и данные бывших участников. Открытые окна обновляются раз в 30 секунд, очередь переживает отсутствие сети. Повторяющиеся события и уведомления пока не подключены.
