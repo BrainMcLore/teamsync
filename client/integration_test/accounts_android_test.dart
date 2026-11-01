@@ -14,6 +14,7 @@ import 'package:teamsync/data/tactical_sync.dart';
 import 'package:teamsync/data/account_roster.dart';
 import 'package:teamsync/data/own_video.dart';
 import 'package:teamsync/data/utilities.dart';
+import 'package:teamsync/data/utility_skills.dart';
 import 'package:path_provider/path_provider.dart';
 
 import '../test/fixtures/own_clip_data.dart';
@@ -222,6 +223,22 @@ void main() {
                 as String;
         expect(await File(bclip).readAsBytes(), base64Decode(ownClipBase64));
         expect(await OwnVideo.canOpenOnAndroid(bclip), isA<bool>());
+        final utilityA = UtilityLibrary(a).list(ta).single['id'] as String;
+        final utilityB = UtilityLibrary(b).list(tb).single['id'] as String;
+        final skillsA = SkillStore(a, ta), skillsB = SkillStore(b, tb);
+        final playerId = playerProfile['id'] as String;
+        expect(skillsB.mayWrite(playerId, 'confirmed'), isFalse);
+        skillsB.desire(utilityB, 1, playerId, 'ready');
+        await sb.run(tb, conflictLabel: 'Conflict copy');
+        await sa.run(ta, conflictLabel: 'Conflict copy');
+        skillsA.desire(utilityA, 1, playerId, 'confirmed');
+        await sa.run(ta, conflictLabel: 'Conflict copy');
+        await sb.run(tb, conflictLabel: 'Conflict copy');
+        expect(
+          (skillsB.row(skillsB.document(utilityB), playerId, 1)['remote']
+              as Map)['status'],
+          'confirmed',
+        );
 
         expect(
           File(b.maps(tb).single['image_path'] as String).lengthSync(),
