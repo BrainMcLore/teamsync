@@ -2725,6 +2725,126 @@ abstract class AppLocalizations {
   /// In ru, this message translates to:
   /// **'Загрузить ещё'**
   String get historyMore;
+
+  /// No description provided for @taskType.
+  ///
+  /// In ru, this message translates to:
+  /// **'Тип задания'**
+  String get taskType;
+
+  /// No description provided for @taskTypeUtility.
+  ///
+  /// In ru, this message translates to:
+  /// **'Изучить раскидку'**
+  String get taskTypeUtility;
+
+  /// No description provided for @taskTypeTactic.
+  ///
+  /// In ru, this message translates to:
+  /// **'Выучить роль в тактике'**
+  String get taskTypeTactic;
+
+  /// No description provided for @taskTypeDryRun.
+  ///
+  /// In ru, this message translates to:
+  /// **'Провести dry run'**
+  String get taskTypeDryRun;
+
+  /// No description provided for @taskTypeExecute.
+  ///
+  /// In ru, this message translates to:
+  /// **'Отработать execute'**
+  String get taskTypeExecute;
+
+  /// No description provided for @taskTypeRetake.
+  ///
+  /// In ru, this message translates to:
+  /// **'Отработать retake'**
+  String get taskTypeRetake;
+
+  /// No description provided for @taskTypeDemo.
+  ///
+  /// In ru, this message translates to:
+  /// **'Посмотреть демку'**
+  String get taskTypeDemo;
+
+  /// No description provided for @taskTypeRound.
+  ///
+  /// In ru, this message translates to:
+  /// **'Разобрать раунд'**
+  String get taskTypeRound;
+
+  /// No description provided for @taskTypeFix.
+  ///
+  /// In ru, this message translates to:
+  /// **'Исправить ошибку'**
+  String get taskTypeFix;
+
+  /// No description provided for @taskTypeQuiz.
+  ///
+  /// In ru, this message translates to:
+  /// **'Проверка знаний'**
+  String get taskTypeQuiz;
+
+  /// No description provided for @taskDeadline.
+  ///
+  /// In ru, this message translates to:
+  /// **'Срок'**
+  String get taskDeadline;
+
+  /// No description provided for @taskNoDeadline.
+  ///
+  /// In ru, this message translates to:
+  /// **'Без срока'**
+  String get taskNoDeadline;
+
+  /// No description provided for @taskClearDeadline.
+  ///
+  /// In ru, this message translates to:
+  /// **'Убрать срок'**
+  String get taskClearDeadline;
+
+  /// No description provided for @taskDeadlineHelp.
+  ///
+  /// In ru, this message translates to:
+  /// **'Выберите время на этом устройстве. Участники увидят срок в своём часовом поясе.'**
+  String get taskDeadlineHelp;
+
+  /// No description provided for @taskCriteria.
+  ///
+  /// In ru, this message translates to:
+  /// **'Критерий выполнения'**
+  String get taskCriteria;
+
+  /// No description provided for @editTaskPlan.
+  ///
+  /// In ru, this message translates to:
+  /// **'Изменить план'**
+  String get editTaskPlan;
+
+  /// No description provided for @taskOverdue.
+  ///
+  /// In ru, this message translates to:
+  /// **'Просрочено'**
+  String get taskOverdue;
+
+  /// No description provided for @taskTypeGeneral.
+  ///
+  /// In ru, this message translates to:
+  /// **'Общее задание'**
+  String get taskTypeGeneral;
+
+  /// No description provided for @taskCreate.
+  ///
+  /// In ru, this message translates to:
+  /// **'Создать задание'**
+  String get taskCreate;
+
+  /// No description provided for @taskSavePlan.
+  ///
+  /// In ru, this message translates to:
+  /// **'Сохранить план'**
+  String get taskSavePlan;
 }
 
 class _AppLocalizationsDelegate

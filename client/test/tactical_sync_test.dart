@@ -463,6 +463,9 @@ void main() {
         ta,
         'Выучить выход',
         'Роль и тайминги',
+        taskType: 'execute',
+        dueAt: DateTime.parse('2026-11-02T18:30:00Z'),
+        criteria: 'Three coordinated runs',
         member:
             a.members(ta).singleWhere((m) => m['name'] == 'Player')['id']
                 as String,
@@ -539,6 +542,12 @@ void main() {
 
       final received = b.tasks(tb).single;
       expect(received['title'], 'Выучить выход');
+      expect(received['task_type'], 'execute');
+      expect(
+        DateTime.parse(received['due_at'] as String),
+        DateTime.utc(2026, 11, 2, 18, 30),
+      );
+      expect(received['criteria'], 'Three coordinated runs');
       expect(received['strategy_id'], b.strategies(tb).single['id']);
       expect(
         received['member_id'],

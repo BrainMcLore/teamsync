@@ -5,6 +5,7 @@ import os
 import re
 import secrets
 import time
+from datetime import datetime
 from collections import OrderedDict
 from threading import Lock
 from typing import Literal, Annotated
@@ -103,6 +104,9 @@ class DocumentPayload(StrictModel):
     side: Literal['T','CT'] | None = None
     status: Literal['todo','in_progress','submitted','approved']='todo'
     task_review_reason: str = Field(default='',max_length=2000)
+    task_type: Literal['general','utility','tactic','dry_run','execute','retake','demo','round_review','fix','quiz']='general'
+    task_due_at: str | None = Field(default=None,max_length=40)
+    task_criteria: str = Field(default='',max_length=5000)
     objects: list[TacticalObject] = Field(default_factory=list,max_length=2000)
     catalog_id: str | None = Field(default=None,max_length=80)
     level: Literal['default','lower']='default'
@@ -114,6 +118,17 @@ class DocumentPayload(StrictModel):
     def arrows_have_end(cls,value):
         if any(o.type=='arrow' and (o.x2 is None or o.y2 is None) for o in value):
             raise ValueError('arrow_requires_end')
+        return value
+
+    @field_validator('task_due_at')
+    @classmethod
+    def aware_task_deadline(cls,value):
+        if value is not None:
+            if not re.fullmatch(r'\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,6})?(?:Z|[+-]\d{2}:\d{2})',value):
+                raise ValueError('invalid_deadline')
+            parsed=datetime.fromisoformat(value.replace('Z','+00:00'))
+            if parsed.tzinfo is None or parsed.utcoffset() is None:
+                raise ValueError('deadline_timezone_required')
         return value
 
 class DocumentWrite(StrictModel):
@@ -513,6 +528,10 @@ def create_app(database_url=None, public_url=None):
         if not body.payload.task_review_reason:
             if isinstance(excluded['payload'],set): excluded['payload'].add('task_review_reason')
             else: excluded['payload']['task_review_reason']=True
+        for field,default in (('task_type','general'),('task_due_at',None),('task_criteria','')):
+            if getattr(body.payload,field)==default:
+                if isinstance(excluded['payload'],set): excluded['payload'].add(field)
+                else: excluded['payload'][field]=True
         legacy_hash=hashlib.sha256(body.model_dump_json(exclude=excluded).encode()).hexdigest()
         provided=[] if body.payload.utility is None else sorted(
             f for f in ('image_ids','video_id') if f in body.payload.utility.model_fields_set)
@@ -545,10 +564,13 @@ def create_app(database_url=None, public_url=None):
                     if field not in body.payload.utility.model_fields_set and field in old_utility:
                         payload['utility'][field]=old_utility[field]
 
-            if current and body.kind=='task' and 'task_review_reason' not in body.payload.model_fields_set:
-                payload['task_review_reason']=current['payload'].get('task_review_reason','')
+            if current and body.kind=='task':
+                for field,default in (('task_review_reason',''),('task_type','general'),('task_due_at',None),('task_criteria','')):
+                    if field not in body.payload.model_fields_set:
+                        payload[field]=current['payload'].get(field,default)
             if current and body.kind=='task':
                 previous_status=current['payload'].get('status','todo')
+                if previous_status in ('submitted','approved') and payload['status']==previous_status and any(payload[f]!=current['payload'].get(f,d) for f,d in (('task_type','general'),('task_due_at',None),('task_criteria',''))): fail('plan_locked',422)
                 allowed={'todo':('in_progress','submitted'),'in_progress':('submitted','todo'),'submitted':('approved','todo'),'approved':('todo',)}
                 if payload['status']!=previous_status and payload['status'] not in allowed[previous_status]: fail('invalid_transition',422)
             if current and body.kind=='task' and payload['status']=='todo' and current['payload'].get('status')!='todo' and ('task_review_reason' not in body.payload.model_fields_set or not payload['task_review_reason']):

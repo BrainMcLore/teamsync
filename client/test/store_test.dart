@@ -124,12 +124,72 @@ CREATE INDEX tasks_team ON tasks(team_id); PRAGMA user_version=5;''');
     expect(store.tasks(team).single['notes'], 'Keep these notes');
     expect(store.setting('tactical_sync_$team'), '{"outbox":{"op":{}}}');
     expect(
-      directory.listSync().any((f) => f.path.contains('.pre-v6-')),
+      directory.listSync().any((f) => f.path.contains('.pre-v7-')),
       isTrue,
     );
     store.transitionTask(task, 'in_progress');
     expect(store.tasks(team).single['status'], 'in_progress');
   });
+  test('v6 migration preserves an active task and its review reason', () {
+    final team = store.createTeam('Existing v6');
+    final task = store.createTask(team, 'Existing task', 'Keep notes');
+    store.transitionTask(task, 'submitted');
+    store.transitionTask(task, 'todo', reason: 'Repeat timing');
+    store.transitionTask(task, 'in_progress');
+    store.close();
+    final old = sqlite3.open('${directory.path}/test.sqlite');
+    old.execute(
+      'ALTER TABLE tasks DROP COLUMN task_type; ALTER TABLE tasks DROP COLUMN due_at; ALTER TABLE tasks DROP COLUMN criteria; PRAGMA user_version=6;',
+    );
+    old.close();
+    store = Store('${directory.path}/test.sqlite');
+    final saved = store.tasks(team).single;
+    expect(saved['status'], 'in_progress');
+    expect(saved['review_reason'], 'Repeat timing');
+    expect(saved['task_type'], 'general');
+    expect(saved['due_at'], isNull);
+    expect(saved['criteria'], '');
+    store.updateTaskPlan(
+      task,
+      taskType: 'retake',
+      dueAt: DateTime.parse('2026-11-02T18:30:00+02:00'),
+      criteria: 'Three runs',
+    );
+    expect(
+      DateTime.parse(store.tasks(team).single['due_at'] as String),
+      DateTime.utc(2026, 11, 2, 16, 30),
+    );
+    store.updateTaskPlan(task, taskType: 'retake', criteria: 'Three runs');
+    expect(store.tasks(team).single['due_at'], isNull);
+    store.transitionTask(task, 'submitted');
+    expect(
+      () => store.updateTaskPlan(
+        task,
+        taskType: 'tactic',
+        criteria: 'Changed after submission',
+      ),
+      throwsA(isA<DomainError>()),
+    );
+  });
+  test(
+    'backup deadline parsing rejects missing zones and rolled calendar dates',
+    () {
+      expect(
+        Store.parseTaskDeadline('2026-11-02T18:30:00+02:00'),
+        DateTime.utc(2026, 11, 2, 16, 30),
+      );
+      for (final value in [
+        '2026-02-30T18:30:00Z',
+        '2026-11-02T18:30:00',
+        '2026-11-02T25:30:00Z',
+      ]) {
+        expect(
+          () => Store.parseTaskDeadline(value),
+          throwsA(isA<DomainError>()),
+        );
+      }
+    },
+  );
   test('stale versions rejected without losing history', () {
     final team = store.createTeam('A'), map = store.addMap(team, 'Ancient');
     final id = store.createStrategy(map, 'B', 'T');

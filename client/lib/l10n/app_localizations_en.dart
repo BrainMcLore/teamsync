@@ -1448,4 +1448,65 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get historyMore => 'Load more';
+
+  @override
+  String get taskType => 'Training type';
+
+  @override
+  String get taskTypeUtility => 'Study a lineup';
+
+  @override
+  String get taskTypeTactic => 'Learn a tactical role';
+
+  @override
+  String get taskTypeDryRun => 'Complete a dry run';
+
+  @override
+  String get taskTypeExecute => 'Practice an execute';
+
+  @override
+  String get taskTypeRetake => 'Practice a retake';
+
+  @override
+  String get taskTypeDemo => 'Watch a demo';
+
+  @override
+  String get taskTypeRound => 'Review a round';
+
+  @override
+  String get taskTypeFix => 'Correct a mistake';
+
+  @override
+  String get taskTypeQuiz => 'Knowledge check';
+
+  @override
+  String get taskDeadline => 'Due date';
+
+  @override
+  String get taskNoDeadline => 'No deadline';
+
+  @override
+  String get taskClearDeadline => 'Clear deadline';
+
+  @override
+  String get taskDeadlineHelp =>
+      'Choose a time on this device. Teammates see the deadline in their own time zone.';
+
+  @override
+  String get taskCriteria => 'Completion criteria';
+
+  @override
+  String get editTaskPlan => 'Edit assignment plan';
+
+  @override
+  String get taskOverdue => 'Overdue';
+
+  @override
+  String get taskTypeGeneral => 'General assignment';
+
+  @override
+  String get taskCreate => 'Create assignment';
+
+  @override
+  String get taskSavePlan => 'Save plan';
 }

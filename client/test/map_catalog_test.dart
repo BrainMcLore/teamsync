@@ -80,6 +80,9 @@ void main() {
         team,
         'Active practice',
         '',
+        taskType: 'retake',
+        dueAt: DateTime.parse('2026-11-02T18:30:00+02:00'),
+        criteria: 'Three coordinated retakes',
         strategyId: strategy,
       );
       store.transitionTask(activeTask, 'in_progress');
@@ -95,6 +98,15 @@ void main() {
         root,
         OfflinePackage.export(store, team, 'ru'),
       );
+      final restoredActive = store
+          .tasks(imported)
+          .singleWhere((t) => t['title'] == 'Active practice');
+      expect(restoredActive['task_type'], 'retake');
+      expect(
+        DateTime.parse(restoredActive['due_at'] as String),
+        DateTime.utc(2026, 11, 2, 16, 30),
+      );
+      expect(restoredActive['criteria'], 'Three coordinated retakes');
       expect(
         store
             .tasks(imported)

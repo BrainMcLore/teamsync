@@ -36,12 +36,12 @@ class Store {
     db.execute('PRAGMA foreign_keys = ON');
     db.execute('PRAGMA journal_mode = WAL');
     final version = db.select('PRAGMA user_version').first.values.first as int;
-    if (version > 0 && version < 6 && path != ':memory:') {
+    if (version > 0 && version < 7 && path != ':memory:') {
       final backup =
-          '$path.pre-v6-${DateTime.now().toUtc().millisecondsSinceEpoch}.sqlite';
+          '$path.pre-v7-${DateTime.now().toUtc().millisecondsSinceEpoch}.sqlite';
       db.execute("VACUUM INTO '${backup.replaceAll("'", "''")}'");
     }
-    if (version > 6) {
+    if (version > 7) {
       db.close();
       throw DomainError('newerDatabase');
     }
@@ -118,6 +118,16 @@ DROP TABLE tasks;
 ALTER TABLE tasks_v6 RENAME TO tasks;
 CREATE INDEX tasks_team ON tasks(team_id);
 PRAGMA user_version=6;
+""");
+      });
+    }
+    if (version < 7) {
+      transaction(() {
+        db.execute("""
+ALTER TABLE tasks ADD COLUMN task_type TEXT NOT NULL DEFAULT 'general';
+ALTER TABLE tasks ADD COLUMN due_at TEXT;
+ALTER TABLE tasks ADD COLUMN criteria TEXT NOT NULL DEFAULT '';
+PRAGMA user_version=7;
 """);
       });
     }
@@ -321,9 +331,13 @@ PRAGMA user_version=6;
     String notes, {
     String? member,
     String? strategyId,
+    String taskType = 'general',
+    DateTime? dueAt,
+    String criteria = '',
   }) {
     if (!canEditTeam(team)) throw DomainError('readOnlyTeam');
     if (notes.length > 20000) throw DomainError('limit');
+    validateTaskPlan(taskType, dueAt, criteria);
     if (member != null &&
         rows('SELECT id FROM members WHERE id=? AND team_id=?', [
           member,
@@ -340,11 +354,87 @@ PRAGMA user_version=6;
     }
     final id = uuid.v4();
     db.execute(
-      'INSERT INTO tasks(id,team_id,strategy_id,member_id,title,notes,status,updated_at) VALUES(?,?,?,?,?,?,?,?)',
-      [id, team, strategyId, member, requiredText(title), notes, 'todo', now],
+      'INSERT INTO tasks(id,team_id,strategy_id,member_id,title,notes,status,updated_at,task_type,due_at,criteria) VALUES(?,?,?,?,?,?,?,?,?,?,?)',
+      [
+        id,
+        team,
+        strategyId,
+        member,
+        requiredText(title),
+        notes,
+        'todo',
+        now,
+        taskType,
+        dueAt?.toUtc().toIso8601String(),
+        criteria.trim(),
+      ],
     );
     if (!applyingSync) onTacticalChange?.call();
     return id;
+  }
+
+  static DateTime? parseTaskDeadline(Object? value) {
+    if (value == null) return null;
+    if (value is! String) throw DomainError('invalidText');
+    final match = RegExp(
+      r'^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(?:\.(\d{1,6}))?(Z|([+-])(\d{2}):(\d{2}))$',
+    ).firstMatch(value);
+    if (match == null) throw DomainError('invalidText');
+    int n(int group) => int.parse(match.group(group)!);
+    final date = DateTime.utc(n(1), n(2), n(3));
+    if (n(1) < 1 ||
+        date.year != n(1) ||
+        date.month != n(2) ||
+        date.day != n(3) ||
+        n(4) > 23 ||
+        n(5) > 59 ||
+        n(6) > 59 ||
+        (match.group(10) != null && (n(10) > 23 || n(11) > 59))) {
+      throw DomainError('invalidText');
+    }
+    return DateTime.parse(value).toUtc();
+  }
+
+  void validateTaskPlan(String taskType, DateTime? dueAt, String criteria) {
+    if (criteria.length > 5000) throw DomainError('limit');
+    if (dueAt != null && (dueAt.year < 1 || dueAt.year > 9999)) {
+      throw DomainError('invalidText');
+    }
+    if (![
+      'general',
+      'utility',
+      'tactic',
+      'dry_run',
+      'execute',
+      'retake',
+      'demo',
+      'round_review',
+      'fix',
+      'quiz',
+    ].contains(taskType)) {
+      throw DomainError('invalidText');
+    }
+  }
+
+  void updateTaskPlan(
+    String id, {
+    required String taskType,
+    DateTime? dueAt,
+    required String criteria,
+  }) {
+    final task = rows('SELECT * FROM tasks WHERE id=?', [id]).single;
+    if (!canEditTeam(task['team_id'] as String)) {
+      throw DomainError('readOnlyTeam');
+    }
+    if (!['todo', 'in_progress'].contains(task['status'])) {
+      throw DomainError('invalidTransition');
+    }
+    validateTaskPlan(taskType, dueAt, criteria);
+    db.execute(
+      'UPDATE tasks SET task_type=?,due_at=?,criteria=?,updated_at=? WHERE id=?',
+      [taskType, dueAt?.toUtc().toIso8601String(), criteria.trim(), now, id],
+    );
+    if (!applyingSync) onTacticalChange?.call();
   }
 
   void transitionTask(String id, String status, {String reason = ''}) {

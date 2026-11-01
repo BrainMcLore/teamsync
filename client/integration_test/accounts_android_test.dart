@@ -261,12 +261,21 @@ void main() {
           ta,
           'Отработать выход',
           'Тайминг первой флешки',
+          taskType: 'execute',
+          dueAt: DateTime.parse('2026-11-02T18:30:00+02:00'),
+          criteria: 'Three coordinated runs',
           member: playerMember,
           strategyId: tactic,
         );
         await sa.run(ta, conflictLabel: 'Conflict copy');
         await sb.run(tb, conflictLabel: 'Conflict copy');
         final receivedTask = b.tasks(tb).single;
+        expect(receivedTask['task_type'], 'execute');
+        expect(
+          DateTime.parse(receivedTask['due_at'] as String),
+          DateTime.utc(2026, 11, 2, 16, 30),
+        );
+        expect(receivedTask['criteria'], 'Three coordinated runs');
         expect(receivedTask['strategy_id'], b.strategies(tb).single['id']);
         b.transitionTask(receivedTask['id'] as String, 'in_progress');
         await sb.run(tb, conflictLabel: 'Conflict copy');

@@ -3,6 +3,29 @@ import 'package:teamsync/data/account_roster.dart';
 import 'package:teamsync/data/store.dart';
 
 void main() {
+  test(
+    'assignment choices exclude legacy members and another account cache',
+    () {
+      final store = Store(':memory:');
+      addTearDown(store.close);
+      final team = saveAccountRoster(
+        store,
+        'https://fixture.example',
+        'alice',
+        {'id': 'remote', 'name': 'Team', 'role': 'owner'},
+        [
+          {'id': 'alice', 'name': 'Alice', 'role': 'owner'},
+        ],
+      );
+      store.addMember(team, 'Legacy offline player', 'player', 'IGL');
+      expect(accountAssignableMembers(store, team).map((r) => r['name']), [
+        'Alice',
+      ]);
+      rememberAccountIdentity(store, 'https://fixture.example', 'bob');
+      expect(accountAssignableMembers(store, team), isEmpty);
+    },
+  );
+
   test('cached teams are isolated across account switches and logout', () {
     final store = Store(':memory:');
     addTearDown(store.close);

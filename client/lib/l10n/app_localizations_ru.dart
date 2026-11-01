@@ -1462,4 +1462,65 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get historyMore => 'Загрузить ещё';
+
+  @override
+  String get taskType => 'Тип задания';
+
+  @override
+  String get taskTypeUtility => 'Изучить раскидку';
+
+  @override
+  String get taskTypeTactic => 'Выучить роль в тактике';
+
+  @override
+  String get taskTypeDryRun => 'Провести dry run';
+
+  @override
+  String get taskTypeExecute => 'Отработать execute';
+
+  @override
+  String get taskTypeRetake => 'Отработать retake';
+
+  @override
+  String get taskTypeDemo => 'Посмотреть демку';
+
+  @override
+  String get taskTypeRound => 'Разобрать раунд';
+
+  @override
+  String get taskTypeFix => 'Исправить ошибку';
+
+  @override
+  String get taskTypeQuiz => 'Проверка знаний';
+
+  @override
+  String get taskDeadline => 'Срок';
+
+  @override
+  String get taskNoDeadline => 'Без срока';
+
+  @override
+  String get taskClearDeadline => 'Убрать срок';
+
+  @override
+  String get taskDeadlineHelp =>
+      'Выберите время на этом устройстве. Участники увидят срок в своём часовом поясе.';
+
+  @override
+  String get taskCriteria => 'Критерий выполнения';
+
+  @override
+  String get editTaskPlan => 'Изменить план';
+
+  @override
+  String get taskOverdue => 'Просрочено';
+
+  @override
+  String get taskTypeGeneral => 'Общее задание';
+
+  @override
+  String get taskCreate => 'Создать задание';
+
+  @override
+  String get taskSavePlan => 'Сохранить план';
 }

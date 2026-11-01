@@ -296,6 +296,9 @@ class OfflinePackage {
             t['notes'] as String,
             member: memberIds[t['member_id']],
             strategyId: strategyIds[t['strategy_id']],
+            taskType: t['task_type'] as String? ?? 'general',
+            dueAt: Store.parseTaskDeadline(t['due_at']),
+            criteria: t['criteria'] as String? ?? '',
           );
           final status = t['status'];
           if (![

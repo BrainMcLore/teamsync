@@ -212,6 +212,21 @@ void main() {
         '../../artifacts/verification/studio-mobile-08${Platform.isLinux ? '-linux' : ''}.png',
       ),
     );
+    await tester.tap(find.text('Новое задание'));
+    // The workspace busy indicator animates while its modal action is open.
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 400));
+    FocusManager.instance.primaryFocus?.unfocus();
+    await tester.pump(const Duration(milliseconds: 200));
+    expect(tester.takeException(), isNull);
+    await expectLater(
+      find.byKey(const Key('native-shot')),
+      matchesGoldenFile(
+        '../../artifacts/verification/studio-task-form-08${Platform.isLinux ? '-linux' : ''}.png',
+      ),
+    );
+    await tester.tap(find.text('Отмена').last);
+    await tester.pumpAndSettle();
     await tester.tap(find.byIcon(Icons.more_horiz).last);
     await tester.pumpAndSettle();
     await tester.tap(find.text('Раскидки').last);

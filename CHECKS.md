@@ -144,3 +144,18 @@ Remaining training scope includes due dates, completion criteria, evidence,
 independent comments, templates and the map-preparation wizard. Schedule,
 notifications, joint review and the remote server agent remain separate unfinished
 parts of the full requirements; passing this milestone does not close full acceptance.
+
+### Assignment plans — development verification
+
+- Added general and specialized training types, optional UTC deadline and completion
+  criteria, with two-client synchronization and offline-package round trip.
+- v6 -> v7 migration retains active task state and review reason; older migration
+  coverage also preserves account assignments and durable sync settings.
+- Server tests cover explicit time zones, invalid dates, old-client preservation,
+  player immutability, clearing deadlines and locking plans after submission.
+- RU/EN form tests at 320px pick a calendar/time deadline, save criteria, edit the
+  plan without changing the assignee/progress, and reject a stale account form.
+- New assignments offer only current roster accounts; legacy member records remain
+  stored. Existing unbound legacy assignments still need an explicit migration path.
+- Last full client run: 75 passed, 5 skipped; server: 20 passed. New form screenshot
+  and native build checks are being prepared. No final release/publication yet.

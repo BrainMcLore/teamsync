@@ -69,6 +69,9 @@ class TacticalSync {
         'assignee_user_id': value['assignee_user_id'],
         'status': value['status'] ?? 'todo',
         'task_review_reason': value['task_review_reason'] ?? '',
+        'task_type': value['task_type'] ?? 'general',
+        'task_due_at': value['task_due_at'],
+        'task_criteria': value['task_criteria'] ?? '',
       };
     }
     if (kind == 'map') {
@@ -497,6 +500,9 @@ class TacticalSync {
         'notes': row['notes'],
         'status': row['status'],
         'task_review_reason': row['review_reason'] ?? '',
+        'task_type': row['task_type'] ?? 'general',
+        'task_due_at': row['due_at'],
+        'task_criteria': row['criteria'] ?? '',
         'strategy_id': row['strategy_id'] == null
             ? null
             : entry('strategy', row['strategy_id'] as String)['remote'],
@@ -746,6 +752,9 @@ class TacticalSync {
               current['notes'] as String,
               member: current['member_id'] as String?,
               strategyId: current['strategy_id'] as String?,
+              taskType: current['task_type'] as String? ?? 'general',
+              dueAt: DateTime.tryParse(current['due_at'] as String? ?? ''),
+              criteria: current['criteria'] as String? ?? '',
             );
             store.db.execute(
               'UPDATE tasks SET status=?,review_reason=? WHERE id=?',
@@ -763,7 +772,7 @@ class TacticalSync {
                 strategyId: parent?['local'] as String?,
               );
           store.db.execute(
-            'UPDATE tasks SET title=?,notes=?,status=?,member_id=?,strategy_id=?,updated_at=?,review_reason=? WHERE id=?',
+            'UPDATE tasks SET title=?,notes=?,status=?,member_id=?,strategy_id=?,updated_at=?,review_reason=?,task_type=?,due_at=?,criteria=? WHERE id=?',
             [
               payload['title'],
               payload['notes'],
@@ -772,6 +781,9 @@ class TacticalSync {
               parent?['local'],
               store.now,
               payload['task_review_reason'] ?? '',
+              payload['task_type'] ?? 'general',
+              payload['task_due_at'],
+              payload['task_criteria'] ?? '',
               id,
             ],
           );

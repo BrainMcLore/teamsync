@@ -27,6 +27,7 @@ import 'editor.dart';
 import 'account_page.dart';
 import 'utilities_page.dart';
 import 'task_history_dialog.dart';
+import 'task_form.dart';
 import '../data/task_history.dart';
 
 class Workspace extends StatefulWidget {
@@ -403,29 +404,9 @@ class _WorkspaceState extends State<Workspace> with WidgetsBindingObserver {
   }
 
   Future<void> createTask({String? strategy}) async {
-    final members = db.members(teamId!), strategies = db.strategies(teamId!);
-    final v = await form(
-      l.newTask,
-      {'title': l.title, 'notes': l.taskDetails},
-      choices: {
-        'member': [
-          ('', l.unassigned),
-          ...members.map((e) => (e['id'] as String, e['name'] as String)),
-        ],
-        if (strategy == null)
-          'strategy': [
-            ('', l.noLink),
-            ...strategies.map((e) => (e['id'] as String, e['title'] as String)),
-          ],
-      },
-    );
-    if (v == null) return;
-    db.createTask(
-      teamId!,
-      v['title']!,
-      v['notes']!,
-      member: v['member'] == '' ? null : v['member'],
-      strategyId: strategy ?? (v['strategy'] == '' ? null : v['strategy']),
+    await showDialog<String>(
+      context: context,
+      builder: (_) => TaskForm(store: db, team: teamId!, strategy: strategy),
     );
   }
 
@@ -1037,6 +1018,11 @@ class _WorkspaceState extends State<Workspace> with WidgetsBindingObserver {
                 ? Studio.ct
                 : Studio.t,
           ),
+          const SizedBox(height: 8),
+          Text(
+            taskTypeLabel(l, task['task_type'] as String? ?? 'general'),
+            style: const TextStyle(color: Studio.muted, fontSize: 12),
+          ),
           const SizedBox(height: 16),
           Text(
             task['title'] as String,
@@ -1047,6 +1033,25 @@ class _WorkspaceState extends State<Workspace> with WidgetsBindingObserver {
             task['member_name'] as String? ?? l.unassigned,
             style: const TextStyle(color: Studio.muted, fontSize: 11),
           ),
+          if (task['due_at'] != null) ...[
+            const SizedBox(height: 12),
+            Text(
+              '${state != 'approved' && DateTime.parse(task['due_at'] as String).isBefore(DateTime.now()) ? '${l.taskOverdue} · ' : ''}${l.taskDeadline}: ${MaterialLocalizations.of(context).formatMediumDate(DateTime.parse(task['due_at'] as String).toLocal())} · ${MaterialLocalizations.of(context).formatTimeOfDay(TimeOfDay.fromDateTime(DateTime.parse(task['due_at'] as String).toLocal()))}',
+              style: TextStyle(
+                fontSize: 12,
+                color:
+                    state != 'approved' &&
+                        DateTime.parse(task['due_at'] as String)
+                            .isBefore(DateTime.now())
+                    ? Colors.orange
+                    : Studio.muted,
+              ),
+            ),
+          ],
+          if ((task['criteria'] as String? ?? '').isNotEmpty) ...[
+            const SizedBox(height: 12),
+            Text('${l.taskCriteria}: ${task['criteria']}'),
+          ],
           if ((task['notes'] as String).isNotEmpty) ...[
             const SizedBox(height: 12),
             Text(
@@ -1097,6 +1102,21 @@ class _WorkspaceState extends State<Workspace> with WidgetsBindingObserver {
                           db.transitionTask(task['id'] as String, 'approved');
                         }),
                   child: Text(l.approve),
+                ),
+              if (db.canEditTeam(teamId!) &&
+                  ['todo', 'in_progress'].contains(state))
+                TextButton.icon(
+                  onPressed: busy
+                      ? null
+                      : () => act(() async {
+                          await showDialog<String>(
+                            context: context,
+                            builder: (_) =>
+                                TaskForm(store: db, team: teamId!, value: task),
+                          );
+                        }),
+                  icon: const Icon(Icons.edit_outlined),
+                  label: Text(l.editTaskPlan),
                 ),
               if (db.setting('account_team_$teamId') != null)
                 TextButton.icon(

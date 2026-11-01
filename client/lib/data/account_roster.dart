@@ -118,3 +118,22 @@ String saveAccountRoster(
   if (select) store.onTeamChange?.call();
   return result;
 }
+
+/// New online assignments may only target accounts in the current server roster.
+List<RecordData> accountAssignableMembers(Store store, String team) {
+  final raw = store.setting('account_team_$team');
+  if (raw == null) return store.members(team);
+  final binding = jsonDecode(raw) as Map;
+  if (store.setting('account_signed_out') == '1' ||
+      store.setting('account_identity') !=
+          jsonEncode([binding['server'], binding['user']])) {
+    return [];
+  }
+  final namespace = sha256.convert(
+    utf8.encode('${binding['server']}/${binding['user']}/${binding['team']}'),
+  );
+  final roster =
+      jsonDecode(store.setting('account_roster_$namespace') ?? '{}') as Map;
+  final ids = (roster['members'] as Map? ?? {}).values.toSet();
+  return store.members(team).where((m) => ids.contains(m['id'])).toList();
+}

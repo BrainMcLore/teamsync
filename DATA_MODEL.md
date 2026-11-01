@@ -61,3 +61,16 @@ an explicit nonempty reason. Players can start and submit their own assignments;
 manager approval remains protected on the API. Existing three-stage clients may
 still submit directly from `todo`. Older task edits omitting the review field retain
 the saved comment. Offline exports retain both the new stage and review comment.
+
+### Assignment plans (schema v7)
+
+Tasks add `task_type`, `due_at` and `criteria`, represented as `task_type`,
+`task_due_at` and `task_criteria` in versioned documents. Existing tasks migrate
+as general assignments with no deadline and empty criteria. The on-disk database
+is backed up before upgrade; existing IDs, progress, review reasons and sync queues
+remain intact. Deadlines carry an explicit offset and are stored as UTC by the
+client. Imported deadlines reject invalid calendar dates and missing time zones.
+Managers can change plans before submission. Submitted/approved plans require a
+return with a comment first. Player status updates cannot rewrite plan metadata.
+Older clients omitting these fields preserve the server values; explicit null clears
+a deadline. Offline packages carry the plan alongside progress and review reasons.

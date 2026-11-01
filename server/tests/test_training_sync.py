@@ -66,3 +66,38 @@ def test_four_stage_task_return_requires_an_explicit_reason(setup):
     assert response.status_code == 200
     saved = next(r for r in client.get(base+'/documents', headers=player[1]).json()['items'] if r['id']==task['document_id'])
     assert saved['payload']['task_review_reason'] == returned['payload']['task_review_reason']
+
+
+def test_assignment_deadlines_and_criteria_survive_old_clients_and_are_manager_owned(setup):
+    _, client, (owner, player, _) = setup
+    team = client.post('/api/v1/teams', headers=owner[1], json={'name': 'Plan'}).json()['id']
+    base = f'/api/v1/teams/{team}'
+    code = client.post(base+'/invites', headers=owner[1], json={}).json()['code']
+    client.post('/api/v1/invites/join', headers=player[1], json={'code': code})
+    old_payload = {'title': 'Retake B', 'assignee_user_id': player[0]}
+    task = {'operation_id': uid(), 'document_id': uid(), 'expected_version': 0,
+            'kind': 'task', 'payload': {**old_payload, 'task_type': 'retake',
+            'task_due_at': '2026-11-02T18:30:00.000Z', 'task_criteria': 'Three coordinated retakes'}}
+    invalid = {**task, 'payload': {**task['payload'], 'task_due_at': '2026-11-02T18:30:00'}}
+    assert client.post(base+'/documents', headers=owner[1], json=invalid).status_code == 422
+    invalid['payload']['task_due_at']='2026-02-30T18:30:00Z'
+    assert client.post(base+'/documents', headers=owner[1], json=invalid).status_code == 422
+    assert client.post(base+'/documents', headers=owner[1], json=task).status_code == 200
+    start = {**task, 'operation_id': uid(), 'expected_version': 1,
+             'payload': {**old_payload, 'status': 'in_progress'}}
+    rewrite = {**start, 'payload': {**start['payload'], 'task_criteria': 'Changed'}}
+    assert client.post(base+'/documents', headers=player[1], json=rewrite).status_code == 403
+    assert client.post(base+'/documents', headers=player[1], json=start).status_code == 200
+    saved = next(r for r in client.get(base+'/documents', headers=player[1]).json()['items'] if r['id']==task['document_id'])
+    for field in ('task_type','task_due_at','task_criteria'):
+        assert saved['payload'][field] == task['payload'][field]
+    clear = {**start, 'operation_id': uid(), 'expected_version': 2,
+             'payload': {**start['payload'], 'task_due_at': None}}
+    assert client.post(base+'/documents', headers=owner[1], json=clear).status_code == 200
+    saved = next(r for r in client.get(base+'/documents', headers=player[1]).json()['items'] if r['id']==task['document_id'])
+    assert saved['payload']['task_due_at'] is None
+    assert saved['payload']['task_criteria'] == task['payload']['task_criteria']
+    submitted={**clear,'operation_id':uid(),'expected_version':3,'payload':{**clear['payload'],'status':'submitted'}}
+    assert client.post(base+'/documents',headers=player[1],json=submitted).status_code==200
+    changed={**submitted,'operation_id':uid(),'expected_version':4,'payload':{**submitted['payload'],'task_criteria':'Different after submission'}}
+    assert client.post(base+'/documents',headers=owner[1],json=changed).status_code==422
