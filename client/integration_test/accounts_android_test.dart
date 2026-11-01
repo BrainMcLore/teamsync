@@ -15,6 +15,7 @@ import 'package:teamsync/data/account_roster.dart';
 import 'package:teamsync/data/own_video.dart';
 import 'package:teamsync/data/utilities.dart';
 import 'package:teamsync/data/utility_skills.dart';
+import 'package:teamsync/data/task_history.dart';
 import 'package:path_provider/path_provider.dart';
 
 import '../test/fixtures/own_clip_data.dart';
@@ -285,6 +286,31 @@ void main() {
         await sa.run(ta, conflictLabel: 'Conflict copy');
         await sb.run(tb, conflictLabel: 'Conflict copy');
         expect(b.tasks(tb).single['status'], 'approved');
+        a.transitionTask(
+          assignment,
+          'todo',
+          reason: 'Repeat the first flash timing',
+        );
+        await sa.run(ta, conflictLabel: 'Conflict copy');
+        await sb.run(tb, conflictLabel: 'Conflict copy');
+        expect(
+          b.tasks(tb).single['review_reason'],
+          'Repeat the first flash timing',
+        );
+        final history = TaskHistory(
+          b,
+          tb,
+          receivedTask['id'] as String,
+          clientFactory: (_) => DeviceSession(player),
+        );
+        final versions = await history.page(0);
+        expect(versions.first['payload']['status'], 'todo');
+        expect(
+          versions.first['payload']['task_review_reason'],
+          'Repeat the first flash timing',
+        );
+        expect(versions.first['author_name'], isNotEmpty);
+        expect(history.cached().first['version'], versions.first['version']);
       } finally {
         a.close();
         b.close();
