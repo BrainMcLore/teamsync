@@ -73,7 +73,9 @@ class UtilityLibrary {
           !limits.containsKey(key) &&
           key != 'strategy_ids' &&
           key != 'screenshot_paths' &&
-          key != 'video_path',
+          key != 'video_path' &&
+          key != 'training_revision' &&
+          key != 'review_reason',
     )) {
       throw DomainError('invalidText');
     }
@@ -103,9 +105,32 @@ class UtilityLibrary {
       throw DomainError('invalidVideo');
     }
     value['video_path'] = video;
+    final revision = details['training_revision'] ?? 1;
+    final reason = details['review_reason'] ?? '';
+    if (revision is! int ||
+        revision < 1 ||
+        revision > 1000000000 ||
+        reason is! String ||
+        reason.length > 500) {
+      throw DomainError('invalidText');
+    }
+    value['training_revision'] = revision;
+    value['review_reason'] = reason.trim();
 
     if (id != null && !list(team).any((u) => u['id'] == id)) {
       throw DomainError('crossTeam');
+    }
+    if (id != null && !store.applyingSync) {
+      final old = jsonDecode(
+        list(team).singleWhere((u) => u['id'] == id)['details'] as String,
+      ) as Map;
+      final previous = old['training_revision'] as int? ?? 1;
+      if (revision != previous && revision != previous + 1) {
+        throw DomainError('invalidText');
+      }
+      if (revision != previous && reason.trim().isEmpty) {
+        throw DomainError('reviewReasonRequired');
+      }
     }
     final key = id ?? Store.uuid.v4();
     store.db.execute(

@@ -39,3 +39,14 @@ pc.installRoot сохраняет выбранный родительский к
 ## Миграция SQLite v4
 
 Таблица `utilities`: UUID, внешний ключ команды и карты, название, сторона T/CT, инструкция, ограниченные JSON-метаданные и UTC-время обновления. Индекс `(team_id,map_id)` обслуживает библиотеку. Метаданные содержат источник, автора, параметры броска и локальные ID связанных тактик; при синхронизации/экспорте связи переводятся явно. Серверные версии хранятся в `documents`/`document_versions`; запись доступна управляющим ролям. Перед обновлением существующей базы создаётся `.pre-v4-*.sqlite`.
+
+### Utility study progress (schema v5)
+
+`utility_progress_cache` keeps account-bound remote states, durable pending operations,
+local intentions and explicit conflicts per team, remote utility, user and material
+revision. Server tables `utility_progress` and `utility_progress_versions` retain
+current state and author-attributed history. Players update their own preparation;
+only managers confirm a ready member. Returning another member to preparation
+requires a comment. An explicit material revision starts a new verification cycle;
+ordinary text edits preserve the current cycle. Progress history is currently kept
+on the server and in the local cache, and is not included in offline exports.

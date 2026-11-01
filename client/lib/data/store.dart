@@ -36,12 +36,12 @@ class Store {
     db.execute('PRAGMA foreign_keys = ON');
     db.execute('PRAGMA journal_mode = WAL');
     final version = db.select('PRAGMA user_version').first.values.first as int;
-    if (version > 0 && version < 4 && path != ':memory:') {
+    if (version > 0 && version < 5 && path != ':memory:') {
       final backup =
-          '$path.pre-v4-${DateTime.now().toUtc().millisecondsSinceEpoch}.sqlite';
+          '$path.pre-v5-${DateTime.now().toUtc().millisecondsSinceEpoch}.sqlite';
       db.execute("VACUUM INTO '${backup.replaceAll("'", "''")}'");
     }
-    if (version > 4) {
+    if (version > 5) {
       db.close();
       throw DomainError('newerDatabase');
     }
@@ -97,6 +97,15 @@ PRAGMA user_version=2;
 CREATE TABLE utilities(id TEXT PRIMARY KEY, team_id TEXT NOT NULL REFERENCES teams(id), map_id TEXT NOT NULL REFERENCES maps(id), title TEXT NOT NULL, side TEXT NOT NULL CHECK(side IN ('T','CT')), notes TEXT NOT NULL, details TEXT NOT NULL, updated_at TEXT NOT NULL);
 CREATE INDEX utilities_team_map ON utilities(team_id,map_id);
 PRAGMA user_version=4;
+""");
+      });
+    }
+    if (version < 5) {
+      transaction(() {
+        db.execute("""
+CREATE TABLE utility_progress_cache(team_id TEXT NOT NULL REFERENCES teams(id),document_id TEXT NOT NULL,user_id TEXT NOT NULL,revision INTEGER NOT NULL,remote TEXT NOT NULL,desired TEXT,pending TEXT,conflict INTEGER NOT NULL DEFAULT 0,archived INTEGER NOT NULL DEFAULT 0,PRIMARY KEY(team_id,document_id,user_id,revision));
+CREATE INDEX utility_progress_pending ON utility_progress_cache(team_id,archived);
+PRAGMA user_version=5;
 """);
       });
     }

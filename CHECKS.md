@@ -83,3 +83,13 @@ Windows installer: 132798073 байта; SHA-256 `4851259a2fba2fb11d96b462b4c6be
 - Windows workflow `41303650875` и Android workflow `41303249177` завершились успешно на одном коммите `56f155a`. Это сборки до последующих изменений видеоклипов и очереди.
 - Артефакты скачаны и проверены по SHA-256: Windows Setup `75887fe5dde48b8f1fff6c60ea60e5cea9a51fc119e1f9c4ff117bc62a2a26fd`; Android APK `583fe0ea88469c8e0493cb82604aac62c0f0c255a1db3410735ffb4d5cd6c0b2`.
 - APK подписан постоянным сертификатом. Новый публичный релиз этим результатом не объявлен.
+
+### Utility study progress — development verification
+
+- Server: 18 pytest cases pass, including role boundaries, optimistic conflicts,
+  revision changes and author-attributed progress history.
+- Client: 9 tactical sync tests pass, including a lost progress acknowledgement,
+  retry without duplicate versions, coach confirmation and player self-retraining.
+- RU mobile utility card with the study panel rendered and visually inspected on
+  Linux; Windows baseline and Android device verification remain pending for this change.
+- New feature is not yet deployed or included in a published release.

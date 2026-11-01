@@ -10,6 +10,7 @@ import 'files.dart';
 import 'store.dart';
 import 'utilities.dart';
 import 'own_video.dart';
+import 'utility_skills.dart';
 
 /// Durable outbox + optimistic versions. No network operation runs in a SQLite
 /// transaction. A lost acknowledgement reuses the exact operation and payload.
@@ -51,6 +52,8 @@ class TacticalSync {
             key: details[key] ?? '',
           'source_url': details['source_url'],
           'video_id': details['video_id'],
+          'training_revision': details['training_revision'] ?? 1,
+          'review_reason': details['review_reason'] ?? '',
           'image_ids': List<String>.from(details['image_ids'] as List? ?? []),
           'strategy_ids': List<String>.from(
             details['strategy_ids'] as List? ?? [],
@@ -250,6 +253,19 @@ class TacticalSync {
         final conflict = await flush();
         deferred = conflict;
         if (!conflict) break;
+      }
+      if (UtilityLibrary(store).list(local).isNotEmpty) {
+        final skills = SkillSync(
+          SkillStore(store, local),
+          api,
+          path,
+          accountUser,
+          assertActiveAccount,
+        );
+        await skills.run();
+        blockedByRole = blockedByRole || skills.blocked;
+        deferred = deferred || skills.pending;
+        conflicts += skills.conflicts;
       }
       store.setSetting(
         'tactical_sync_time_$local',

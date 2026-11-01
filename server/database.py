@@ -69,6 +69,22 @@ audit = Table('audit_events', metadata,
     Column('user_id', ForeignKey('users.id'), nullable=False), Column('action', String(64), nullable=False),
     Column('object_id', String(36)), Column('created', Float, nullable=False))
 
+utility_progress = Table('utility_progress', metadata,
+    Column('id', String(36), primary_key=True),
+    Column('team_id', ForeignKey('teams.id'), nullable=False, index=True),
+    Column('document_id', ForeignKey('documents.id'), nullable=False),
+    Column('user_id', ForeignKey('users.id'), nullable=False),
+    Column('revision', Integer, nullable=False), Column('version', Integer, nullable=False),
+    Column('status', String(20), nullable=False), Column('reason', String(2000), nullable=False),
+    Column('reviewed_by', ForeignKey('users.id')), Column('updated', Float, nullable=False),
+    UniqueConstraint('team_id','document_id','user_id','revision'))
+utility_progress_versions = Table('utility_progress_versions', metadata,
+    Column('id', String(36), primary_key=True),
+    Column('progress_id', ForeignKey('utility_progress.id'), nullable=False),
+    Column('version', Integer, nullable=False), Column('status', String(20), nullable=False),
+    Column('reason', String(2000), nullable=False), Column('author_id', ForeignKey('users.id'), nullable=False),
+    Column('updated', Float, nullable=False), UniqueConstraint('progress_id','version'))
+
 def uid():
     return str(uuid.uuid4())
 

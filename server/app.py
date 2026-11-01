@@ -20,6 +20,7 @@ from sqlalchemy.exc import IntegrityError
 from .database import (open_database, users, identities, sessions, auth_states, teams,
     memberships, invites, account_invites, roster_details, media, documents, document_versions, operations, audit, uid, record)
 from .media_types import media_type
+from .skills import attach_skill_routes
 from .auth import (fail, digest, start_auth, verified_identity, finish_auth, exchange_code)
 
 class StrictModel(BaseModel):
@@ -78,6 +79,8 @@ class UtilityDetails(StrictModel):
     map_revision: str = Field(default='',max_length=120)
     image_ids: list[Annotated[str,StringConstraints(pattern=r'^[0-9a-f]{64}$')]] = Field(default_factory=list,max_length=10)
     video_id: str | None = Field(default=None,pattern=r'^[0-9a-f]{64}$')
+    training_revision: int = Field(default=1,ge=1,le=1000000000)
+    review_reason: str = Field(default='',max_length=500)
 
     @field_validator('source_url')
     @classmethod
@@ -200,9 +203,11 @@ def create_app(database_url=None, public_url=None):
             fail('forbidden',403)
         return value
 
+    attach_skill_routes(app,engine,authenticated,member)
+
     @app.get('/api/v1/health')
     def health():
-        return {'status':'ok','version':'0.7.0','providers':{'steam':True,'discord':bool(discord_id and discord_secret)},'capabilities':['identity','teams','account_invites','roster','tactical_sync','training_sync','utilities','team_media','versioned_documents'],'native_client_required':True}
+        return {'status':'ok','version':'0.7.0','providers':{'steam':True,'discord':bool(discord_id and discord_secret)},'capabilities':['identity','teams','account_invites','roster','tactical_sync','training_sync','utilities','utility_skills','team_media','versioned_documents'],'native_client_required':True}
 
     @app.post('/api/v1/auth/{provider}/start')
     def auth_start(provider:str,body:AuthStart):
@@ -501,6 +506,8 @@ def create_app(database_url=None, public_url=None):
             empty_new_fields=set()
             if not body.payload.utility.image_ids: empty_new_fields.add('image_ids')
             if body.payload.utility.video_id is None: empty_new_fields.add('video_id')
+            if body.payload.utility.training_revision==1: empty_new_fields.add('training_revision')
+            if not body.payload.utility.review_reason: empty_new_fields.add('review_reason')
             excluded={'payload': {'utility': empty_new_fields}}
         legacy_hash=hashlib.sha256(body.model_dump_json(exclude=excluded).encode()).hexdigest()
         provided=[] if body.payload.utility is None else sorted(
@@ -530,7 +537,7 @@ def create_app(database_url=None, public_url=None):
             # attachments on their full-document edits; explicit null/[] removes them.
             if current and body.kind=='utility' and payload['utility']:
                 old_utility=current['payload'].get('utility') or {}
-                for field in ('image_ids','video_id'):
+                for field in ('image_ids','video_id','training_revision','review_reason'):
                     if field not in body.payload.utility.model_fields_set and field in old_utility:
                         payload['utility'][field]=old_utility[field]
 
@@ -552,6 +559,10 @@ def create_app(database_url=None, public_url=None):
                     if not linked:
                         fail('invalid_link',422)
             if payload['utility']:
+                old_revision=((current['payload'].get('utility') or {}).get('training_revision',1)) if current else payload['utility']['training_revision']
+                revision=payload['utility']['training_revision']
+                if revision not in (old_revision,old_revision+1): fail('invalid_training_revision',422)
+                if revision>old_revision and not payload['utility']['review_reason']: fail('review_reason_required',422)
                 video_id=payload['utility']['video_id']
                 if video_id and not conn.execute(select(media.c.id).where(media.c.id==video_id,media.c.team_id==team,media.c.mime=='video/mp4')).first():
                     fail('invalid_media',422)

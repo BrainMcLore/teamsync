@@ -2587,6 +2587,120 @@ abstract class AppLocalizations {
   /// In ru, this message translates to:
   /// **'Не удалось открыть клип. Выберите совместимый проигрыватель через отправку файла.'**
   String get videoUnavailable;
+
+  /// No description provided for @skillTitle.
+  ///
+  /// In ru, this message translates to:
+  /// **'Изучение и проверка'**
+  String get skillTitle;
+
+  /// No description provided for @skillSelf.
+  ///
+  /// In ru, this message translates to:
+  /// **'Мой статус'**
+  String get skillSelf;
+
+  /// No description provided for @skillNotStarted.
+  ///
+  /// In ru, this message translates to:
+  /// **'Не изучено'**
+  String get skillNotStarted;
+
+  /// No description provided for @skillLearning.
+  ///
+  /// In ru, this message translates to:
+  /// **'Изучаю'**
+  String get skillLearning;
+
+  /// No description provided for @skillReady.
+  ///
+  /// In ru, this message translates to:
+  /// **'Готов проверить'**
+  String get skillReady;
+
+  /// No description provided for @skillConfirmed.
+  ///
+  /// In ru, this message translates to:
+  /// **'Подтверждено'**
+  String get skillConfirmed;
+
+  /// No description provided for @skillTeam.
+  ///
+  /// In ru, this message translates to:
+  /// **'Проверка состава'**
+  String get skillTeam;
+
+  /// No description provided for @skillRecheck.
+  ///
+  /// In ru, this message translates to:
+  /// **'Нужна повторная проверка'**
+  String get skillRecheck;
+
+  /// No description provided for @skillRequestRecheck.
+  ///
+  /// In ru, this message translates to:
+  /// **'Запросить повторную проверку навыков'**
+  String get skillRequestRecheck;
+
+  /// No description provided for @skillReason.
+  ///
+  /// In ru, this message translates to:
+  /// **'Причина повторной проверки'**
+  String get skillReason;
+
+  /// No description provided for @skillReturnReason.
+  ///
+  /// In ru, this message translates to:
+  /// **'Причина возврата на доработку'**
+  String get skillReturnReason;
+
+  /// No description provided for @skillConflict.
+  ///
+  /// In ru, this message translates to:
+  /// **'Статус изменён на другом устройстве'**
+  String get skillConflict;
+
+  /// No description provided for @skillKeepRemote.
+  ///
+  /// In ru, this message translates to:
+  /// **'Оставить серверный статус'**
+  String get skillKeepRemote;
+
+  /// No description provided for @skillKeepLocal.
+  ///
+  /// In ru, this message translates to:
+  /// **'Отправить мой статус'**
+  String get skillKeepLocal;
+
+  /// No description provided for @skillPending.
+  ///
+  /// In ru, this message translates to:
+  /// **'Сохранено локально'**
+  String get skillPending;
+
+  /// No description provided for @skillMaterialChanged.
+  ///
+  /// In ru, this message translates to:
+  /// **'Раскидка обновилась. Закройте окно и откройте проверку заново.'**
+  String get skillMaterialChanged;
+
+  /// No description provided for @skillEmptyHistory.
+  ///
+  /// In ru, this message translates to:
+  /// **'Истории проверок пока нет.'**
+  String get skillEmptyHistory;
+
+  /// No description provided for @skillMember.
+  ///
+  /// In ru, this message translates to:
+  /// **'Участник команды'**
+  String get skillMember;
+
+  /// No description provided for @skillReasonRequired.
+  ///
+  /// In ru, this message translates to:
+  /// **'Укажите причину повторной проверки.'**
+  String get skillReasonRequired;
 }
 
 class _AppLocalizationsDelegate

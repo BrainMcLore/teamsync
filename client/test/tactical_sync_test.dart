@@ -11,6 +11,7 @@ import 'package:teamsync/data/files.dart';
 import 'package:teamsync/data/store.dart';
 import 'package:teamsync/data/tactical_sync.dart';
 import 'package:teamsync/data/utilities.dart';
+import 'package:teamsync/data/utility_skills.dart';
 import 'package:teamsync/ui/workspace.dart';
 import 'package:teamsync/ui/editor.dart';
 import 'package:teamsync/main.dart';
@@ -20,6 +21,7 @@ class SharedFixture {
   final documents = <String, Map<String, dynamic>>{},
       operations = <String, Map<String, dynamic>>{};
   final images = <String, Uint8List>{};
+  final progress = <String, Map<String, dynamic>>{};
   final roles = <String, String>{'alice': 'owner', 'bob': 'coach'};
   bool loseAck = false;
   void Function(String user, String method)? checkMedia;
@@ -67,6 +69,51 @@ class SyncAccount extends AccountClient {
             {'id': r.key, 'role': r.value, 'name': r.key},
         ],
       };
+    }
+    if (method == 'GET' && path.contains('/utility-progress?')) {
+      final offset = int.parse(Uri.parse(path).queryParameters['offset']!);
+      return {'items': server.progress.values.skip(offset).take(100).toList()};
+    }
+    if (method == 'POST' && path.endsWith('/progress')) {
+      final op = body!['operation_id'] as String;
+      if (server.operations.containsKey(op)) return server.operations[op]!;
+      final document = path.split('/')[6],
+          target = body['target_user_id'] as String;
+      if (server.roles[user] == 'viewer' ||
+          (!['owner', 'coach', 'captain'].contains(server.roles[user]) &&
+              (target != user || body['status'] == 'confirmed'))) {
+        throw DomainError('forbidden');
+      }
+      final material = server.documents[document];
+      if (material == null) throw DomainError('not_found');
+      final revision =
+          ((material['payload'] as Map)['utility']
+              as Map)['training_revision'] ??
+          1;
+      if (revision != body['revision']) {
+        throw DomainError('progress_revision_changed');
+      }
+      final key = '$document/$target/$revision', old = server.progress[key];
+      if ((old?['version'] ?? 0) != body['expected_version']) {
+        throw DomainError('version_conflict');
+      }
+      final result = <String, dynamic>{
+        'id': old?['id'] ?? Store.uuid.v4(),
+        'document_id': document,
+        'user_id': target,
+        'revision': revision,
+        'version': (body['expected_version'] as int) + 1,
+        'status': body['status'],
+        'reason': body['reason'],
+        'reviewed_by': body['status'] == 'confirmed' ? user : null,
+      };
+      server.progress[key] = result;
+      server.operations[op] = result;
+      if (server.loseAck) {
+        server.loseAck = false;
+        throw const SocketException('Lost acknowledgement');
+      }
+      return result;
     }
     if (method == 'GET' && path.contains('/documents?')) {
       final uri = Uri.parse(path),
@@ -125,6 +172,75 @@ class HeldSync extends TacticalSync {
 }
 
 void main() {
+  test(
+    'utility progress survives a lost acknowledgement and coach confirmation',
+    () async {
+      final root = Directory.systemTemp.createTempSync('teamsync_skills_');
+      final a = Store(':memory:'),
+          b = Store(':memory:'),
+          server = SharedFixture();
+      addTearDown(() {
+        a.close();
+        b.close();
+        root.deleteSync(recursive: true);
+      });
+      final team = {'id': Store.uuid.v4(), 'name': 'Five', 'role': 'owner'};
+      final roster = [
+        {'id': 'alice', 'name': 'Alice', 'role': 'owner'},
+        {'id': 'bob', 'name': 'Bob', 'role': 'player'},
+      ];
+      server.roles['bob'] = 'player';
+      final ta = saveAccountRoster(
+        a,
+        'https://fixture.example',
+        'alice',
+        team,
+        roster,
+      );
+      final tb = saveAccountRoster(b, 'https://fixture.example', 'bob', {
+        ...team,
+        'role': 'player',
+      }, roster);
+      final map = a.addMap(ta, 'Mirage');
+      final ua = UtilityLibrary(a)
+          .save(ta, map, 'Window', 'T', 'Aim', {'grenade': 'smoke'});
+      final sa = TacticalSync(
+        a,
+        LocalFiles(root),
+        clientFactory: (_) => SyncAccount(server, 'alice'),
+      );
+      final sb = TacticalSync(
+        b,
+        LocalFiles(root),
+        clientFactory: (_) => SyncAccount(server, 'bob'),
+      );
+      await sa.run(ta, conflictLabel: 'Copy');
+      await sb.run(tb, conflictLabel: 'Copy');
+      final ub = UtilityLibrary(b).list(tb).single['id'] as String;
+      final bs = SkillStore(b, tb), ass = SkillStore(a, ta);
+      expect(bs.mayWrite('bob', 'confirmed'), isFalse);
+      bs.desire(ub, 1, 'bob', 'ready');
+      server.loseAck = true;
+      await expectLater(
+        sb.run(tb, conflictLabel: 'Copy'),
+        throwsA(isA<SocketException>()),
+      );
+      await sb.run(tb, conflictLabel: 'Copy');
+      expect(server.progress.values.single['version'], 1);
+      await sa.run(ta, conflictLabel: 'Copy');
+      ass.desire(ua, 1, 'bob', 'confirmed');
+      await sa.run(ta, conflictLabel: 'Copy');
+      await sb.run(tb, conflictLabel: 'Copy');
+      expect(
+        (bs.row(bs.document(ub), 'bob', 1)['remote'] as Map)['status'],
+        'confirmed',
+      );
+      bs.desire(ub, 1, 'bob', 'learning');
+      await sb.run(tb, conflictLabel: 'Copy');
+      expect(server.progress.values.single['status'], 'learning');
+    },
+  );
+
   TestWidgetsFlutterBinding.ensureInitialized();
   test('logout stops pending writes and another identity cannot flush the old queue', () async {
     final root = Directory.systemTemp.createTempSync('teamsync_logout_');

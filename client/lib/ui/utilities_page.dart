@@ -11,6 +11,7 @@ import '../data/utilities.dart';
 import '../data/own_video.dart';
 import '../l10n/app_localizations.dart';
 import 'kit.dart';
+import 'skill_panel.dart';
 
 Widget aimImage(BuildContext context, String path) {
   final l = AppLocalizations.of(context);
@@ -199,6 +200,7 @@ class _UtilitiesPageState extends State<UtilitiesPage> {
                         details =
                             jsonDecode(rows[index]['details'] as String) as Map;
                     return Card(
+                      key: ValueKey(row['id']),
                       child: Padding(
                         padding: const EdgeInsets.all(20),
                         child: Column(
@@ -209,6 +211,15 @@ class _UtilitiesPageState extends State<UtilitiesPage> {
                               style: Theme.of(context).textTheme.titleLarge,
                             ),
                             const SizedBox(height: 8),
+                            if (widget.store.setting(
+                                  'account_team_${widget.team}',
+                                ) !=
+                                null)
+                              SkillPanel(
+                                store: widget.store,
+                                team: widget.team,
+                                utility: row['id'] as String,
+                              ),
                             Wrap(
                               spacing: 12,
                               runSpacing: 8,
@@ -352,6 +363,10 @@ class _UtilityFormState extends State<_UtilityForm> {
   final screenshots = <String>[], newFiles = <String>[];
   bool importing = false, saved = false;
   String? clipPath;
+  int trainingRevision = 1;
+  String previousReviewReason = '';
+  bool requestRecheck = false;
+  final reviewReason = TextEditingController();
   String? failure;
   @override
   void initState() {
@@ -366,6 +381,8 @@ class _UtilityFormState extends State<_UtilityForm> {
     side = row?['side'] as String? ?? 'T';
     grenade = details['grenade'] as String? ?? 'smoke';
     clipPath = details['video_path'] as String?;
+    trainingRevision = details['training_revision'] as int? ?? 1;
+    previousReviewReason = details['review_reason'] as String? ?? '';
     screenshots.addAll(
       List<String>.from(details['screenshot_paths'] as List? ?? []),
     );
@@ -411,6 +428,7 @@ class _UtilityFormState extends State<_UtilityForm> {
     for (final field in fields.values) {
       field.dispose();
     }
+    reviewReason.dispose();
     super.dispose();
   }
 
@@ -521,6 +539,19 @@ class _UtilityFormState extends State<_UtilityForm> {
                 ],
                 onChanged: (v) => grenade = v!,
               ),
+              if (widget.value != null) ...[
+                CheckboxListTile(
+                  value: requestRecheck,
+                  title: Text(l.skillRequestRecheck),
+                  onChanged: (v) => setState(() => requestRecheck = v ?? false),
+                ),
+                if (requestRecheck)
+                  TextField(
+                    controller: reviewReason,
+                    maxLength: 500,
+                    decoration: InputDecoration(labelText: l.skillReason),
+                  ),
+              ],
               for (final item in [
                 ('title', l.title),
                 ('start', l.utilityStart),
@@ -650,6 +681,11 @@ class _UtilityFormState extends State<_UtilityForm> {
                       side,
                       fields['notes']!.text,
                       {
+                        'training_revision':
+                            trainingRevision + (requestRecheck ? 1 : 0),
+                        'review_reason': requestRecheck
+                            ? reviewReason.text.trim()
+                            : previousReviewReason,
                         'grenade': grenade,
                         'strategy_ids': selectedStrategies.toList(),
                         'screenshot_paths': screenshots,
@@ -665,7 +701,9 @@ class _UtilityFormState extends State<_UtilityForm> {
                     Navigator.pop(context, true);
                   } on DomainError catch (e) {
                     setState(
-                      () => failure = e.code == 'invalidSource'
+                      () => failure = e.code == 'reviewReasonRequired'
+                          ? l.skillReasonRequired
+                          : e.code == 'invalidSource'
                           ? l.utilityInvalidSource
                           : e.code == 'readOnlyTeam'
                           ? l.readOnlyTeam

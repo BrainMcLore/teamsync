@@ -1392,4 +1392,62 @@ class AppLocalizationsRu extends AppLocalizations {
   @override
   String get videoUnavailable =>
       'Не удалось открыть клип. Выберите совместимый проигрыватель через отправку файла.';
+
+  @override
+  String get skillTitle => 'Изучение и проверка';
+
+  @override
+  String get skillSelf => 'Мой статус';
+
+  @override
+  String get skillNotStarted => 'Не изучено';
+
+  @override
+  String get skillLearning => 'Изучаю';
+
+  @override
+  String get skillReady => 'Готов проверить';
+
+  @override
+  String get skillConfirmed => 'Подтверждено';
+
+  @override
+  String get skillTeam => 'Проверка состава';
+
+  @override
+  String get skillRecheck => 'Нужна повторная проверка';
+
+  @override
+  String get skillRequestRecheck => 'Запросить повторную проверку навыков';
+
+  @override
+  String get skillReason => 'Причина повторной проверки';
+
+  @override
+  String get skillReturnReason => 'Причина возврата на доработку';
+
+  @override
+  String get skillConflict => 'Статус изменён на другом устройстве';
+
+  @override
+  String get skillKeepRemote => 'Оставить серверный статус';
+
+  @override
+  String get skillKeepLocal => 'Отправить мой статус';
+
+  @override
+  String get skillPending => 'Сохранено локально';
+
+  @override
+  String get skillMaterialChanged =>
+      'Раскидка обновилась. Закройте окно и откройте проверку заново.';
+
+  @override
+  String get skillEmptyHistory => 'Истории проверок пока нет.';
+
+  @override
+  String get skillMember => 'Участник команды';
+
+  @override
+  String get skillReasonRequired => 'Укажите причину повторной проверки.';
 }

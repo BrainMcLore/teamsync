@@ -1378,4 +1378,62 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get videoUnavailable =>
       'Could not open the clip. Use Share file to choose a compatible player.';
+
+  @override
+  String get skillTitle => 'Study and verification';
+
+  @override
+  String get skillSelf => 'My status';
+
+  @override
+  String get skillNotStarted => 'Not studied';
+
+  @override
+  String get skillLearning => 'Learning';
+
+  @override
+  String get skillReady => 'Ready for review';
+
+  @override
+  String get skillConfirmed => 'Confirmed';
+
+  @override
+  String get skillTeam => 'Review roster';
+
+  @override
+  String get skillRecheck => 'A new review is required';
+
+  @override
+  String get skillRequestRecheck => 'Request skill re-verification';
+
+  @override
+  String get skillReason => 'Reason for re-verification';
+
+  @override
+  String get skillReturnReason => 'Reason for returning to practice';
+
+  @override
+  String get skillConflict => 'Status changed on another device';
+
+  @override
+  String get skillKeepRemote => 'Keep server status';
+
+  @override
+  String get skillKeepLocal => 'Send my status';
+
+  @override
+  String get skillPending => 'Saved locally';
+
+  @override
+  String get skillMaterialChanged =>
+      'The utility changed. Close this window and reopen the review.';
+
+  @override
+  String get skillEmptyHistory => 'No verification history yet.';
+
+  @override
+  String get skillMember => 'Team member';
+
+  @override
+  String get skillReasonRequired => 'Enter the reason for re-verification.';
 }
