@@ -164,7 +164,7 @@ class _SchedulePageState extends State<SchedulePage>
       lastDate: DateTime(DateTime.now().year + 20, 12, 31),
       initialDateRange: DateTimeRange(
         start: from,
-        end: until.subtract(const Duration(days: 1)),
+        end: DateTime(until.year, until.month, until.day - 1),
       ),
     );
     if (selected == null || !mounted) return;
@@ -220,7 +220,7 @@ class _SchedulePageState extends State<SchedulePage>
               onPressed: busy ? null : range,
               icon: const Icon(Icons.date_range),
               label: Text(
-                '${MaterialLocalizations.of(context).formatCompactDate(from)} – ${MaterialLocalizations.of(context).formatCompactDate(until.subtract(const Duration(days: 1)))}',
+                '${MaterialLocalizations.of(context).formatCompactDate(from)} – ${MaterialLocalizations.of(context).formatCompactDate(DateTime(until.year, until.month, until.day - 1))}',
               ),
             ),
             IconButton(
