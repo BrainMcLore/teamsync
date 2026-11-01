@@ -1,3 +1,5 @@
+import 'reminder_settings.dart';
+
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -222,6 +224,13 @@ class _SchedulePageState extends State<SchedulePage>
               label: Text(
                 '${MaterialLocalizations.of(context).formatCompactDate(from)} – ${MaterialLocalizations.of(context).formatCompactDate(DateTime(until.year, until.month, until.day - 1))}',
               ),
+            ),
+            OutlinedButton.icon(
+              onPressed: busy
+                  ? null
+                  : () => openReminderSettings(context, widget.store),
+              icon: const Icon(Icons.notifications_outlined),
+              label: Text(l.remindersTitle),
             ),
             IconButton(
               onPressed: busy ? null : load,

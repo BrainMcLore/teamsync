@@ -13,6 +13,7 @@ import 'l10n/app_localizations.dart';
 import 'ui/workspace.dart';
 import 'ui/kit.dart';
 import 'data/account.dart';
+import 'data/reminders.dart';
 import 'ui/account_page.dart';
 
 void main() {
@@ -196,7 +197,8 @@ class TeamSyncApp extends StatefulWidget {
   State<TeamSyncApp> createState() => _TeamSyncAppState();
 }
 
-class _TeamSyncAppState extends State<TeamSyncApp> {
+class _TeamSyncAppState extends State<TeamSyncApp> with WidgetsBindingObserver {
+  late ReminderCoordinator reminders;
   late Locale locale;
   final navigation = GlobalKey<NavigatorState>();
   StreamSubscription<Uri>? links;
@@ -205,6 +207,8 @@ class _TeamSyncAppState extends State<TeamSyncApp> {
   void initState() {
     super.initState();
     locale = Locale(widget.store.setting('language') == 'en' ? 'en' : 'ru');
+    reminders = ReminderCoordinator(widget.store)..start();
+    WidgetsBinding.instance.addObserver(this);
     if (Platform.isAndroid || Platform.isIOS) {
       final appLinks = AppLinks();
       links = appLinks.uriLinkStream.listen(openCallback, onError: (_) {});
@@ -212,6 +216,12 @@ class _TeamSyncAppState extends State<TeamSyncApp> {
         if (uri != null) openCallback(uri);
       });
     }
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    reminders.foreground = state == AppLifecycleState.resumed;
+    if (reminders.foreground) unawaited(reminders.refresh());
   }
 
   void openCallback(Uri uri) {
@@ -240,6 +250,8 @@ class _TeamSyncAppState extends State<TeamSyncApp> {
   @override
   void dispose() {
     links?.cancel();
+    WidgetsBinding.instance.removeObserver(this);
+    reminders.dispose();
     super.dispose();
   }
 

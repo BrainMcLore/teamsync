@@ -1775,4 +1775,52 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get scheduleType => 'Event type';
+
+  @override
+  String get remindersTitle => 'Reminders';
+
+  @override
+  String get remindersEnable => 'Enable on this device';
+
+  @override
+  String get remindersHelp =>
+      'Local system reminders for up to 64 upcoming events in the next 30 days. Changes from another device apply after syncing. Android may delay delivery; these are not server push notifications. Notices contain no team or account details.';
+
+  @override
+  String get remindersUnavailable =>
+      'System reminders are unavailable. On Windows, use the installed application and allow notifications in system settings.';
+
+  @override
+  String get remindersPermission =>
+      'Allow TeamSync notifications in system settings.';
+
+  @override
+  String get remindersPartial =>
+      'Some schedules could not be refreshed. Previously loaded events are being used where possible.';
+
+  @override
+  String get remindersLead => 'Remind me';
+
+  @override
+  String get remindersAtStart => 'At the start';
+
+  @override
+  String get remindersSystemSettings => 'System settings';
+
+  @override
+  String get remindersTest => 'Test notification';
+
+  @override
+  String get remindersTestBody =>
+      'TeamSync test reminder. Open the app to check your schedule.';
+
+  @override
+  String remindersMinutes(int minutes) {
+    return '$minutes min before';
+  }
+
+  @override
+  String remindersCount(int count) {
+    return 'Scheduled on this device: $count';
+  }
 }

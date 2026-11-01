@@ -593,5 +593,32 @@
   "scheduleStart": "Начало",
   "scheduleEnd": "Окончание",
   "scheduleLocation": "Место / сервер",
-  "scheduleType": "Тип события"
+  "scheduleType": "Тип события",
+  "remindersTitle": "Напоминания",
+  "remindersEnable": "Включить на этом устройстве",
+  "remindersHelp": "Локальные системные напоминания для ближайших 64 событий на 30 дней. Изменения с другого устройства применяются после синхронизации. Android может задерживать доставку. Это не push от сервера; уведомления не содержат данных команды и аккаунта.",
+  "remindersUnavailable": "Системные напоминания недоступны. На Windows используйте установленную версию и разрешите уведомления в настройках системы.",
+  "remindersPermission": "Разрешите уведомления TeamSync в настройках системы.",
+  "remindersPartial": "Часть расписания не удалось обновить. По возможности используются ранее загруженные события.",
+  "remindersLead": "Напомнить",
+  "remindersAtStart": "В момент начала",
+  "remindersSystemSettings": "Настройки системы",
+  "remindersTest": "Проверить уведомление",
+  "remindersTestBody": "Проверочное напоминание TeamSync. Откройте приложение для просмотра расписания.",
+  "remindersMinutes": "За {minutes} мин.",
+  "@remindersMinutes": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "remindersCount": "Запланировано на устройстве: {count}",
+  "@remindersCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  }
 }

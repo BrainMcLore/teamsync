@@ -381,4 +381,49 @@ void main() {
       store.close();
     },
   );
+  testWidgets('native reminders replace schedules and clear on logout', (
+    tester,
+  ) async {
+    const channel = MethodChannel('app.teamsync/reminders');
+    await tester.runAsync(() async {
+      final status = await channel.invokeMapMethod<String, dynamic>('status');
+      expect(status?['supported'], isTrue);
+      final now = DateTime.now().millisecondsSinceEpoch;
+      final item = {
+        'id': '0123456789abcdef',
+        'at': now + 600000,
+        'start': now + 1200000,
+        'title': 'TeamSync',
+        'body':
+            'Practice reminder. Open TeamSync to check your current schedule.',
+      };
+      await channel.invokeMethod<int>('replace', {
+        'items': [item],
+      });
+      expect(
+        (await channel.invokeMapMethod<String, dynamic>('status'))?['count'],
+        1,
+      );
+      await channel.invokeMethod<int>('replace', {
+        'items': [item],
+      });
+      expect(
+        (await channel.invokeMapMethod<String, dynamic>('status'))?['count'],
+        1,
+      );
+      await channel.invokeMethod<int>('replace', {'items': []});
+      expect(
+        (await channel.invokeMapMethod<String, dynamic>('status'))?['count'],
+        0,
+      );
+      await channel.invokeMethod<int>('replace', {
+        'items': [item],
+      });
+      await channel.invokeMethod<void>('clear');
+      expect(
+        (await channel.invokeMapMethod<String, dynamic>('status'))?['count'],
+        0,
+      );
+    });
+  });
 }

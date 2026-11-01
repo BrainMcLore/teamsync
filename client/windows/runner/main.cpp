@@ -1,12 +1,26 @@
 #include <flutter/dart_project.h>
 #include <flutter/flutter_view_controller.h>
 #include <windows.h>
+#include <roapi.h>
+#include <shobjidl.h>
 
 #include "flutter_window.h"
 #include "utils.h"
 
 int APIENTRY wWinMain(_In_ HINSTANCE instance, _In_opt_ HINSTANCE prev,
                       _In_ wchar_t *command_line, _In_ int show_command) {
+  if (std::wstring(command_line) == L"--clear-reminders") {
+    if (FAILED(::RoInitialize(RO_INIT_SINGLETHREADED))) return EXIT_FAILURE;
+    bool cleared = ClearScheduledReminders(); ::RoUninitialize();
+    return cleared ? EXIT_SUCCESS : EXIT_FAILURE;
+  }
+  HANDLE instance = CreateMutexW(nullptr, FALSE, L"Local\\TeamSync.Desktop.Instance");
+  if (instance && GetLastError() == ERROR_ALREADY_EXISTS) {
+    if (HWND window = FindWindowW(L"FLUTTER_RUNNER_WIN32_WINDOW", L"TeamSync")) {
+      ShowWindow(window, SW_RESTORE); SetForegroundWindow(window);
+    }
+    CloseHandle(instance); return 0;
+  }
   // Attach to console when present (e.g., 'flutter run') or create a
   // new console when running with a debugger.
   if (!::AttachConsole(ATTACH_PARENT_PROCESS) && ::IsDebuggerPresent()) {
@@ -15,7 +29,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE instance, _In_opt_ HINSTANCE prev,
 
   // Initialize COM, so that it is available for use in the library and/or
   // plugins.
-  ::CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED);
+  if (FAILED(::RoInitialize(RO_INIT_SINGLETHREADED))) return EXIT_FAILURE;
+  ::SetCurrentProcessExplicitAppUserModelID(L"TeamSync.Desktop");
 
   flutter::DartProject project(L"data");
 
@@ -38,7 +53,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE instance, _In_opt_ HINSTANCE prev,
     ::DispatchMessage(&msg);
   }
 
-  ::CoUninitialize();
+  ::RoUninitialize();
+  if (instance) CloseHandle(instance);
   return EXIT_SUCCESS;
 }
 

@@ -32,8 +32,13 @@ Source: "..\docs\user-guide.md"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\.tools\webview2-bootstrap\MicrosoftEdgeWebview2Setup.exe"; DestDir: "{tmp}"; Flags: deleteafterinstall
 
 [Icons]
-Name: "{group}\TeamSync"; Filename: "{app}\teamsync.exe"
+Name: "{group}\TeamSync"; Filename: "{app}\teamsync.exe"; AppUserModelID: "TeamSync.Desktop"
 Name: "{autodesktop}\TeamSync"; Filename: "{app}\teamsync.exe"; Tasks: desktopicon
+
+[Registry]
+Root: HKCU; Subkey: "Software\Classes\teamsync-reminder"; ValueType: string; ValueData: "URL:TeamSync reminders"; Flags: uninsdeletekey
+Root: HKCU; Subkey: "Software\Classes\teamsync-reminder"; ValueType: string; ValueName: "URL Protocol"; ValueData: ""
+Root: HKCU; Subkey: "Software\Classes\teamsync-reminder\shell\open\command"; ValueType: string; ValueData: """{app}\teamsync.exe"" ""%1"""
 
 [Tasks]
 Name: "desktopicon"; Description: "Desktop shortcut / Ярлык на рабочем столе"; Flags: unchecked
@@ -41,6 +46,9 @@ Name: "desktopicon"; Description: "Desktop shortcut / Ярлык на рабоч
 [Run]
 Filename: "{tmp}\MicrosoftEdgeWebview2Setup.exe"; Parameters: "/silent /install"; Flags: runhidden waituntilterminated; Check: NeedsWebView2
 Filename: "{app}\teamsync.exe"; Description: "TeamSync"; Flags: nowait postinstall skipifsilent
+
+[UninstallRun]
+Filename: "{app}\teamsync.exe"; Parameters: "--clear-reminders"; Flags: runhidden waituntilterminated skipifdoesntexist
 
 [Code]
 function NeedsWebView2: Boolean;

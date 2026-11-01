@@ -1790,4 +1790,52 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get scheduleType => 'Тип события';
+
+  @override
+  String get remindersTitle => 'Напоминания';
+
+  @override
+  String get remindersEnable => 'Включить на этом устройстве';
+
+  @override
+  String get remindersHelp =>
+      'Локальные системные напоминания для ближайших 64 событий на 30 дней. Изменения с другого устройства применяются после синхронизации. Android может задерживать доставку. Это не push от сервера; уведомления не содержат данных команды и аккаунта.';
+
+  @override
+  String get remindersUnavailable =>
+      'Системные напоминания недоступны. На Windows используйте установленную версию и разрешите уведомления в настройках системы.';
+
+  @override
+  String get remindersPermission =>
+      'Разрешите уведомления TeamSync в настройках системы.';
+
+  @override
+  String get remindersPartial =>
+      'Часть расписания не удалось обновить. По возможности используются ранее загруженные события.';
+
+  @override
+  String get remindersLead => 'Напомнить';
+
+  @override
+  String get remindersAtStart => 'В момент начала';
+
+  @override
+  String get remindersSystemSettings => 'Настройки системы';
+
+  @override
+  String get remindersTest => 'Проверить уведомление';
+
+  @override
+  String get remindersTestBody =>
+      'Проверочное напоминание TeamSync. Откройте приложение для просмотра расписания.';
+
+  @override
+  String remindersMinutes(int minutes) {
+    return 'За $minutes мин.';
+  }
+
+  @override
+  String remindersCount(int count) {
+    return 'Запланировано на устройстве: $count';
+  }
 }

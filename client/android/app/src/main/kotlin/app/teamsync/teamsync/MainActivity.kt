@@ -12,6 +12,14 @@ import java.io.File
 class TeamSyncMediaProvider : FileProvider()
 
 class MainActivity : FlutterActivity() {
+    private var notificationPermission: MethodChannel.Result? = null
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == 9021) {
+            notificationPermission?.success(Reminders.enabled(this))
+            notificationPermission = null
+        }
+    }
     private fun ownClip(path: String?): File {
         require(path != null)
         val root = File(filesDir, "media").canonicalFile
@@ -24,6 +32,27 @@ class MainActivity : FlutterActivity() {
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "app.teamsync/reminders").setMethodCallHandler { call, result ->
+            try {
+                when (call.method) {
+                    "status" -> result.success(Reminders.status(this))
+                    "requestPermission" -> {
+                        if (android.os.Build.VERSION.SDK_INT >= 33 && !Reminders.enabled(this)) {
+                            if (notificationPermission != null) result.error("busy", "Permission request is active", null)
+                            else {
+                                notificationPermission = result
+                                requestPermissions(arrayOf(android.Manifest.permission.POST_NOTIFICATIONS), 9021)
+                            }
+                        } else result.success(Reminders.enabled(this))
+                    }
+                    "replace" -> result.success(Reminders.replace(this, call.argument<List<Map<*, *>>>("items") ?: emptyList()))
+                    "clear" -> { Reminders.clear(this); result.success(null) }
+                    "test" -> result.success(Reminders.test(this, call.argument<String>("title") ?: "TeamSync", call.argument<String>("body") ?: "TeamSync"))
+                    "settings" -> { Reminders.settings(this); result.success(null) }
+                    else -> result.notImplemented()
+                }
+            } catch (_: Exception) { result.error("reminderUnavailable", "Notification operation failed", null) }
+        }
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "app.teamsync/media")
             .setMethodCallHandler { call, result ->
                 if (call.method !in listOf("openVideo", "canOpenVideo")) {

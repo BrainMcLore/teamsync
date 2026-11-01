@@ -1,3 +1,5 @@
+import '../data/reminders.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -82,6 +84,9 @@ class _AccountPageState extends State<AccountPage> with WidgetsBindingObserver {
       await fn();
     } catch (e) {
       if (e is DomainError && e.code == 'unauthorized') {
+        try {
+          await ReminderCoordinator.of(widget.store)?.clearForLogout();
+        } catch (_) {}
         widget.store.setSetting('account_signed_out', '1');
         await api?.storage.delete(key: api!.storageKey);
         api?.token = null;
@@ -332,6 +337,10 @@ class _AccountPageState extends State<AccountPage> with WidgetsBindingObserver {
                       ? null
                       : () => act(() async {
                           try {
+                            try {
+                              await ReminderCoordinator.of(widget.store)
+                                  ?.clearForLogout();
+                            } catch (_) {}
                             await api!.logout();
                           } finally {
                             widget.store.setSetting('account_signed_out', '1');

@@ -66,6 +66,12 @@ def test_rsvp_is_separate_from_coach_attendance_and_corrections_are_audited(setu
     no={'operation_id':uid(),'expected_version':3,'rsvp':'declined'}
     updated=c.post(target,headers=player[1],json=no).json()
     assert updated['attendance']=='late' and updated['reason']=='Joined ten minutes late'
+    start=datetime.fromisoformat(body['starts_at'])
+    query={'from_at':(start-timedelta(hours=1)).isoformat(),'until_at':(start+timedelta(hours=3)).isoformat()}
+    own=c.get(base+'/events',headers=player[1],params=query).json()['items'][0]
+    manager=c.get(base+'/events',headers=owner[1],params=query).json()['items'][0]
+    assert own['my_rsvp']=='declined' and own['my_rsvp_version']==4
+    assert manager['my_rsvp']=='unknown' and manager['my_rsvp_version']==0
     shift={**body,'operation_id':uid(),'expected_version':1,
            'starts_at':(datetime.now(timezone.utc)+timedelta(days=2)).isoformat(),
            'ends_at':(datetime.now(timezone.utc)+timedelta(days=2,hours=2)).isoformat()}

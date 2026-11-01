@@ -103,10 +103,13 @@ def attach_schedule_routes(app, engine, authenticated, member):
             fail('invalid_time_range', 422)
         with engine.connect() as conn:
             member(conn, team, session['user_id'])
-            rows = list(conn.execute(select(events).where(events.c.team_id == team,
-                events.c.starts >= from_at.timestamp(), events.c.starts < until_at.timestamp())
+            rows = list(conn.execute(select(events, participation.c.payload.label('mine'), participation.c.version.label('my_version')).outerjoin(participation,
+                and_(participation.c.event_id == events.c.id, participation.c.user_id == session['user_id']))
+                .where(events.c.team_id == team, events.c.starts >= from_at.timestamp(), events.c.starts < until_at.timestamp())
                 .order_by(events.c.starts, events.c.id).offset(offset).limit(limit+1)).mappings())
-            return {'items': [response(r) for r in rows[:limit]], 'next': offset+limit if len(rows) > limit else None}
+            items = [{**response({key: row[key] for key in events.c.keys()}),
+                      'my_rsvp': (row['mine'] or {}).get('rsvp', 'unknown'), 'my_rsvp_version': row['my_version'] or 0} for row in rows[:limit]]
+            return {'items': items, 'next': offset+limit if len(rows) > limit else None}
 
     @app.post('/api/v1/teams/{team}/events/{identifier}')
     def save_event(team: str, identifier: str, body: EventWrite, session=Depends(authenticated)):

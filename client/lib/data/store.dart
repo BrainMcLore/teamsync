@@ -17,6 +17,7 @@ class Store {
   void notifyRemoteTactical(String id) => _tacticalUpdates.add(id);
   final Set<String> editingStrategies = {};
   void Function()? onTacticalChange;
+  final settingListeners = <void Function(String)>{};
   void Function()? onTeamChange;
   bool applyingSync = false;
   final editingUtilities = <String>{};
@@ -152,10 +153,26 @@ PRAGMA user_version=7;
             key,
           ]).firstOrNull?['value']
           as String?;
-  void setSetting(String key, String value) => db.execute(
-    'INSERT INTO settings VALUES(?,?) ON CONFLICT(key) DO UPDATE SET value=excluded.value',
-    [key, value],
-  );
+  void setSetting(String key, String value) {
+    final watched =
+        ['account_identity', 'account_signed_out', 'language'].contains(key) ||
+        key.startsWith('account_team_') ||
+        key.startsWith('reminder_pref_') ||
+        key.startsWith('schedule_') && key.endsWith('_queue');
+    final previous = watched ? setting(key) : null;
+    db.execute(
+      'INSERT INTO settings VALUES(?,?) ON CONFLICT(key) DO UPDATE SET value=excluded.value',
+      [key, value],
+    );
+    if (watched && previous != value) {
+      for (final listener in settingListeners.toList()) {
+        try {
+          listener(key);
+        } catch (_) {}
+      }
+    }
+  }
+
   String get now => DateTime.now().toUtc().toIso8601String();
   String requiredText(String value, [int max = 120]) {
     final text = value.trim();

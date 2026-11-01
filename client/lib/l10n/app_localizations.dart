@@ -3325,6 +3325,84 @@ abstract class AppLocalizations {
   /// In ru, this message translates to:
   /// **'Тип события'**
   String get scheduleType;
+
+  /// No description provided for @remindersTitle.
+  ///
+  /// In ru, this message translates to:
+  /// **'Напоминания'**
+  String get remindersTitle;
+
+  /// No description provided for @remindersEnable.
+  ///
+  /// In ru, this message translates to:
+  /// **'Включить на этом устройстве'**
+  String get remindersEnable;
+
+  /// No description provided for @remindersHelp.
+  ///
+  /// In ru, this message translates to:
+  /// **'Локальные системные напоминания для ближайших 64 событий на 30 дней. Изменения с другого устройства применяются после синхронизации. Android может задерживать доставку. Это не push от сервера; уведомления не содержат данных команды и аккаунта.'**
+  String get remindersHelp;
+
+  /// No description provided for @remindersUnavailable.
+  ///
+  /// In ru, this message translates to:
+  /// **'Системные напоминания недоступны. На Windows используйте установленную версию и разрешите уведомления в настройках системы.'**
+  String get remindersUnavailable;
+
+  /// No description provided for @remindersPermission.
+  ///
+  /// In ru, this message translates to:
+  /// **'Разрешите уведомления TeamSync в настройках системы.'**
+  String get remindersPermission;
+
+  /// No description provided for @remindersPartial.
+  ///
+  /// In ru, this message translates to:
+  /// **'Часть расписания не удалось обновить. По возможности используются ранее загруженные события.'**
+  String get remindersPartial;
+
+  /// No description provided for @remindersLead.
+  ///
+  /// In ru, this message translates to:
+  /// **'Напомнить'**
+  String get remindersLead;
+
+  /// No description provided for @remindersAtStart.
+  ///
+  /// In ru, this message translates to:
+  /// **'В момент начала'**
+  String get remindersAtStart;
+
+  /// No description provided for @remindersSystemSettings.
+  ///
+  /// In ru, this message translates to:
+  /// **'Настройки системы'**
+  String get remindersSystemSettings;
+
+  /// No description provided for @remindersTest.
+  ///
+  /// In ru, this message translates to:
+  /// **'Проверить уведомление'**
+  String get remindersTest;
+
+  /// No description provided for @remindersTestBody.
+  ///
+  /// In ru, this message translates to:
+  /// **'Проверочное напоминание TeamSync. Откройте приложение для просмотра расписания.'**
+  String get remindersTestBody;
+
+  /// No description provided for @remindersMinutes.
+  ///
+  /// In ru, this message translates to:
+  /// **'За {minutes} мин.'**
+  String remindersMinutes(int minutes);
+
+  /// No description provided for @remindersCount.
+  ///
+  /// In ru, this message translates to:
+  /// **'Запланировано на устройстве: {count}'**
+  String remindersCount(int count);
 }
 
 class _AppLocalizationsDelegate
