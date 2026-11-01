@@ -177,24 +177,44 @@ class SkillPanel extends StatelessWidget {
   }
 
   Future<void> history(BuildContext context, String target, int epoch) async {
-    final l = AppLocalizations.of(context),
-        row = skills.row(skills.document(utility), target, epoch),
-        remote = row['remote'] as Map;
+    final l = AppLocalizations.of(context);
     try {
-      List<dynamic> rows = [];
-      if (remote['id'] != null) {
-        final api = AccountClient(skills.binding['server'] as String);
-        await api.loadToken();
-        if (store.setting('account_identity') !=
-            jsonEncode([skills.binding['server'], skills.user])) {
+      final rows = <Map<String, dynamic>>[];
+      final api = AccountClient(skills.binding['server'] as String);
+      await api.loadToken();
+      final records =
+          skills.rows
+              .where(
+                (r) =>
+                    r['document'] == skills.document(utility) &&
+                    r['user'] == target &&
+                    (r['remote'] as Map)['id'] != null,
+              )
+              .toList()
+            ..sort(
+              (a, b) => (b['revision'] as int).compareTo(a['revision'] as int),
+            );
+      for (final record in records) {
+        if (store.setting('account_signed_out') == '1' ||
+            store.setting('account_identity') !=
+                jsonEncode([skills.binding['server'], skills.user])) {
           throw DomainError('syncAccountMismatch');
         }
-        rows =
+        final remote = record['remote'] as Map;
+        final values =
             (await api.request(
                   'GET',
                   '/api/v1/teams/${skills.binding['team']}/utility-progress/${remote['id']}/versions',
                 ))['items']
                 as List;
+        rows.addAll(
+          values.map(
+            (r) => <String, dynamic>{
+              ...Map<String, dynamic>.from(r as Map),
+              'revision': record['revision'],
+            },
+          ),
+        );
       }
       if (!context.mounted) return;
       await showDialog<void>(
@@ -212,7 +232,7 @@ class SkillPanel extends StatelessWidget {
                         ListTile(
                           title: Text(label(l, r['status'] as String)),
                           subtitle: Text(
-                            '${r['author_name'] ?? l.skillMember}\n${r['reason'] ?? ''}',
+                            '${l.skillRecheck} ${r['revision']} · ${r['author_name'] ?? l.skillMember}\n${r['reason'] ?? ''}',
                           ),
                         ),
                     ],

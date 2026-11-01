@@ -93,3 +93,9 @@ Windows installer: 132798073 байта; SHA-256 `4851259a2fba2fb11d96b462b4c6be
 - RU mobile utility card with the study panel rendered and visually inspected on
   Linux; Windows baseline and Android device verification remain pending for this change.
 - New feature is not yet deployed or included in a published release.
+
+Windows UI snapshots run 41327200507 completed successfully at a6ba966; the new
+utility panel was visually inspected and its Windows baseline accepted. The hosted
+API health endpoint now advertises `utility_skills` after backend deployment
+5826344. Client analysis is clean; the full suite passes 64 tests with 5 explicit
+skips. Progress history also exposes prior verification cycles after a recheck.
