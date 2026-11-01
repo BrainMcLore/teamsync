@@ -27,7 +27,7 @@ Name: "russian"; MessagesFile: "compiler:Languages\Russian.isl"
 
 [Files]
 Source: "..\client\build\windows\x64\v08\runner\Release\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "..\USER_GUIDE.md"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\docs\user-guide.md"; DestDir: "{app}"; Flags: ignoreversion
 
 Source: "..\.tools\webview2-bootstrap\MicrosoftEdgeWebview2Setup.exe"; DestDir: "{tmp}"; Flags: deleteafterinstall
 
