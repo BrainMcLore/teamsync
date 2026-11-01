@@ -12,6 +12,12 @@ import 'package:teamsync/data/store.dart';
 import 'package:teamsync/data/files.dart';
 import 'package:teamsync/data/tactical_sync.dart';
 import 'package:teamsync/data/account_roster.dart';
+import 'package:teamsync/data/own_video.dart';
+import 'package:teamsync/data/utilities.dart';
+import 'package:path_provider/path_provider.dart';
+
+import '../test/fixtures/own_clip_data.dart';
+
 import 'package:teamsync/l10n/app_localizations.dart';
 import 'package:teamsync/main.dart';
 import 'package:teamsync/ui/account_page.dart';
@@ -123,6 +129,8 @@ void main() {
         'teamsync_shared_device_',
       );
       final a = Store(':memory:'), b = Store(':memory:');
+      Directory? nativeCache;
+      String? nativeClip;
       try {
         final ta = saveAccountRoster(
           a,
@@ -150,6 +158,50 @@ void main() {
           {'type': 't', 'x': .2, 'y': .3},
           {'type': 'ct', 'x': .7, 'y': .6},
         ], 1);
+        final nativeRoot = await getApplicationSupportDirectory();
+        final cache = Directory(
+          '${nativeRoot.path}/media/qa-team-${team['id']}',
+        );
+        nativeCache = cache;
+        final clip = await OwnVideo.importBytes(
+          LocalFiles(nativeRoot),
+          base64Decode(ownClipBase64),
+        );
+        nativeClip = clip;
+        final outside = File(
+          '${nativeRoot.path}/qa-outside-${Store.uuid.v4()}.mp4',
+        );
+        await outside.writeAsBytes(base64Decode(ownClipBase64));
+        try {
+          expect(await OwnVideo.canOpenOnAndroid(clip), isA<bool>());
+          await expectLater(
+            OwnVideo.channel.invokeMethod<bool>('canOpenVideo', {
+              'path': outside.path,
+            }),
+            throwsA(
+              isA<PlatformException>().having(
+                (e) => e.code,
+                'code',
+                'invalidMedia',
+              ),
+            ),
+          );
+        } finally {
+          await outside.delete();
+        }
+        UtilityLibrary(a).save(
+          ta,
+          map,
+          'Own clip and aiming point',
+          'T',
+          'Offline instruction',
+          {
+            'grenade': 'smoke',
+            'strategy_ids': [tactic],
+            'video_path': clip,
+            'screenshot_paths': [radar.path],
+          },
+        );
         final sa = TacticalSync(
           a,
           LocalFiles(Directory('${sharedRoot.path}/a')),
@@ -157,12 +209,20 @@ void main() {
         );
         final sb = TacticalSync(
           b,
-          LocalFiles(Directory('${sharedRoot.path}/b')),
+          LocalFiles(cache),
           clientFactory: (_) => DeviceSession(player),
         );
         await sa.run(ta, conflictLabel: 'Conflict copy');
         await sb.run(tb, conflictLabel: 'Conflict copy');
         expect(b.strategies(tb).single['notes'], 'shared first plan');
+        final bclip =
+            jsonDecode(
+                  UtilityLibrary(b).list(tb).single['details'] as String,
+                )['video_path']
+                as String;
+        expect(await File(bclip).readAsBytes(), base64Decode(ownClipBase64));
+        expect(await OwnVideo.canOpenOnAndroid(bclip), isA<bool>());
+
         expect(
           File(b.maps(tb).single['image_path'] as String).lengthSync(),
           radar.lengthSync(),
@@ -208,6 +268,12 @@ void main() {
         a.close();
         b.close();
         sharedRoot.deleteSync(recursive: true);
+        if (nativeClip != null && File(nativeClip).existsSync()) {
+          File(nativeClip).deleteSync();
+        }
+        if (nativeCache != null && nativeCache.existsSync()) {
+          nativeCache.deleteSync(recursive: true);
+        }
       }
       final store = Store(':memory:');
       store.setSetting('api_url', player.base.toString());

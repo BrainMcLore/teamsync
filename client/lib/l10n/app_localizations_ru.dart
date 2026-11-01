@@ -1359,4 +1359,37 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get utilityRemoveImage => 'Убрать изображение';
+
+  @override
+  String get syncReadOnlyPending =>
+      'Локальные правки сохранены. Текущая роль не разрешает их отправку.';
+
+  @override
+  String get syncMediaQuota => 'Лимит вложений команды исчерпан.';
+
+  @override
+  String get utilityVideo => 'Свой видеоклип';
+
+  @override
+  String get utilityAddVideo => 'Добавить свой MP4';
+
+  @override
+  String get utilityOpenVideo => 'Смотреть клип';
+
+  @override
+  String get utilityShareVideo => 'Отправить файл';
+
+  @override
+  String get utilityRemoveVideo => 'Убрать клип';
+
+  @override
+  String get utilityVideoLimit =>
+      'Свой MP4 до 20 МБ. Клип синхронизируется с командой и сохраняется для офлайн-просмотра.';
+
+  @override
+  String get invalidVideo => 'Выберите MP4 с видеодорожкой размером до 20 МБ.';
+
+  @override
+  String get videoUnavailable =>
+      'Не удалось открыть клип. Выберите совместимый проигрыватель через отправку файла.';
 }

@@ -3,10 +3,12 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:share_plus/share_plus.dart';
 
 import '../data/store.dart';
 import '../data/files.dart';
 import '../data/utilities.dart';
+import '../data/own_video.dart';
 import '../l10n/app_localizations.dart';
 import 'kit.dart';
 
@@ -110,6 +112,35 @@ class _UtilitiesPageState extends State<UtilitiesPage> {
     if (mounted) {
       ScaffoldMessenger.of(context)
           .showSnackBar(SnackBar(content: Text(l.utilityUnavailable)));
+    }
+  }
+
+  Future<void> playVideo(String path) async {
+    try {
+      await OwnVideo.open(path);
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              e is DomainError && e.code == 'fileMissing'
+                  ? l.fileMissing
+                  : l.videoUnavailable,
+            ),
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> shareVideo(String path) async {
+    try {
+      await SharePlus.instance.share(ShareParams(files: [XFile(path)]));
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(l.videoUnavailable)));
+      }
     }
   }
 
@@ -255,6 +286,22 @@ class _UtilitiesPageState extends State<UtilitiesPage> {
                               spacing: 12,
                               runSpacing: 8,
                               children: [
+                                if (details['video_path'] != null) ...[
+                                  OutlinedButton.icon(
+                                    onPressed: () => playVideo(
+                                      details['video_path'] as String,
+                                    ),
+                                    icon: const Icon(Icons.play_circle_outline),
+                                    label: Text(l.utilityOpenVideo),
+                                  ),
+                                  TextButton.icon(
+                                    onPressed: () => shareVideo(
+                                      details['video_path'] as String,
+                                    ),
+                                    icon: const Icon(Icons.share_outlined),
+                                    label: Text(l.utilityShareVideo),
+                                  ),
+                                ],
                                 if (details['source_url'] != null)
                                   OutlinedButton.icon(
                                     onPressed: () =>
@@ -302,8 +349,9 @@ class _UtilityFormState extends State<_UtilityForm> {
   late String? map;
   String side = 'T', grenade = 'smoke';
   final selectedStrategies = <String>{};
-  final screenshots = <String>[], newImages = <String>[];
+  final screenshots = <String>[], newFiles = <String>[];
   bool importing = false, saved = false;
+  String? clipPath;
   String? failure;
   @override
   void initState() {
@@ -317,6 +365,7 @@ class _UtilityFormState extends State<_UtilityForm> {
         widget.store.maps(widget.team).firstOrNull?['id'] as String?;
     side = row?['side'] as String? ?? 'T';
     grenade = details['grenade'] as String? ?? 'smoke';
+    clipPath = details['video_path'] as String?;
     screenshots.addAll(
       List<String>.from(details['screenshot_paths'] as List? ?? []),
     );
@@ -350,8 +399,8 @@ class _UtilityFormState extends State<_UtilityForm> {
   @override
   void dispose() {
     widget.store.editingUtilities.remove(widget.value?['id']);
-    for (final path in newImages.where(
-      (p) => !saved || !screenshots.contains(p),
+    for (final path in newFiles.where(
+      (p) => !saved || (!screenshots.contains(p) && clipPath != p),
     )) {
       try {
         File(path).deleteSync();
@@ -381,11 +430,38 @@ class _UtilityFormState extends State<_UtilityForm> {
       }
       setState(() {
         screenshots.add(path);
-        newImages.add(path);
+        newFiles.add(path);
       });
     } catch (_) {
       if (mounted) {
         setState(() => failure = AppLocalizations.of(context).invalidImage);
+      }
+    } finally {
+      if (mounted) setState(() => importing = false);
+    }
+  }
+
+  Future<void> addVideo() async {
+    if (importing || widget.files == null) return;
+    setState(() => importing = true);
+    try {
+      final path = await OwnVideo.pick(widget.files!);
+      if (path == null) return;
+      if (!mounted) {
+        try {
+          File(path).deleteSync();
+        } on FileSystemException {
+          /* Cancelled. */
+        }
+        return;
+      }
+      setState(() {
+        clipPath = path;
+        newFiles.add(path);
+      });
+    } catch (_) {
+      if (mounted) {
+        setState(() => failure = AppLocalizations.of(context).invalidVideo);
       }
     } finally {
       if (mounted) setState(() => importing = false);
@@ -466,6 +542,29 @@ class _UtilityFormState extends State<_UtilityForm> {
                   ),
                 ),
               if (widget.files != null) ...[
+                const SizedBox(height: 14),
+                Text(
+                  l.utilityVideoLimit,
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    OutlinedButton.icon(
+                      onPressed: importing ? null : addVideo,
+                      icon: const Icon(Icons.video_file_outlined),
+                      label: Text(l.utilityAddVideo),
+                    ),
+                    if (clipPath != null)
+                      TextButton.icon(
+                        onPressed: () => setState(() => clipPath = null),
+                        icon: const Icon(Icons.close),
+                        label: Text(l.utilityRemoveVideo),
+                      ),
+                  ],
+                ),
+
                 const SizedBox(height: 14),
                 Align(
                   alignment: Alignment.centerLeft,
@@ -554,6 +653,7 @@ class _UtilityFormState extends State<_UtilityForm> {
                         'grenade': grenade,
                         'strategy_ids': selectedStrategies.toList(),
                         'screenshot_paths': screenshots,
+                        'video_path': clipPath,
                         for (final entry in fields.entries.where(
                           (e) => !['title', 'notes'].contains(e.key),
                         ))
@@ -567,6 +667,10 @@ class _UtilityFormState extends State<_UtilityForm> {
                     setState(
                       () => failure = e.code == 'invalidSource'
                           ? l.utilityInvalidSource
+                          : e.code == 'readOnlyTeam'
+                          ? l.readOnlyTeam
+                          : e.code == 'invalidVideo'
+                          ? l.invalidVideo
                           : l.invalidText,
                     );
                   }

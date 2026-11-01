@@ -55,15 +55,21 @@ class _WorkspaceState extends State<Workspace> with WidgetsBindingObserver {
   late ServerInstallJob serverInstaller;
   late TacticalSync tacticalSync;
   Timer? syncTimer, syncDebounce;
-  bool syncing = false;
+  bool syncing = false, syncAgain = false;
   String? syncError;
   List<RecordData> get onlineTeams => visibleAccountTeams(db);
   bool get shared =>
-      teamId != null && db.setting('account_team_$teamId') != null;
+      teamId != null && onlineTeams.any((t) => t['id'] == teamId);
   String get syncLabel => syncing
       ? l.syncWorking
       : syncError == 'conflicts'
       ? l.syncConflict
+      : syncError == 'readOnlyPending'
+      ? l.syncReadOnlyPending
+      : syncError == 'media_quota'
+      ? l.syncMediaQuota
+      : syncError == 'fileMissing'
+      ? l.fileMissing
       : syncError == 'pending'
       ? l.syncWorking
       : syncError == 'syncAccountMismatch'
@@ -76,7 +82,12 @@ class _WorkspaceState extends State<Workspace> with WidgetsBindingObserver {
       ? l.syncOffline
       : l.syncReady;
   Future<void> syncNow() async {
-    if (!shared || syncing || tacticalSync.running || !mounted) return;
+    if (!shared || !mounted) return;
+    if (syncing || tacticalSync.running) {
+      syncAgain = true;
+      return;
+    }
+    syncAgain = false;
     final selected = teamId!;
     syncTimer ??= Timer.periodic(const Duration(seconds: 15), (_) {
       if (WidgetsBinding.instance.lifecycleState == null ||
@@ -93,6 +104,8 @@ class _WorkspaceState extends State<Workspace> with WidgetsBindingObserver {
       if (mounted && teamId == selected) {
         syncError = tacticalSync.conflicts > 0
             ? 'conflicts'
+            : tacticalSync.blockedByRole
+            ? 'readOnlyPending'
             : tacticalSync.deferred
             ? 'pending'
             : null;
@@ -102,7 +115,12 @@ class _WorkspaceState extends State<Workspace> with WidgetsBindingObserver {
         syncError = e is DomainError ? e.code : 'offline';
       }
     } finally {
-      if (mounted) setState(() => syncing = false);
+      if (mounted) {
+        setState(() => syncing = false);
+        if ((teamId != selected || syncAgain) && shared) {
+          scheduleMicrotask(syncNow);
+        }
+      }
     }
   }
 

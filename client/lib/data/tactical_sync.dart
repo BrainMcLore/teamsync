@@ -9,6 +9,7 @@ import 'account_roster.dart';
 import 'files.dart';
 import 'store.dart';
 import 'utilities.dart';
+import 'own_video.dart';
 
 /// Durable outbox + optimistic versions. No network operation runs in a SQLite
 /// transaction. A lost acknowledgement reuses the exact operation and payload.
@@ -23,7 +24,8 @@ class TacticalSync {
   late AccountClient api;
   late String team, local, key;
   late Map<String, dynamic> state, entries, outbox;
-  bool writable = false;
+  bool writable = false, playerSubmission = false, blockedByRole = false;
+  late String accountUser;
   final Map<String, (int, int, String)> _hashCache = {};
 
   String hash(Object value) =>
@@ -48,6 +50,7 @@ class TacticalSync {
           ])
             key: details[key] ?? '',
           'source_url': details['source_url'],
+          'video_id': details['video_id'],
           'image_ids': List<String>.from(details['image_ids'] as List? ?? []),
           'strategy_ids': List<String>.from(
             details['strategy_ids'] as List? ?? [],
@@ -146,6 +149,17 @@ class TacticalSync {
     _ => store.strategies(local),
   };
 
+  void assertActiveAccount() {
+    if (store.setting('account_signed_out') == '1') {
+      throw DomainError('unauthorized');
+    }
+    final active = store.setting('account_identity');
+    if (active != null &&
+        active != jsonEncode([api.base.toString(), accountUser])) {
+      throw DomainError('syncAccountMismatch');
+    }
+  }
+
   String get path => '/api/v1/teams/$team';
 
   Future<void> run(String localTeam, {required String conflictLabel}) async {
@@ -154,6 +168,7 @@ class TacticalSync {
     if (binding == null) return;
     running = true;
     deferred = false;
+    blockedByRole = false;
     conflicts = 0;
     uploaded = 0;
     downloaded = 0;
@@ -167,13 +182,18 @@ class TacticalSync {
       api =
           clientFactory?.call(config['server'] as String) ??
           AccountClient(config['server'] as String);
+      accountUser = config['user'] as String;
+      assertActiveAccount();
       await api.loadToken();
       if (api.token == null) throw DomainError('unauthorized');
       final me = await api.request('GET', '/api/v1/me');
+      accountUser = me['id'] as String;
       if (me['id'] != config['user']) throw DomainError('syncAccountMismatch');
+      assertActiveAccount();
       String? role;
       final roster = <dynamic>[];
       for (var offset = 0; ; offset += 100) {
+        assertActiveAccount();
         final rows =
             (await api.request(
                   'GET',
@@ -187,6 +207,7 @@ class TacticalSync {
         if (rows.length < 100) break;
       }
       if (role == null) throw DomainError('forbidden');
+      assertActiveAccount();
       saveAccountRoster(
         store,
         api.base.toString(),
@@ -202,6 +223,7 @@ class TacticalSync {
       );
       store.setSetting('shared_role_$local', role);
       writable = ['owner', 'captain', 'coach'].contains(role);
+      playerSubmission = role == 'player';
       files.catalog?.ensureTeam(store, local);
       key = 'tactical_sync_$local';
       state = jsonDecode(store.setting(key) ?? '{}') as Map<String, dynamic>;
@@ -241,7 +263,19 @@ class TacticalSync {
   Future<bool> flush() async {
     var conflict = false;
     for (final id in outbox.keys.toList()) {
+      assertActiveAccount();
       final operation = outbox[id] as Map<String, dynamic>;
+      final request = operation['request'] as Map;
+      final payload = request['payload'] as Map;
+      if (!writable &&
+          !(playerSubmission &&
+              request['kind'] == 'task' &&
+              payload['assignee_user_id'] == accountUser &&
+              payload['status'] == 'submitted')) {
+        blockedByRole = true;
+        continue;
+      }
+
       try {
         final result = await api.request(
           'POST',
@@ -255,6 +289,16 @@ class TacticalSync {
         persist();
         uploaded++;
       } on DomainError catch (e) {
+        if (e.code == 'forbidden') {
+          blockedByRole = true;
+          if (writable) {
+            writable = false;
+            playerSubmission = false;
+            store.setSetting('shared_role_$local', 'viewer');
+            return false;
+          }
+          continue;
+        }
         if (e.code != 'version_conflict') rethrow;
         outbox.remove(id);
         persist();
@@ -266,20 +310,30 @@ class TacticalSync {
 
   Future<void> queueChanges() async {
     for (final kind in ['map', 'strategy', 'utility', 'task']) {
-      if (!writable && kind != 'task') continue;
-      final rows = records(kind);
-      for (final row in rows) {
+      for (final row in records(kind)) {
         final id = row['id'] as String;
         final e = entry(kind, id);
-        if (!writable &&
-            (e['version'] == 0 ||
-                row['member_id'] !=
-                    store.setting('shared_user_member_$local'))) {
-          continue;
-        }
-        final payload = await localPayload(kind, row, uploadMedia: true);
+        final payload = await localPayload(kind, row, uploadMedia: writable);
         final fingerprint = hash(payload);
         if (e['hash'] == fingerprint) continue;
+        if (!writable &&
+            !(playerSubmission &&
+                kind == 'task' &&
+                e['version'] != 0 &&
+                row['member_id'] ==
+                    store.setting('shared_user_member_$local') &&
+                row['status'] == 'submitted')) {
+          final seededMap =
+              kind == 'map' &&
+              e['version'] == 0 &&
+              row['catalog_id'] != null &&
+              payload['image_id'] == null &&
+              payload['lower_image_id'] == null &&
+              files.catalog?.find(row['catalog_id'] as String)?['name'] ==
+                  row['name'];
+          if (!seededMap) blockedByRole = true;
+          continue;
+        }
         final index = '$kind:$id';
         if (outbox.containsKey(index)) continue;
         outbox[index] = {
@@ -297,9 +351,39 @@ class TacticalSync {
     }
   }
 
-  Future<String?> imageId(String? filename, {required bool upload}) async {
+  Future<String?> assetId(
+    String? filename, {
+    required bool upload,
+    bool video = false,
+  }) async {
     if (filename == null) return null;
     final file = File(filename);
+    final paths = Map<String, dynamic>.from(state['asset_paths'] as Map? ?? {});
+    final rootPath = files.root.absolute.uri
+        .normalizePath()
+        .toFilePath()
+        .replaceAll(RegExp(r'[\\/]+$'), '');
+    final ownPath = file.absolute.uri.normalizePath().toFilePath();
+    final cached = RegExp(r'([0-9a-f]{64})\.(?:radar|mp4)$')
+        .firstMatch(ownPath)
+        ?.group(1);
+    if (!await file.exists()) {
+      final previous = paths[filename] as String? ?? cached;
+      if (previous == null ||
+          !ownPath.startsWith('$rootPath${Platform.pathSeparator}')) {
+        throw DomainError('fileMissing');
+      }
+      try {
+        final restored = await downloadAsset(previous, video: video);
+        if (restored != null && !await file.exists()) {
+          await file.parent.create(recursive: true);
+          await File(restored).copy(file.path);
+        }
+      } on DomainError catch (e) {
+        if (e.code == 'not_found') throw DomainError('fileMissing');
+        rethrow;
+      }
+    }
     if (!await file.exists()) throw DomainError('fileMissing');
     final stat = await file.stat();
     if (stat.size > 20 * 1024 * 1024) throw DomainError('limit');
@@ -320,10 +404,31 @@ class TacticalSync {
         id,
       );
     }
+    if (cached != null &&
+        id != cached &&
+        ownPath.startsWith('$rootPath${Platform.pathSeparator}')) {
+      final restored = await downloadAsset(cached, video: video);
+      if (restored != null &&
+          !await FileSystemEntity.identical(restored, filename)) {
+        await File(restored).copy(filename);
+      }
+      _hashCache.remove(filename);
+      return assetId(filename, upload: upload, video: video);
+    }
+    if (paths[filename] != id) {
+      paths[filename] = id;
+      state['asset_paths'] = paths;
+      persist();
+    }
     final sent = List<String>.from(state['media'] as List? ?? []);
     if (upload && !sent.contains(id)) {
       bytes ??= await file.readAsBytes();
-      await LocalFiles.validateRadar(bytes);
+      if (video) {
+        OwnVideo.validate(bytes);
+      } else {
+        await LocalFiles.validateRadar(bytes);
+      }
+      assertActiveAccount();
       await api.media('PUT', '$path/media/$id', bytes: bytes);
       sent.add(id);
       state['media'] = sent;
@@ -341,9 +446,14 @@ class TacticalSync {
       final details = Map<String, dynamic>.from(
         jsonDecode(row['details'] as String) as Map,
       );
+      details['video_id'] = await assetId(
+        details['video_path'] as String?,
+        upload: uploadMedia,
+        video: true,
+      );
       details['image_ids'] = [
         for (final file in details['screenshot_paths'] as List? ?? [])
-          await imageId(file as String, upload: uploadMedia),
+          await assetId(file as String, upload: uploadMedia),
       ];
       details['strategy_ids'] = [
         for (final id in details['strategy_ids'] as List? ?? [])
@@ -402,29 +512,38 @@ class TacticalSync {
       'catalog_id': catalog,
       'image_id': primary == primaryDefault
           ? null
-          : await imageId(primary, upload: uploadMedia),
+          : await assetId(primary, upload: uploadMedia),
       'lower_image_id': lower == lowerDefault
           ? null
-          : await imageId(lower, upload: uploadMedia),
+          : await assetId(lower, upload: uploadMedia),
     });
   }
 
-  Future<String?> downloadImage(String? id) async {
+  Future<String?> downloadAsset(String? id, {bool video = false}) async {
     if (id == null) return null;
     if (!RegExp(r'^[0-9a-f]{64}$').hasMatch(id)) {
       throw DomainError('invalidImage');
     }
-    final target = File('${files.root.path}/sync-media/$team/$id.radar');
+    final target = File(
+      video
+          ? '${files.root.path}/media/sync-videos/$team/$id.mp4'
+          : '${files.root.path}/sync-media/$team/$id.radar',
+    );
     if (await target.exists()) {
       if (sha256.convert(await target.readAsBytes()).toString() == id) {
         return target.path;
       }
     }
+    assertActiveAccount();
     final bytes = await api.media('GET', '$path/media/$id');
     if (sha256.convert(bytes).toString() != id) {
       throw DomainError('invalidImage');
     }
-    await LocalFiles.validateRadar(bytes);
+    if (video) {
+      OwnVideo.validate(bytes);
+    } else {
+      await LocalFiles.validateRadar(bytes);
+    }
     await target.parent.create(recursive: true);
     await target.writeAsBytes(bytes, flush: true);
     final sent = List<String>.from(state['media'] as List? ?? []);
@@ -436,6 +555,7 @@ class TacticalSync {
   Future<void> pull(String conflictLabel) async {
     final documents = <Map<String, dynamic>>[];
     for (var offset = 0; ; offset += 5) {
+      assertActiveAccount();
       final rows =
           (await api.request(
                 'GET',
@@ -498,7 +618,10 @@ class TacticalSync {
           final dirty = fingerprint != e['hash'];
           currentDirty = dirty;
           if (dirty && e['version'] == document['version']) continue;
-          if (dirty && (e['version'] as int) > 0 && kind == 'strategy') {
+          if (dirty &&
+              ((e['version'] as int) > 0 ||
+                  outbox.containsKey('$kind:${e['local']}')) &&
+              kind == 'strategy') {
             store.applyingSync = true;
             try {
               final title = current['title'] as String;
@@ -529,9 +652,13 @@ class TacticalSync {
         final details = Map<String, dynamic>.from(payload['utility'] as Map);
         details['screenshot_paths'] = [
           for (final image in details['image_ids'] as List? ?? [])
-            await downloadImage(image as String),
+            await downloadAsset(image as String),
         ];
         details.remove('image_ids');
+        details['video_path'] = await downloadAsset(
+          details.remove('video_id') as String?,
+          video: true,
+        );
 
         details['strategy_ids'] = [
           for (final remote in details['strategy_ids'] as List? ?? [])
@@ -634,8 +761,8 @@ class TacticalSync {
           store.applyingSync = false;
         }
       } else if (kind == 'map') {
-        final primary = await downloadImage(payload['image_id'] as String?);
-        final lower = await downloadImage(payload['lower_image_id'] as String?);
+        final primary = await downloadAsset(payload['image_id'] as String?);
+        final lower = await downloadAsset(payload['lower_image_id'] as String?);
         final id =
             current?['id'] as String? ??
             store.addMap(local, payload['title'] as String);

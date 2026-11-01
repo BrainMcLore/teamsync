@@ -439,5 +439,15 @@
   "utilityTactics": "Связанные тактики",
   "utilityScreenshots": "Скриншоты прицеливания",
   "utilityAddImage": "Своё изображение",
-  "utilityRemoveImage": "Убрать изображение"
+  "utilityRemoveImage": "Убрать изображение",
+  "syncReadOnlyPending": "Локальные правки сохранены. Текущая роль не разрешает их отправку.",
+  "syncMediaQuota": "Лимит вложений команды исчерпан.",
+  "utilityVideo": "Свой видеоклип",
+  "utilityAddVideo": "Добавить свой MP4",
+  "utilityOpenVideo": "Смотреть клип",
+  "utilityShareVideo": "Отправить файл",
+  "utilityRemoveVideo": "Убрать клип",
+  "utilityVideoLimit": "Свой MP4 до 20 МБ. Клип синхронизируется с командой и сохраняется для офлайн-просмотра.",
+  "invalidVideo": "Выберите MP4 с видеодорожкой размером до 20 МБ.",
+  "videoUnavailable": "Не удалось открыть клип. Выберите совместимый проигрыватель через отправку файла."
 }

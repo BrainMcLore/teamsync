@@ -1345,4 +1345,37 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get utilityRemoveImage => 'Remove image';
+
+  @override
+  String get syncReadOnlyPending =>
+      'Local edits are preserved. Your current role cannot publish them.';
+
+  @override
+  String get syncMediaQuota => 'The team attachment limit has been reached.';
+
+  @override
+  String get utilityVideo => 'Own video clip';
+
+  @override
+  String get utilityAddVideo => 'Add own MP4';
+
+  @override
+  String get utilityOpenVideo => 'Watch clip';
+
+  @override
+  String get utilityShareVideo => 'Share file';
+
+  @override
+  String get utilityRemoveVideo => 'Remove clip';
+
+  @override
+  String get utilityVideoLimit =>
+      'Own MP4 up to 20 MB. Clips sync with the team and are saved for offline viewing.';
+
+  @override
+  String get invalidVideo => 'Choose an MP4 with a video track, up to 20 MB.';
+
+  @override
+  String get videoUnavailable =>
+      'Could not open the clip. Use Share file to choose a compatible player.';
 }

@@ -72,7 +72,8 @@ class UtilityLibrary {
       (key) =>
           !limits.containsKey(key) &&
           key != 'strategy_ids' &&
-          key != 'screenshot_paths',
+          key != 'screenshot_paths' &&
+          key != 'video_path',
     )) {
       throw DomainError('invalidText');
     }
@@ -97,6 +98,11 @@ class UtilityLibrary {
       throw DomainError('invalidImage');
     }
     value['screenshot_paths'] = screenshots.toSet().toList();
+    final video = details['video_path'];
+    if (video != null && (video is! String || video.length > 4096)) {
+      throw DomainError('invalidVideo');
+    }
+    value['video_path'] = video;
 
     if (id != null && !list(team).any((u) => u['id'] == id)) {
       throw DomainError('crossTeam');

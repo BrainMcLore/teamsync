@@ -60,3 +60,8 @@ kotlin {
 flutter {
     source = "../.."
 }
+
+// Match the core version already used by share_plus.
+dependencies {
+    implementation("androidx.core:core:1.16.0")
+}

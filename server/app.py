@@ -1,4 +1,5 @@
 import hashlib
+import base64
 import json
 import os
 import re
@@ -18,6 +19,7 @@ from sqlalchemy.exc import IntegrityError
 
 from .database import (open_database, users, identities, sessions, auth_states, teams,
     memberships, invites, account_invites, roster_details, media, documents, document_versions, operations, audit, uid, record)
+from .media_types import media_type
 from .auth import (fail, digest, start_auth, verified_identity, finish_auth, exchange_code)
 
 class StrictModel(BaseModel):
@@ -75,6 +77,7 @@ class UtilityDetails(StrictModel):
     verified_at: str = Field(default='',max_length=40)
     map_revision: str = Field(default='',max_length=120)
     image_ids: list[Annotated[str,StringConstraints(pattern=r'^[0-9a-f]{64}$')]] = Field(default_factory=list,max_length=10)
+    video_id: str | None = Field(default=None,pattern=r'^[0-9a-f]{64}$')
 
     @field_validator('source_url')
     @classmethod
@@ -469,7 +472,7 @@ def create_app(database_url=None, public_url=None):
             member(conn,team,session['user_id'],write=True)
             content=await request.body()
             if not content or hashlib.sha256(content).hexdigest()!=identifier:fail('invalid_media',422)
-            mime='image/png' if content.startswith(b'\x89PNG\r\n\x1a\n') else 'image/jpeg' if content.startswith(b'\xff\xd8\xff') else None
+            mime=media_type(content)
             if mime is None:fail('invalid_media',422)
             old=conn.execute(select(media.c.id).where(media.c.team_id==team,media.c.id==identifier)).first()
             if not old:
@@ -492,9 +495,19 @@ def create_app(database_url=None, public_url=None):
     def write_document(team:str,body:DocumentWrite,session=Depends(authenticated)):
         # Preserve the canonical request bytes of pre-utility clients so an
         # acknowledged operation can still be retried after a server upgrade.
-        excluded={'payload': {'utility'}} if body.payload.utility is None else (
-            {'payload': {'utility': {'image_ids'}}} if not body.payload.utility.image_ids else None)
-        request_hash=hashlib.sha256(body.model_dump_json(exclude=excluded).encode()).hexdigest()
+        if body.payload.utility is None:
+            excluded={'payload': {'utility'}}
+        else:
+            empty_new_fields=set()
+            if not body.payload.utility.image_ids: empty_new_fields.add('image_ids')
+            if body.payload.utility.video_id is None: empty_new_fields.add('video_id')
+            excluded={'payload': {'utility': empty_new_fields}}
+        legacy_hash=hashlib.sha256(body.model_dump_json(exclude=excluded).encode()).hexdigest()
+        provided=[] if body.payload.utility is None else sorted(
+            f for f in ('image_ids','video_id') if f in body.payload.utility.model_fields_set)
+        canonical=json.dumps({'request':body.model_dump(mode='json',exclude_unset=True),'utility_fields':provided},
+                             sort_keys=True,ensure_ascii=False,separators=(',',':')).encode()
+        request_hash='v2:'+base64.urlsafe_b64encode(hashlib.sha256(canonical).digest()).decode().rstrip('=')
         with engine.begin() as conn:
             caller=member(conn,team,session['user_id'])
             manager=caller['role'] in ('owner','captain','coach')
@@ -502,7 +515,7 @@ def create_app(database_url=None, public_url=None):
                 fail('forbidden',403)
             previous=conn.execute(select(operations).where(operations.c.id==body.operation_id)).mappings().first()
             if previous:
-                if previous['team_id']!=team or previous['user_id']!=session['user_id'] or previous['request_hash']!=request_hash:
+                if previous['team_id']!=team or previous['user_id']!=session['user_id'] or previous['request_hash'] not in (request_hash,legacy_hash):
                     fail('operation_conflict',409)
                 return previous['response']
             current=conn.execute(select(documents).where(documents.c.id==body.document_id).with_for_update()).mappings().first()
@@ -513,6 +526,14 @@ def create_app(database_url=None, public_url=None):
             if current and current['kind']!=body.kind:
                 fail('kind_conflict',409)
             payload=body.payload.model_dump()
+            # Older clients cannot send fields they do not know. Preserve newer
+            # attachments on their full-document edits; explicit null/[] removes them.
+            if current and body.kind=='utility' and payload['utility']:
+                old_utility=current['payload'].get('utility') or {}
+                for field in ('image_ids','video_id'):
+                    if field not in body.payload.utility.model_fields_set and field in old_utility:
+                        payload['utility'][field]=old_utility[field]
+
             if not manager:
                 # Players may submit only their own existing assignment. Every
                 # other field is immutable; approval belongs to the coaching staff.
@@ -524,15 +545,18 @@ def create_app(database_url=None, public_url=None):
                 if {k:v for k,v in old.items() if k!='status'}!={k:v for k,v in payload.items() if k!='status'}:
                     fail('forbidden',403)
             for field in ('image_id','lower_image_id'):
-                if payload[field] and not conn.execute(select(media.c.id).where(media.c.team_id==team,media.c.id==payload[field])).first():fail('invalid_media',422)
+                if payload[field] and not conn.execute(select(media.c.id).where(media.c.team_id==team,media.c.id==payload[field],media.c.mime.in_(['image/png','image/jpeg']))).first():fail('invalid_media',422)
             for key,kind in [('map_id','map'),('strategy_id','strategy')]:
                 if payload[key]:
                     linked=conn.execute(select(documents).where(documents.c.id==payload[key],documents.c.team_id==team,documents.c.kind==kind)).first()
                     if not linked:
                         fail('invalid_link',422)
             if payload['utility']:
+                video_id=payload['utility']['video_id']
+                if video_id and not conn.execute(select(media.c.id).where(media.c.id==video_id,media.c.team_id==team,media.c.mime=='video/mp4')).first():
+                    fail('invalid_media',422)
                 for image_id in payload['utility']['image_ids']:
-                    if not conn.execute(select(media.c.id).where(media.c.id==image_id,media.c.team_id==team)).first():
+                    if not conn.execute(select(media.c.id).where(media.c.id==image_id,media.c.team_id==team,media.c.mime.in_(['image/png','image/jpeg']))).first():
                         fail('invalid_media',422)
                 for linked_id in payload['utility']['strategy_ids']:
                     if not conn.execute(select(documents.c.id).where(documents.c.id==linked_id,documents.c.team_id==team,documents.c.kind=='strategy')).first():

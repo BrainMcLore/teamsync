@@ -32,6 +32,7 @@ void main() {
       'strategy_ids': [strategy],
       'source_url': 'https://youtu.be/example?t=12',
       'screenshot_paths': [File('test/fixtures/radar.png').absolute.path],
+      'video_path': File('test/fixtures/own_clip.mp4').absolute.path,
     });
     store.saveStrategy(strategy, 'Smoke CT', [
       {'type': 'smoke', 'x': 0.3, 'y': 0.4},
@@ -49,6 +50,15 @@ void main() {
     final clone = await OfflinePackage.restore(store, dir, bytes);
     expect(store.teams, hasLength(2));
     expect(clone, isNot(team));
+    final clip =
+        jsonDecode(
+              UtilityLibrary(store).list(clone).single['details'] as String,
+            )['video_path']
+            as String;
+    expect(
+      await File(clip).readAsBytes(),
+      await File('test/fixtures/own_clip.mp4').readAsBytes(),
+    );
     expect(
       UtilityLibrary(store).list(clone).single['map_id'],
       store.maps(clone).single['id'],
@@ -94,6 +104,28 @@ void main() {
     expect(store.teams, hasLength(1));
     expect(store.maps(team), hasLength(1));
   });
+  test(
+    'offline import never accepts a caller supplied local media path',
+    () async {
+      final team = store.createTeam('Own clips'),
+          map = store.addMap(team, 'Mirage');
+      UtilityLibrary(store)
+          .save(team, map, 'Smoke', 'T', 'Instruction', {'grenade': 'smoke'});
+      final data = jsonDecode(
+        utf8.decode(OfflinePackage.export(store, team, 'en')),
+      ) as Map;
+      final utility = (data['utilities'] as List).single as Map;
+      final details = jsonDecode(utility['details'] as String) as Map;
+      details['video_path'] = File('test/fixtures/own_clip.mp4').absolute.path;
+      utility['details'] = jsonEncode(details);
+      await expectLater(
+        OfflinePackage.restore(store, dir, utf8.encode(jsonEncode(data))),
+        throwsA(isA<DomainError>()),
+      );
+      expect(store.teams, hasLength(1));
+      expect(File('test/fixtures/own_clip.mp4').existsSync(), isTrue);
+    },
+  );
   test('generate real Cyrillic PDF in both languages', () async {
     final team = store.createTeam('Пятёрка'),
         map = store.addMap(team, 'Mirage');

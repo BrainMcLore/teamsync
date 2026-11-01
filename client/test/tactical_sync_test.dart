@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:async';
 import 'dart:io';
 import 'dart:typed_data';
 
@@ -22,6 +23,7 @@ class SharedFixture {
   final roles = <String, String>{'alice': 'owner', 'bob': 'coach'};
   bool loseAck = false;
   void Function(String user, String method)? checkMedia;
+  void Function(String user, String method, String path)? checkRequest;
 }
 
 class SyncAccount extends AccountClient {
@@ -55,6 +57,7 @@ class SyncAccount extends AccountClient {
     Map<String, dynamic>? body,
     bool authorize = true,
   }) async {
+    server.checkRequest?.call(user, method, path);
     if (path == '/api/v1/me') return {'id': user};
     if (path.contains('/members?')) {
       if (!server.roles.containsKey(user)) throw DomainError('not_found');
@@ -110,8 +113,187 @@ class SyncAccount extends AccountClient {
   }
 }
 
+class HeldSync extends TacticalSync {
+  final gate = Completer<void>();
+  final calls = <String>[];
+  HeldSync(super.store, super.files);
+  @override
+  Future<void> run(String team, {required String conflictLabel}) async {
+    calls.add(team);
+    if (calls.length == 1) await gate.future;
+  }
+}
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
+  test('logout stops pending writes and another identity cannot flush the old queue', () async {
+    final root = Directory.systemTemp.createTempSync('teamsync_logout_');
+    final store = Store(':memory:'), server = SharedFixture();
+    addTearDown(() {
+      store.close();
+      root.deleteSync(recursive: true);
+    });
+    final local = saveAccountRoster(store, 'https://fixture.example', 'alice', {
+      'id': Store.uuid.v4(),
+      'name': 'Private',
+      'role': 'owner',
+    }, []);
+    store.addMap(local, 'One');
+    store.addMap(local, 'Two');
+    var signedOut = false;
+    server.checkRequest = (user, method, path) {
+      if (!signedOut && method == 'POST' && path.endsWith('/documents')) {
+        signedOut = true;
+        store.setSetting('account_signed_out', '1');
+      }
+    };
+    final sync = TacticalSync(
+      store,
+      LocalFiles(root),
+      clientFactory: (_) => SyncAccount(server, 'alice'),
+    );
+    await expectLater(
+      sync.run(local, conflictLabel: 'Copy'),
+      throwsA(isA<DomainError>().having((e) => e.code, 'code', 'unauthorized')),
+    );
+    expect(server.documents, hasLength(1));
+    expect(
+      (jsonDecode(store.setting('tactical_sync_$local')!)['outbox'] as Map),
+      hasLength(1),
+    );
+    rememberAccountIdentity(store, 'https://fixture.example', 'bob');
+    await expectLater(
+      sync.run(local, conflictLabel: 'Copy'),
+      throwsA(
+        isA<DomainError>().having((e) => e.code, 'code', 'syncAccountMismatch'),
+      ),
+    );
+    expect(server.documents, hasLength(1));
+    rememberAccountIdentity(store, 'https://fixture.example', 'alice');
+    await sync.run(local, conflictLabel: 'Copy');
+    expect(server.documents, hasLength(2));
+  });
+  testWidgets(
+    'switching team during sync immediately starts the selected team afterward',
+    (tester) async {
+      final root = Directory.systemTemp.createTempSync('teamsync_switch_');
+      final store = Store(':memory:');
+      addTearDown(() {
+        store.close();
+        root.deleteSync(recursive: true);
+      });
+      String add(String name) => saveAccountRoster(
+        store,
+        'https://fixture.example',
+        'alice',
+        {'id': Store.uuid.v4(), 'name': name, 'role': 'owner'},
+        [],
+      );
+      final a = add('One'), b = add('Two');
+      store.setSetting('team', a);
+      final files = LocalFiles(root), sync = HeldSync(store, LocalFiles(root));
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: workspaceTheme(),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Workspace(
+            store: store,
+            files: files,
+            sync: sync,
+            onLocale: (_) {},
+          ),
+        ),
+      );
+      await tester.pump();
+      expect(sync.calls, [a]);
+      store.setSetting('team', b);
+      store.onTeamChange!();
+      await tester.pump();
+      sync.gate.complete();
+      await tester.pumpAndSettle();
+      expect(sync.calls, [a, b]);
+      await tester.pumpWidget(const SizedBox.shrink());
+    },
+  );
+  test(
+    'a demoted coach keeps rejected edits but continues receiving team updates',
+    () async {
+      final root = Directory.systemTemp.createTempSync('teamsync_demotion_');
+      final a = Store(':memory:'),
+          b = Store(':memory:'),
+          server = SharedFixture();
+      addTearDown(() {
+        a.close();
+        b.close();
+        root.deleteSync(recursive: true);
+      });
+      final team = {'id': Store.uuid.v4(), 'name': 'Five', 'role': 'owner'};
+      final ta = saveAccountRoster(
+        a,
+        'https://fixture.example',
+        'alice',
+        team,
+        [],
+      );
+      final tb = saveAccountRoster(b, 'https://fixture.example', 'bob', {
+        ...team,
+        'role': 'coach',
+      }, []);
+      final map = a.addMap(ta, 'Mirage'),
+          tactic = a.createStrategy(
+            a.maps(ta).single['id'] as String,
+            'Shared',
+            'T',
+          );
+      expect(map, isNotEmpty);
+      final sa = TacticalSync(
+        a,
+        LocalFiles(root),
+        clientFactory: (_) => SyncAccount(server, 'alice'),
+      );
+      final sb = TacticalSync(
+        b,
+        LocalFiles(root),
+        clientFactory: (_) => SyncAccount(server, 'bob'),
+      );
+      await sa.run(ta, conflictLabel: 'Copy');
+      await sb.run(tb, conflictLabel: 'Copy');
+      final bt = b.strategies(tb).single['id'] as String;
+      b.saveStrategy(
+        bt,
+        'Local preserved',
+        [],
+        b.strategy(bt)['version'] as int,
+      );
+      var dropped = false;
+      server.checkRequest = (user, method, path) {
+        if (!dropped && user == 'bob' && method == 'POST') {
+          dropped = true;
+          server.roles['bob'] = 'player';
+        }
+      };
+      await sb.run(tb, conflictLabel: 'Copy');
+      expect(sb.blockedByRole, isTrue);
+      a.saveStrategy(
+        tactic,
+        'Fresh team plan',
+        [],
+        a.strategy(tactic)['version'] as int,
+      );
+      await sa.run(ta, conflictLabel: 'Copy');
+      await sb.run(tb, conflictLabel: 'Copy');
+      expect(
+        b.strategies(tb).map((s) => s['notes']),
+        containsAll(['Fresh team plan', 'Local preserved']),
+      );
+      expect(
+        server.documents.values.where((d) => d['kind'] == 'strategy'),
+        hasLength(1),
+      );
+      expect(sb.blockedByRole, isTrue);
+    },
+  );
   test(
     'training assignments sync with stable account and tactic links',
     () async {
@@ -155,6 +337,7 @@ void main() {
             'strategy_ids': [tactic],
             'source_url': 'https://cs2tricks.com/lineup/window',
             'screenshot_paths': [File('test/fixtures/radar.png').absolute.path],
+            'video_path': File('test/fixtures/own_clip.mp4').absolute.path,
             'author': 'Source author',
           });
       final task = a.createTask(
@@ -203,6 +386,38 @@ void main() {
         await File(screenshot).readAsBytes(),
         await File('test/fixtures/radar.png').readAsBytes(),
       );
+      final clip =
+          jsonDecode(
+                UtilityLibrary(b).list(tb).single['details'] as String,
+              )['video_path']
+              as String;
+      expect(
+        await File(clip).readAsBytes(),
+        await File('test/fixtures/own_clip.mp4').readAsBytes(),
+      );
+      await File(screenshot).delete();
+      await File(clip).delete();
+      await sb.run(tb, conflictLabel: 'Conflict');
+      expect(await File(clip).exists(), isTrue);
+      expect(await File(screenshot).exists(), isTrue);
+      final operationsBeforeRepair = server.operations.length;
+      await File(clip).writeAsBytes([1, 2, 3, 4]);
+      await File(screenshot).writeAsBytes([1, 2, 3, 4]);
+      await File(clip)
+          .setLastModified(DateTime.now().add(const Duration(seconds: 1)));
+      await File(screenshot)
+          .setLastModified(DateTime.now().add(const Duration(seconds: 1)));
+      await sb.run(tb, conflictLabel: 'Conflict');
+      expect(
+        await File(clip).readAsBytes(),
+        await File('test/fixtures/own_clip.mp4').readAsBytes(),
+      );
+      expect(
+        await File(screenshot).readAsBytes(),
+        await File('test/fixtures/radar.png').readAsBytes(),
+      );
+      expect(server.operations.length, operationsBeforeRepair);
+
       final received = b.tasks(tb).single;
       expect(received['title'], 'Выучить выход');
       expect(received['strategy_id'], b.strategies(tb).single['id']);

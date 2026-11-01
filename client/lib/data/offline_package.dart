@@ -5,6 +5,7 @@ import 'dart:typed_data';
 import 'store.dart';
 import 'files.dart';
 import 'utilities.dart';
+import 'own_video.dart';
 
 /// Bounded JSON format: never extracts caller-supplied paths or archives.
 class OfflinePackage {
@@ -47,6 +48,17 @@ class OfflinePackage {
         images.add(base64Encode(file.readAsBytesSync()));
       }
       details['screenshot_images'] = images;
+      final clip = details.remove('video_path') as String?;
+      if (clip != null) {
+        final file = File(clip);
+        if (!file.existsSync()) throw DomainError('fileMissing');
+        total += file.lengthSync();
+        if (total > limit ~/ 2) throw DomainError('packageError');
+        final bytes = file.readAsBytesSync();
+        OwnVideo.validate(bytes);
+        details['video_bytes'] = base64Encode(bytes);
+      }
+
       utility['details'] = jsonEncode(details);
     }
     final value = {
@@ -136,7 +148,8 @@ class OfflinePackage {
         final details = Map<String, dynamic>.from(
           jsonDecode(utility['details'] as String) as Map,
         );
-        if (details.containsKey('screenshot_paths')) {
+        if (details.containsKey('screenshot_paths') ||
+            details.containsKey('video_path')) {
           throw DomainError('packageError');
         }
         final images = details.remove('screenshot_images') as List? ?? [];
@@ -164,6 +177,16 @@ class OfflinePackage {
           paths.add(file.path);
         }
         details['screenshot_paths'] = paths;
+        final clip = details.remove('video_bytes') as String?;
+        if (clip != null) {
+          final video = await OwnVideo.importBytes(
+            LocalFiles(root),
+            base64Decode(clip),
+          );
+          created.add(File(video));
+          details['video_path'] = video;
+        }
+
         utility['details'] = jsonEncode(details);
       }
       return store.transaction<String>(() {

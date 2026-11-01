@@ -439,5 +439,15 @@
   "utilityTactics": "Linked tactics",
   "utilityScreenshots": "Aim screenshots",
   "utilityAddImage": "Add own image",
-  "utilityRemoveImage": "Remove image"
+  "utilityRemoveImage": "Remove image",
+  "syncReadOnlyPending": "Local edits are preserved. Your current role cannot publish them.",
+  "syncMediaQuota": "The team attachment limit has been reached.",
+  "utilityVideo": "Own video clip",
+  "utilityAddVideo": "Add own MP4",
+  "utilityOpenVideo": "Watch clip",
+  "utilityShareVideo": "Share file",
+  "utilityRemoveVideo": "Remove clip",
+  "utilityVideoLimit": "Own MP4 up to 20 MB. Clips sync with the team and are saved for offline viewing.",
+  "invalidVideo": "Choose an MP4 with a video track, up to 20 MB.",
+  "videoUnavailable": "Could not open the clip. Use Share file to choose a compatible player."
 }

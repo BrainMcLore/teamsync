@@ -2527,6 +2527,66 @@ abstract class AppLocalizations {
   /// In ru, this message translates to:
   /// **'Убрать изображение'**
   String get utilityRemoveImage;
+
+  /// No description provided for @syncReadOnlyPending.
+  ///
+  /// In ru, this message translates to:
+  /// **'Локальные правки сохранены. Текущая роль не разрешает их отправку.'**
+  String get syncReadOnlyPending;
+
+  /// No description provided for @syncMediaQuota.
+  ///
+  /// In ru, this message translates to:
+  /// **'Лимит вложений команды исчерпан.'**
+  String get syncMediaQuota;
+
+  /// No description provided for @utilityVideo.
+  ///
+  /// In ru, this message translates to:
+  /// **'Свой видеоклип'**
+  String get utilityVideo;
+
+  /// No description provided for @utilityAddVideo.
+  ///
+  /// In ru, this message translates to:
+  /// **'Добавить свой MP4'**
+  String get utilityAddVideo;
+
+  /// No description provided for @utilityOpenVideo.
+  ///
+  /// In ru, this message translates to:
+  /// **'Смотреть клип'**
+  String get utilityOpenVideo;
+
+  /// No description provided for @utilityShareVideo.
+  ///
+  /// In ru, this message translates to:
+  /// **'Отправить файл'**
+  String get utilityShareVideo;
+
+  /// No description provided for @utilityRemoveVideo.
+  ///
+  /// In ru, this message translates to:
+  /// **'Убрать клип'**
+  String get utilityRemoveVideo;
+
+  /// No description provided for @utilityVideoLimit.
+  ///
+  /// In ru, this message translates to:
+  /// **'Свой MP4 до 20 МБ. Клип синхронизируется с командой и сохраняется для офлайн-просмотра.'**
+  String get utilityVideoLimit;
+
+  /// No description provided for @invalidVideo.
+  ///
+  /// In ru, this message translates to:
+  /// **'Выберите MP4 с видеодорожкой размером до 20 МБ.'**
+  String get invalidVideo;
+
+  /// No description provided for @videoUnavailable.
+  ///
+  /// In ru, this message translates to:
+  /// **'Не удалось открыть клип. Выберите совместимый проигрыватель через отправку файла.'**
+  String get videoUnavailable;
 }
 
 class _AppLocalizationsDelegate
