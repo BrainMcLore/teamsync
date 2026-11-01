@@ -5,7 +5,8 @@ from release_utils import client_version, write_archive
 root=Path(__file__).resolve().parents[1]
 excluded={'build','failures','.dart_tool','.gradle','ephemeral','Pods','.symlinks','__pycache__','.pytest_cache','.git','.idea','.tools','.venv','.codex','.aws','.agents'}
 files=[*root.glob('*.md'),root/'compose.yaml',root/'.gitignore',root/'.gitattributes',root/'render.yaml',root/'.python-version']
-files.extend(root.glob('artifacts/verification/studio-*-08.png'))
+files.extend(root.glob('artifacts/verification/studio-*-08*.png'))
+files.append(root/'artifacts/app-icon.png')
 files.extend(root.glob('artifacts/verification/review-performance-04.json'))
 for folder in ['client','server','worker','tools','packaging','native','.github']:
     for file in (root/folder).rglob('*'):

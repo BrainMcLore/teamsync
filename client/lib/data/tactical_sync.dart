@@ -5,6 +5,7 @@ import 'dart:typed_data';
 import 'package:crypto/crypto.dart';
 
 import 'account.dart';
+import 'account_roster.dart';
 import 'files.dart';
 import 'store.dart';
 
@@ -27,6 +28,15 @@ class TacticalSync {
   String hash(Object value) =>
       sha256.convert(utf8.encode(jsonEncode(value))).toString();
   Map<String, dynamic> canonical(String kind, Map value) {
+    if (kind == 'task') {
+      return {
+        'title': value['title'],
+        'notes': value['notes'] ?? '',
+        'strategy_id': value['strategy_id'],
+        'assignee_user_id': value['assignee_user_id'],
+        'status': value['status'] ?? 'todo',
+      };
+    }
     if (kind == 'map') {
       return {
         'title': value['title'],
@@ -88,6 +98,26 @@ class TacticalSync {
       .cast<Map<String, dynamic>>()
       .where((r) => r['remote'] == remote)
       .firstOrNull;
+  Map<String, String> get rosterIds {
+    final binding = jsonDecode(store.setting('account_team_$local')!) as Map;
+    final namespace = sha256
+        .convert(
+          utf8.encode(
+            '${binding['server']}/${binding['user']}/${binding['team']}',
+          ),
+        )
+        .toString();
+    final snapshot =
+        jsonDecode(store.setting('account_roster_$namespace') ?? '{}') as Map;
+    return Map<String, String>.from(snapshot['members'] as Map? ?? {});
+  }
+
+  List<RecordData> records(String kind) => switch (kind) {
+    'map' => store.maps(local),
+    'task' => store.tasks(local),
+    _ => store.strategies(local),
+  };
+
   String get path => '/api/v1/teams/$team';
 
   Future<void> run(String localTeam, {required String conflictLabel}) async {
@@ -114,6 +144,7 @@ class TacticalSync {
       final me = await api.request('GET', '/api/v1/me');
       if (me['id'] != config['user']) throw DomainError('syncAccountMismatch');
       String? role;
+      final roster = <dynamic>[];
       for (var offset = 0; ; offset += 100) {
         final rows =
             (await api.request(
@@ -121,12 +152,26 @@ class TacticalSync {
                   '$path/members?offset=$offset&limit=100',
                 ))['items']
                 as List;
+        roster.addAll(rows);
         for (final r in rows) {
           if (r['id'] == me['id']) role = r['role'] as String;
         }
         if (rows.length < 100) break;
       }
       if (role == null) throw DomainError('forbidden');
+      saveAccountRoster(
+        store,
+        api.base.toString(),
+        me['id'] as String,
+        {
+          'id': team,
+          'name': store.teams.singleWhere((t) => t['id'] == local)['name'],
+          'role': role,
+        },
+        roster,
+        localTeam: local,
+        select: false,
+      );
       store.setSetting('shared_role_$local', role);
       writable = ['owner', 'captain', 'coach'].contains(role);
       files.catalog?.ensureTeam(store, local);
@@ -148,10 +193,9 @@ class TacticalSync {
         );
       }
       persist();
-      if (writable) await flush();
+      await flush();
       for (var attempt = 0; attempt < 2; attempt++) {
         await pull(conflictLabel);
-        if (!writable) break;
         await queueChanges();
         final conflict = await flush();
         deferred = conflict;
@@ -193,11 +237,18 @@ class TacticalSync {
   }
 
   Future<void> queueChanges() async {
-    for (final kind in ['map', 'strategy']) {
-      final rows = kind == 'map' ? store.maps(local) : store.strategies(local);
+    for (final kind in ['map', 'strategy', 'task']) {
+      if (!writable && kind != 'task') continue;
+      final rows = records(kind);
       for (final row in rows) {
         final id = row['id'] as String;
         final e = entry(kind, id);
+        if (!writable &&
+            (e['version'] == 0 ||
+                row['member_id'] !=
+                    store.setting('shared_user_member_$local'))) {
+          continue;
+        }
         final payload = await localPayload(kind, row, uploadMedia: true);
         final fingerprint = hash(payload);
         if (e['hash'] == fingerprint) continue;
@@ -258,6 +309,24 @@ class TacticalSync {
     Map row, {
     bool uploadMedia = false,
   }) async {
+    if (kind == 'task') {
+      final assignee = rosterIds.entries
+          .where((e) => e.value == row['member_id'])
+          .firstOrNull
+          ?.key;
+      if (row['member_id'] != null && assignee == null) {
+        throw DomainError('invalid_link');
+      }
+      return canonical(kind, {
+        'title': row['title'],
+        'notes': row['notes'],
+        'status': row['status'],
+        'strategy_id': row['strategy_id'] == null
+            ? null
+            : entry('strategy', row['strategy_id'] as String)['remote'],
+        'assignee_user_id': assignee,
+      });
+    }
     if (kind == 'strategy') {
       final parent = entry('map', row['map_id'] as String);
       return canonical(kind, {
@@ -329,12 +398,12 @@ class TacticalSync {
       if (rows.length < 5) break;
     }
     documents.sort(
-      (a, b) =>
-          (a['kind'] == 'map' ? 0 : 1).compareTo(b['kind'] == 'map' ? 0 : 1),
+      (a, b) => (['map', 'strategy', 'task'].indexOf(a['kind'] as String))
+          .compareTo(['map', 'strategy', 'task'].indexOf(b['kind'] as String)),
     );
     for (final document in documents) {
       final kind = document['kind'] as String;
-      if (!['map', 'strategy'].contains(kind)) continue;
+      if (!['map', 'strategy', 'task'].contains(kind)) continue;
       final payload = canonical(kind, Map.from(document['payload'] as Map));
       var e = byRemote(document['id'] as String);
       if (e == null && kind == 'map') {
@@ -350,10 +419,8 @@ class TacticalSync {
       }
       RecordData? current;
       if (e != null) {
-        final records = kind == 'map'
-            ? store.maps(local)
-            : store.strategies(local);
-        current = records.where((r) => r['id'] == e!['local']).firstOrNull;
+        final rows = records(kind);
+        current = rows.where((r) => r['id'] == e!['local']).firstOrNull;
         if (current != null &&
             kind == 'strategy' &&
             store.editingStrategies.contains(e['local'])) {
@@ -394,7 +461,59 @@ class TacticalSync {
           }
         }
       }
-      if (kind == 'map') {
+      if (kind == 'task') {
+        store.applyingSync = true;
+        try {
+          final parent = payload['strategy_id'] == null
+              ? null
+              : byRemote(payload['strategy_id'] as String);
+          if (payload['strategy_id'] != null && parent == null) {
+            throw DomainError('invalid_link');
+          }
+          final member = rosterIds[payload['assignee_user_id']];
+          if (current != null &&
+              e != null &&
+              e['version'] != document['version'] &&
+              hash(await localPayload(kind, current)) != e['hash']) {
+            final copy = store.createTask(
+              local,
+              '${(current['title'] as String).substring(0, (current['title'] as String).length.clamp(0, 75))} · $conflictLabel',
+              current['notes'] as String,
+              member: current['member_id'] as String?,
+              strategyId: current['strategy_id'] as String?,
+            );
+            store.db.execute('UPDATE tasks SET status=? WHERE id=?', [
+              current['status'],
+              copy,
+            ]);
+            conflicts++;
+          }
+          final id =
+              current?['id'] as String? ??
+              store.createTask(
+                local,
+                payload['title'] as String,
+                payload['notes'] as String,
+                member: member,
+                strategyId: parent?['local'] as String?,
+              );
+          store.db.execute(
+            'UPDATE tasks SET title=?,notes=?,status=?,member_id=?,strategy_id=?,updated_at=? WHERE id=?',
+            [
+              payload['title'],
+              payload['notes'],
+              payload['status'],
+              member,
+              parent?['local'],
+              store.now,
+              id,
+            ],
+          );
+          e ??= entry(kind, id, remote: document['id'] as String);
+        } finally {
+          store.applyingSync = false;
+        }
+      } else if (kind == 'map') {
         final primary = await downloadImage(payload['image_id'] as String?);
         final lower = await downloadImage(payload['lower_image_id'] as String?);
         final id =
@@ -441,7 +560,7 @@ class TacticalSync {
       e['hash'] = hash(payload);
       persist();
       downloaded++;
-      if (kind == 'strategy') {
+      if (kind == 'strategy' || kind == 'task') {
         store.notifyRemoteTactical(e['local'] as String);
       } else {
         for (final row

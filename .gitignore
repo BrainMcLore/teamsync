@@ -18,4 +18,5 @@ client/build-*.log
 **/local.properties
 artifacts/verification/*
 !artifacts/verification/studio-*-08.png
+!artifacts/verification/studio-*-08-linux.png
 !artifacts/verification/review-performance-04.json

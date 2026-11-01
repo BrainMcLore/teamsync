@@ -38,6 +38,7 @@ String saveAccountRoster(
   Map<String, dynamic> team,
   List<dynamic> roster, {
   String? localTeam,
+  bool select = true,
 }) {
   final namespace = sha256
       .convert(utf8.encode('$server/$user/${team['id']}'))
@@ -102,8 +103,11 @@ String saveAccountRoster(
       }
     }
     store.setSetting(key, jsonEncode({'team': local, 'members': current}));
-    store.setSetting('team', local);
-    rememberAccountIdentity(store, server, user);
+    if (select) {
+      store.setSetting('team', local);
+      rememberAccountIdentity(store, server, user);
+    }
+    store.setSetting('shared_user_member_$local', current[user] ?? '');
     store.setSetting('shared_role_$local', team['role'] as String? ?? 'player');
     store.setSetting(
       'account_team_$local',
@@ -111,6 +115,6 @@ String saveAccountRoster(
     );
     return local;
   });
-  store.onTeamChange?.call();
+  if (select) store.onTeamChange?.call();
   return result;
 }

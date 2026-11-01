@@ -128,7 +128,9 @@ void main() {
     expect(tester.takeException(), isNull);
     await expectLater(
       find.byKey(const Key('native-shot')),
-      matchesGoldenFile('../../artifacts/verification/studio-maps-08.png'),
+      matchesGoldenFile(
+        '../../artifacts/verification/studio-maps-08${Platform.isLinux ? '-linux' : ''}.png',
+      ),
     );
     await tester.pumpWidget(
       RepaintBoundary(
@@ -152,7 +154,9 @@ void main() {
     expect(tester.takeException(), isNull);
     await expectLater(
       find.byKey(const Key('native-shot')),
-      matchesGoldenFile('../../artifacts/verification/studio-editor-08.png'),
+      matchesGoldenFile(
+        '../../artifacts/verification/studio-editor-08${Platform.isLinux ? '-linux' : ''}.png',
+      ),
     );
     tester.view.physicalSize = const Size(390, 844);
     await tester.pumpWidget(
@@ -167,7 +171,9 @@ void main() {
     expect(tester.takeException(), isNull);
     await expectLater(
       find.byKey(const Key('native-shot')),
-      matchesGoldenFile('../../artifacts/verification/studio-mobile-08.png'),
+      matchesGoldenFile(
+        '../../artifacts/verification/studio-mobile-08${Platform.isLinux ? '-linux' : ''}.png',
+      ),
     );
   });
   final fixture = Directory('../.tools/demo-fixtures/parsed');
@@ -228,7 +234,9 @@ void main() {
     expect(tester.takeException(), isNull);
     await expectLater(
       find.byKey(const Key('native-shot')),
-      matchesGoldenFile('../../artifacts/verification/studio-review-08.png'),
+      matchesGoldenFile(
+        '../../artifacts/verification/studio-review-08${Platform.isLinux ? '-linux' : ''}.png',
+      ),
     );
     await tester.tap(find.byIcon(Icons.play_arrow_rounded));
     await tester.pump();
@@ -259,7 +267,7 @@ void main() {
         await expectLater(
           find.byKey(const Key('native-shot')),
           matchesGoldenFile(
-            '../../artifacts/verification/studio-review-mobile-08.png',
+            '../../artifacts/verification/studio-review-mobile-08${Platform.isLinux ? '-linux' : ''}.png',
           ),
         );
       }

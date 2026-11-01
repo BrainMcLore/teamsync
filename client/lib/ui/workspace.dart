@@ -1041,7 +1041,11 @@ class _WorkspaceState extends State<Workspace> with WidgetsBindingObserver {
             spacing: 8,
             runSpacing: 8,
             children: [
-              if (state == 'todo')
+              if (state == 'todo' &&
+                  (db.canEditTeam(teamId!) ||
+                      (db.setting('shared_role_$teamId') == 'player' &&
+                          task['member_id'] ==
+                              db.setting('shared_user_member_$teamId'))))
                 FilledButton(
                   onPressed: busy
                       ? null
@@ -1050,7 +1054,7 @@ class _WorkspaceState extends State<Workspace> with WidgetsBindingObserver {
                         }),
                   child: Text(l.submit),
                 ),
-              if (state == 'submitted')
+              if (state == 'submitted' && db.canEditTeam(teamId!))
                 FilledButton(
                   onPressed: busy
                       ? null
@@ -1059,7 +1063,7 @@ class _WorkspaceState extends State<Workspace> with WidgetsBindingObserver {
                         }),
                   child: Text(l.approve),
                 ),
-              if (state != 'todo')
+              if (state != 'todo' && db.canEditTeam(teamId!))
                 TextButton(
                   onPressed: busy
                       ? null
@@ -1087,8 +1091,10 @@ class _WorkspaceState extends State<Workspace> with WidgetsBindingObserver {
       children: [
         heading(
           l.training,
-          action: l.newTask,
-          onAction: () => act(() => createTask()),
+          action: db.canEditTeam(teamId!) ? l.newTask : null,
+          onAction: db.canEditTeam(teamId!)
+              ? () => act(() => createTask())
+              : null,
         ),
         Expanded(
           child: items.isEmpty

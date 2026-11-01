@@ -175,7 +175,7 @@ def create_app(database_url=None, public_url=None):
 
     @app.get('/api/v1/health')
     def health():
-        return {'status':'ok','version':'0.7.0','providers':{'steam':True,'discord':bool(discord_id and discord_secret)},'capabilities':['identity','teams','account_invites','roster','tactical_sync','team_media','versioned_documents'],'native_client_required':True}
+        return {'status':'ok','version':'0.7.0','providers':{'steam':True,'discord':bool(discord_id and discord_secret)},'capabilities':['identity','teams','account_invites','roster','tactical_sync','training_sync','team_media','versioned_documents'],'native_client_required':True}
 
     @app.post('/api/v1/auth/{provider}/start')
     def auth_start(provider:str,body:AuthStart):
@@ -468,7 +468,10 @@ def create_app(database_url=None, public_url=None):
     def write_document(team:str,body:DocumentWrite,session=Depends(authenticated)):
         request_hash=hashlib.sha256(body.model_dump_json().encode()).hexdigest()
         with engine.begin() as conn:
-            member(conn,team,session['user_id'],write=True)
+            caller=member(conn,team,session['user_id'])
+            manager=caller['role'] in ('owner','captain','coach')
+            if not manager and (caller['role']!='player' or body.kind!='task'):
+                fail('forbidden',403)
             previous=conn.execute(select(operations).where(operations.c.id==body.operation_id)).mappings().first()
             if previous:
                 if previous['team_id']!=team or previous['user_id']!=session['user_id'] or previous['request_hash']!=request_hash:
@@ -482,6 +485,16 @@ def create_app(database_url=None, public_url=None):
             if current and current['kind']!=body.kind:
                 fail('kind_conflict',409)
             payload=body.payload.model_dump()
+            if not manager:
+                # Players may submit only their own existing assignment. Every
+                # other field is immutable; approval belongs to the coaching staff.
+                old=current['payload'] if current else {}
+                if not current or old.get('assignee_user_id')!=session['user_id']:
+                    fail('forbidden',403)
+                if old.get('status')!='todo' or payload['status']!='submitted':
+                    fail('forbidden',403)
+                if {k:v for k,v in old.items() if k!='status'}!={k:v for k,v in payload.items() if k!='status'}:
+                    fail('forbidden',403)
             for field in ('image_id','lower_image_id'):
                 if payload[field] and not conn.execute(select(media.c.id).where(media.c.team_id==team,media.c.id==payload[field])).first():fail('invalid_media',422)
             for key,kind in [('map_id','map'),('strategy_id','strategy')]:

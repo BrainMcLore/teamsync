@@ -57,7 +57,8 @@ class SyncAccount extends AccountClient {
       if (!server.roles.containsKey(user)) throw DomainError('not_found');
       return {
         'items': [
-          for (final r in server.roles.entries) {'id': r.key, 'role': r.value},
+          for (final r in server.roles.entries)
+            {'id': r.key, 'role': r.value, 'name': r.key},
         ],
       };
     }
@@ -74,7 +75,11 @@ class SyncAccount extends AccountClient {
       };
     }
     if (method == 'POST' && path.endsWith('/documents')) {
-      if (!['owner', 'coach', 'captain'].contains(server.roles[user])) {
+      if (!['owner', 'coach', 'captain'].contains(server.roles[user]) &&
+          !(server.roles[user] == 'player' &&
+              body?['kind'] == 'task' &&
+              (body?['payload'] as Map)['assignee_user_id'] == user &&
+              (body?['payload'] as Map)['status'] == 'submitted')) {
         throw DomainError('forbidden');
       }
       final op = body!['operation_id'] as String;
@@ -104,6 +109,83 @@ class SyncAccount extends AccountClient {
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
+  test(
+    'training assignments sync with stable account and tactic links',
+    () async {
+      final root = Directory.systemTemp.createTempSync('teamsync_training_');
+      final a = Store(':memory:'),
+          b = Store(':memory:'),
+          server = SharedFixture();
+      addTearDown(() {
+        a.close();
+        b.close();
+        root.deleteSync(recursive: true);
+      });
+      final team = {'id': Store.uuid.v4(), 'name': 'Training', 'role': 'owner'};
+      final roster = [
+        {'id': 'alice', 'name': 'Captain', 'role': 'owner'},
+        {'id': 'bob', 'name': 'Player', 'role': 'coach'},
+      ];
+      final ta = saveAccountRoster(
+        a,
+        'https://fixture.example',
+        'alice',
+        team,
+        roster,
+      );
+      final tb = saveAccountRoster(
+        b,
+        'https://fixture.example',
+        'bob',
+        team,
+        roster,
+      );
+      final map = a.addMap(ta, 'Mirage');
+      final tactic = a.createStrategy(map, 'Выход B', 'T');
+      final task = a.createTask(
+        ta,
+        'Выучить выход',
+        'Роль и тайминги',
+        member:
+            a.members(ta).singleWhere((m) => m['name'] == 'Player')['id']
+                as String,
+        strategyId: tactic,
+      );
+      final sa = TacticalSync(
+        a,
+        LocalFiles(root),
+        clientFactory: (_) => SyncAccount(server, 'alice'),
+      );
+      final sb = TacticalSync(
+        b,
+        LocalFiles(root),
+        clientFactory: (_) => SyncAccount(server, 'bob'),
+      );
+      await sa.run(ta, conflictLabel: 'Conflict');
+      await sb.run(tb, conflictLabel: 'Conflict');
+      final received = b.tasks(tb).single;
+      expect(received['title'], 'Выучить выход');
+      expect(received['strategy_id'], b.strategies(tb).single['id']);
+      expect(
+        received['member_id'],
+        b.members(tb).singleWhere((m) => m['name'] == 'bob')['id'],
+      );
+      server.roles['bob'] = 'player';
+      await sb.run(tb, conflictLabel: 'Conflict');
+      b.transitionTask(received['id'] as String, 'submitted');
+      await sb.run(tb, conflictLabel: 'Conflict');
+      await sa.run(ta, conflictLabel: 'Conflict');
+      expect(a.tasks(ta).single['status'], 'submitted');
+      a.transitionTask(task, 'approved');
+      await sa.run(ta, conflictLabel: 'Conflict');
+      await sb.run(tb, conflictLabel: 'Conflict');
+      expect(b.tasks(tb).single['status'], 'approved');
+      expect(
+        server.documents.values.where((d) => d['kind'] == 'task'),
+        hasLength(1),
+      );
+    },
+  );
   testWidgets(
     'open read-only tactic receives teammate changes without reopening',
     (tester) async {

@@ -291,6 +291,7 @@ PRAGMA user_version=2;
     String? member,
     String? strategyId,
   }) {
+    if (!canEditTeam(team)) throw DomainError('readOnlyTeam');
     if (notes.length > 20000) throw DomainError('limit');
     if (member != null &&
         rows('SELECT id FROM members WHERE id=? AND team_id=?', [
@@ -317,13 +318,21 @@ PRAGMA user_version=2;
       'todo',
       now,
     ]);
+    if (!applyingSync) onTacticalChange?.call();
     return id;
   }
 
   void transitionTask(String id, String status) {
-    final current = rows('SELECT status FROM tasks WHERE id=?', [
-      id,
-    ]).single['status'];
+    final task = rows('SELECT * FROM tasks WHERE id=?', [id]).single;
+    final team = task['team_id'] as String;
+    if (!canEditTeam(team) &&
+        !(setting('shared_role_$team') == 'player' &&
+            task['member_id'] == setting('shared_user_member_$team') &&
+            task['status'] == 'todo' &&
+            status == 'submitted')) {
+      throw DomainError('readOnlyTeam');
+    }
+    final current = task['status'];
     const allowed = {
       'todo': ['submitted'],
       'submitted': ['approved', 'todo'],
@@ -337,6 +346,7 @@ PRAGMA user_version=2;
       now,
       id,
     ]);
+    if (!applyingSync) onTacticalChange?.call();
   }
 
   List<RecordData> demos(String team) => rows(
