@@ -176,3 +176,26 @@ After adding preparation: full Flutter suite 80 passed, 5 skipped; analysis clea
 The backend suite remains 20 passed. Local form snapshots remain stable after
 extracting the shared deadline picker. No gameplay/voice-server acceptance is
 implied by these client/server tests.
+
+### Native assignment plans and map preparation — verified
+
+Both candidates use application commit `2252a50`:
+
+- Android 41333982454: integration flow passed with deadline/criteria preservation,
+  map-plan generation and delivery to the second account. Signed release packaging
+  and the pinned Android certificate check succeeded.
+- Windows 41333982519: packaging/parser fixture, worker/server verification, Flutter
+  checks, native application build and installer packaging succeeded.
+- Downloaded all artifacts; every supplied SHA-256 entry matches the actual file.
+  Android APK: `dc0bb0b2e807289ec868b3524cc16f6ad9248568a9bb357228a67dd5fcbb6339`.
+  Windows installer: `bc216166b8529884eb86bd2af8dbb1956c8a199e293101e7f2d27e96b35719a0`.
+  Source ZIP: `d847693760541f83bf3f230322f8e1c6aeac9d0a693453e561f34d04820dfe7f`.
+  Backend ZIP: `7b35e7dd2aa5079106d6acc101cd58ed0a7024ee65deafa2f5501d468eb31e2f`.
+- Source/backend archive inventories contain no tool environments, signing keys,
+  databases or active .env files. Required skills/media backend modules are included.
+  Git-history secret scan found no leaks; obsolete capture branch and generated
+  failure images were removed. The repository and CI candidates remain private;
+  the existing v0.8.0 release was not overwritten.
+
+Remaining work is still tracked in ACCEPTANCE.md/ROADMAP.md; these successful
+builds are development candidates, not a claim of full product acceptance.

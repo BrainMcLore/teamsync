@@ -32,6 +32,14 @@
 
 В текущих исходниках задания проходят этапы «К выполнению → В процессе → На проверке → Подтверждено». Возврат требует комментария тренера; история сохраняет авторов и время, последние загруженные записи доступны без сети. Тип тренировки, срок и критерий выполнения задаются в форме задания. Мастер «Подготовить карту» распределяет задания по тактикам и аккаунтам; доступны четыре встроенных шаблона с редактируемыми критериями. Доказательства выполнения, отдельные комментарии и системные напоминания ещё в разработке.
 
+<details>
+<summary>Задания и план подготовки</summary>
+<p align="center">
+<img src="artifacts/verification/studio-mobile-08.png" width="270" alt="Командные задания">
+<img src="artifacts/verification/studio-task-form-08.png" width="270" alt="Тип задания, срок и критерий выполнения">
+</p>
+</details>
+
 ### Начать работу
 
 1. Установите Windows-сборку из [Releases](https://github.com/BrainMcLore/teamsync/releases). Сверьте SHA-256 с приложенным файлом контрольных сумм.
@@ -91,6 +99,8 @@ python -m unittest discover -s tools -p test_release.py -v
 ### English
 
 TeamSync is a native CS2 team workspace for Windows and Android, with Russian and English interfaces. Plan tactics on bundled maps, share drawings and notes with your roster, review prepared demos and export printable playbooks. Windows handles DEM parsing, HLTV downloads and local game servers. Own MP4 clips and aiming images are shared as protected team attachments; external videos remain links. Android opens prepared reviews and the shared tactical library.
+
+Current source includes training types, timezone-aware deadlines, completion criteria and a map-preparation wizard with per-tactic player assignments. Four built-in templates can be customized before creating personal tasks; progress and plans sync through the team account. Evidence uploads, independent comments, scheduling and notifications remain unfinished.
 
 This is an active development project. The published Windows release and the current source branch have different verification scopes; see the feature table and linked checks before deploying. Local builds without signing variables use a test key; main-branch CI uses a persistent release key and verifies its public certificate fingerprint. Linux is a development environment, not an application target.
 
