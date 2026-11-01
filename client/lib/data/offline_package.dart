@@ -4,6 +4,7 @@ import 'dart:typed_data';
 
 import 'store.dart';
 import 'files.dart';
+import 'utilities.dart';
 
 /// Bounded JSON format: never extracts caller-supplied paths or archives.
 class OfflinePackage {
@@ -47,6 +48,7 @@ class OfflinePackage {
           )
           .toList(),
       'tasks': store.tasks(team),
+      'utilities': UtilityLibrary(store).list(team),
       'excluded': [
         'demo_files',
         'external_videos',
@@ -74,11 +76,13 @@ class OfflinePackage {
       final maps = data['maps'] as List,
           members = data['members'] as List,
           strategies = data['strategies'] as List,
-          tasks = data['tasks'] as List;
+          tasks = data['tasks'] as List,
+          utilities = data['utilities'] as List? ?? [];
       if (maps.length > 100 ||
           members.length > 100 ||
           strategies.length > 500 ||
-          tasks.length > 5000) {
+          tasks.length > 5000 ||
+          utilities.length > 5000) {
         throw DomainError('packageError');
       }
       final images = <String, String>{};
@@ -180,6 +184,26 @@ class OfflinePackage {
             jsonEncode(snapshot),
             store.now,
           ]);
+        }
+        for (final raw in utilities) {
+          final utility = raw as Map;
+          final map = mapIds[utility['map_id']];
+          if (map == null) throw DomainError('packageError');
+          final details = Map<String, dynamic>.from(
+            jsonDecode(utility['details'] as String) as Map,
+          );
+          details['strategy_ids'] = [
+            for (final id in details['strategy_ids'] as List? ?? [])
+              strategyIds[id] ?? (throw DomainError('packageError')),
+          ];
+          UtilityLibrary(store).save(
+            team,
+            map,
+            utility['title'] as String,
+            utility['side'] as String,
+            utility['notes'] as String,
+            details,
+          );
         }
         for (final raw in tasks) {
           final t = raw as Map;

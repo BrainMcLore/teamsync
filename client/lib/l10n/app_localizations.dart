@@ -2383,6 +2383,132 @@ abstract class AppLocalizations {
   /// In ru, this message translates to:
   /// **'Доступ к команде отозван. Локальные материалы сохранены, синхронизация остановлена.'**
   String get syncAccessLost;
+
+  /// No description provided for @utilityLibrary.
+  ///
+  /// In ru, this message translates to:
+  /// **'Раскидки'**
+  String get utilityLibrary;
+
+  /// No description provided for @newUtility.
+  ///
+  /// In ru, this message translates to:
+  /// **'Новая раскидка'**
+  String get newUtility;
+
+  /// No description provided for @editUtility.
+  ///
+  /// In ru, this message translates to:
+  /// **'Изменить раскидку'**
+  String get editUtility;
+
+  /// No description provided for @utilityInstruction.
+  ///
+  /// In ru, this message translates to:
+  /// **'Инструкция и тайминг'**
+  String get utilityInstruction;
+
+  /// No description provided for @utilitySource.
+  ///
+  /// In ru, this message translates to:
+  /// **'Ссылка YouTube / CS2Tricks'**
+  String get utilitySource;
+
+  /// No description provided for @utilitySourceHelp.
+  ///
+  /// In ru, this message translates to:
+  /// **'Источник открывается в оригинале. Если видео недоступно, используйте сохранённую инструкцию. Медиа внешнего сайта не скачиваются.'**
+  String get utilitySourceHelp;
+
+  /// No description provided for @utilityEmpty.
+  ///
+  /// In ru, this message translates to:
+  /// **'Добавьте командную раскидку: карту, позицию, инструкцию и источник.'**
+  String get utilityEmpty;
+
+  /// No description provided for @utilityGrenade.
+  ///
+  /// In ru, this message translates to:
+  /// **'Тип гранаты'**
+  String get utilityGrenade;
+
+  /// No description provided for @utilityStart.
+  ///
+  /// In ru, this message translates to:
+  /// **'Начальная позиция'**
+  String get utilityStart;
+
+  /// No description provided for @utilityTarget.
+  ///
+  /// In ru, this message translates to:
+  /// **'Цель'**
+  String get utilityTarget;
+
+  /// No description provided for @utilityThrow.
+  ///
+  /// In ru, this message translates to:
+  /// **'Тип броска'**
+  String get utilityThrow;
+
+  /// No description provided for @utilityAuthor.
+  ///
+  /// In ru, this message translates to:
+  /// **'Автор оригинала'**
+  String get utilityAuthor;
+
+  /// No description provided for @utilityVerified.
+  ///
+  /// In ru, this message translates to:
+  /// **'Проверено, дата ISO'**
+  String get utilityVerified;
+
+  /// No description provided for @utilityRevision.
+  ///
+  /// In ru, this message translates to:
+  /// **'Версия карты'**
+  String get utilityRevision;
+
+  /// No description provided for @utilityOpen.
+  ///
+  /// In ru, this message translates to:
+  /// **'Открыть оригинал'**
+  String get utilityOpen;
+
+  /// No description provided for @utilityUnavailable.
+  ///
+  /// In ru, this message translates to:
+  /// **'Не удалось открыть источник. Инструкция остаётся доступной.'**
+  String get utilityUnavailable;
+
+  /// No description provided for @utilityInvalidSource.
+  ///
+  /// In ru, this message translates to:
+  /// **'Разрешены HTTPS-ссылки YouTube и CS2Tricks без логина и пароля.'**
+  String get utilityInvalidSource;
+
+  /// No description provided for @grenadeHe.
+  ///
+  /// In ru, this message translates to:
+  /// **'Осколочная'**
+  String get grenadeHe;
+
+  /// No description provided for @grenadeDecoy.
+  ///
+  /// In ru, this message translates to:
+  /// **'Ложная'**
+  String get grenadeDecoy;
+
+  /// No description provided for @editMaterial.
+  ///
+  /// In ru, this message translates to:
+  /// **'Изменить'**
+  String get editMaterial;
+
+  /// No description provided for @utilityTactics.
+  ///
+  /// In ru, this message translates to:
+  /// **'Связанные тактики'**
+  String get utilityTactics;
 }
 
 class _AppLocalizationsDelegate

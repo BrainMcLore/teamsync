@@ -1269,4 +1269,71 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get syncAccessLost =>
       'Team access was revoked. Local materials are preserved; synchronization has stopped.';
+
+  @override
+  String get utilityLibrary => 'Utilities';
+
+  @override
+  String get newUtility => 'New utility';
+
+  @override
+  String get editUtility => 'Edit utility';
+
+  @override
+  String get utilityInstruction => 'Instructions and timing';
+
+  @override
+  String get utilitySource => 'YouTube / CS2Tricks link';
+
+  @override
+  String get utilitySourceHelp =>
+      'Open the original source. If the video is unavailable, use the saved instructions. External media is not downloaded.';
+
+  @override
+  String get utilityEmpty =>
+      'Add a team utility: map, position, instructions and source.';
+
+  @override
+  String get utilityGrenade => 'Grenade type';
+
+  @override
+  String get utilityStart => 'Start position';
+
+  @override
+  String get utilityTarget => 'Target';
+
+  @override
+  String get utilityThrow => 'Throw type';
+
+  @override
+  String get utilityAuthor => 'Original author';
+
+  @override
+  String get utilityVerified => 'Verified, ISO date';
+
+  @override
+  String get utilityRevision => 'Map revision';
+
+  @override
+  String get utilityOpen => 'Open original';
+
+  @override
+  String get utilityUnavailable =>
+      'Could not open the source. Saved instructions remain available.';
+
+  @override
+  String get utilityInvalidSource =>
+      'Use an HTTPS YouTube or CS2Tricks link without credentials.';
+
+  @override
+  String get grenadeHe => 'HE grenade';
+
+  @override
+  String get grenadeDecoy => 'Decoy';
+
+  @override
+  String get editMaterial => 'Edit';
+
+  @override
+  String get utilityTactics => 'Linked tactics';
 }

@@ -34,3 +34,8 @@ SQLAlchemy Core / PostgreSQL, DDL: server/migrations/001_initial_postgresql.sql.
 HLTV cache — app-support/hltv-cache/results-<offset>.json и match-<id>.json; offset, fetched_at и source сохраняются. hltv.eventTiers в settings — ручные метки событий. Официальные команды/событие при импорте сохраняются в scouting, уже введённые позиции/тир не стираются при повторном импорте. Cookie-состояние HTTPS-сеанса только анонимное и в памяти worker, не личные browser cookies.
 
 pc.installRoot сохраняет выбранный родительский каталог даже при отмене. TeamSyncServers/<kind> содержит .teamsync-install.json с ownership/state. SteamCMD app 730 и TS3 ZIP имеют отдельные пути. Managed pending install блокирует запуск; отмена сохраняет content для SteamCMD resume. TS license marker создаётся только после принятия пользователем диалога с загруженным текстом.
+
+
+## Миграция SQLite v4
+
+Таблица `utilities`: UUID, внешний ключ команды и карты, название, сторона T/CT, инструкция, ограниченные JSON-метаданные и UTC-время обновления. Индекс `(team_id,map_id)` обслуживает библиотеку. Метаданные содержат источник, автора, параметры броска и локальные ID связанных тактик; при синхронизации/экспорте связи переводятся явно. Серверные версии хранятся в `documents`/`document_versions`; запись доступна управляющим ролям. Перед обновлением существующей базы создаётся `.pre-v4-*.sqlite`.

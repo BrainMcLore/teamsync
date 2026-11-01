@@ -1283,4 +1283,71 @@ class AppLocalizationsRu extends AppLocalizations {
   @override
   String get syncAccessLost =>
       'Доступ к команде отозван. Локальные материалы сохранены, синхронизация остановлена.';
+
+  @override
+  String get utilityLibrary => 'Раскидки';
+
+  @override
+  String get newUtility => 'Новая раскидка';
+
+  @override
+  String get editUtility => 'Изменить раскидку';
+
+  @override
+  String get utilityInstruction => 'Инструкция и тайминг';
+
+  @override
+  String get utilitySource => 'Ссылка YouTube / CS2Tricks';
+
+  @override
+  String get utilitySourceHelp =>
+      'Источник открывается в оригинале. Если видео недоступно, используйте сохранённую инструкцию. Медиа внешнего сайта не скачиваются.';
+
+  @override
+  String get utilityEmpty =>
+      'Добавьте командную раскидку: карту, позицию, инструкцию и источник.';
+
+  @override
+  String get utilityGrenade => 'Тип гранаты';
+
+  @override
+  String get utilityStart => 'Начальная позиция';
+
+  @override
+  String get utilityTarget => 'Цель';
+
+  @override
+  String get utilityThrow => 'Тип броска';
+
+  @override
+  String get utilityAuthor => 'Автор оригинала';
+
+  @override
+  String get utilityVerified => 'Проверено, дата ISO';
+
+  @override
+  String get utilityRevision => 'Версия карты';
+
+  @override
+  String get utilityOpen => 'Открыть оригинал';
+
+  @override
+  String get utilityUnavailable =>
+      'Не удалось открыть источник. Инструкция остаётся доступной.';
+
+  @override
+  String get utilityInvalidSource =>
+      'Разрешены HTTPS-ссылки YouTube и CS2Tricks без логина и пароля.';
+
+  @override
+  String get grenadeHe => 'Осколочная';
+
+  @override
+  String get grenadeDecoy => 'Ложная';
+
+  @override
+  String get editMaterial => 'Изменить';
+
+  @override
+  String get utilityTactics => 'Связанные тактики';
 }

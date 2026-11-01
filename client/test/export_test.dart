@@ -6,6 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:teamsync/data/store.dart';
 import 'package:teamsync/data/offline_package.dart';
 import 'package:teamsync/data/playbook.dart';
+import 'package:teamsync/data/utilities.dart';
 import 'package:teamsync/l10n/app_localizations.dart';
 
 void main() {
@@ -24,7 +25,13 @@ void main() {
     final team = store.createTeam('LAN Команда');
     final member = store.addMember(team, 'Rifle', 'player', 'Entry');
     final map = store.addMap(team, 'Mirage');
+
     final strategy = store.createStrategy(map, 'Выход A', 'T');
+    UtilityLibrary(store).save(team, map, 'Смок CT', 'T', 'Инструкция', {
+      'grenade': 'smoke',
+      'strategy_ids': [strategy],
+      'source_url': 'https://youtu.be/example?t=12',
+    });
     store.saveStrategy(strategy, 'Smoke CT', [
       {'type': 'smoke', 'x': 0.3, 'y': 0.4},
     ], 1);
@@ -41,6 +48,17 @@ void main() {
     final clone = await OfflinePackage.restore(store, dir, bytes);
     expect(store.teams, hasLength(2));
     expect(clone, isNot(team));
+    expect(
+      UtilityLibrary(store).list(clone).single['map_id'],
+      store.maps(clone).single['id'],
+    );
+    expect(UtilityLibrary(store).list(clone).single['notes'], 'Инструкция');
+    expect(
+      jsonDecode(
+        UtilityLibrary(store).list(clone).single['details'] as String,
+      )['strategy_ids'],
+      [store.strategies(clone).single['id']],
+    );
     expect(store.tasks(clone).single['member_name'], 'Rifle');
     expect(store.tasks(clone).single['strategy_title'], 'Выход A');
     expect(store.tasks(clone).single['status'], 'approved');

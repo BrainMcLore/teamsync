@@ -9,6 +9,7 @@ import 'package:teamsync/data/account_roster.dart';
 import 'package:teamsync/data/files.dart';
 import 'package:teamsync/data/store.dart';
 import 'package:teamsync/data/tactical_sync.dart';
+import 'package:teamsync/data/utilities.dart';
 import 'package:teamsync/ui/workspace.dart';
 import 'package:teamsync/ui/editor.dart';
 import 'package:teamsync/main.dart';
@@ -141,7 +142,15 @@ void main() {
         roster,
       );
       final map = a.addMap(ta, 'Mirage');
+
       final tactic = a.createStrategy(map, 'Выход B', 'T');
+      UtilityLibrary(a)
+          .save(ta, map, 'Окно smoke', 'T', 'Сохранённая инструкция', {
+            'grenade': 'smoke',
+            'strategy_ids': [tactic],
+            'source_url': 'https://cs2tricks.com/lineup/window',
+            'author': 'Source author',
+          });
       final task = a.createTask(
         ta,
         'Выучить выход',
@@ -163,6 +172,20 @@ void main() {
       );
       await sa.run(ta, conflictLabel: 'Conflict');
       await sb.run(tb, conflictLabel: 'Conflict');
+      expect(
+        UtilityLibrary(b).list(tb).single['notes'],
+        'Сохранённая инструкция',
+      );
+      expect(
+        UtilityLibrary(b).list(tb).single['map_id'],
+        b.maps(tb).single['id'],
+      );
+      expect(
+        jsonDecode(
+          UtilityLibrary(b).list(tb).single['details'] as String,
+        )['strategy_ids'],
+        [b.strategies(tb).single['id']],
+      );
       final received = b.tasks(tb).single;
       expect(received['title'], 'Выучить выход');
       expect(received['strategy_id'], b.strategies(tb).single['id']);

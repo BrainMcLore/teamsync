@@ -1,0 +1,27 @@
+name: Windows UI snapshots
+on:
+  push:
+    branches: ['codex/ui-*']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  snapshots:
+    runs-on: windows-2022
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.47.8'
+          channel: stable
+          cache: true
+      - name: Capture Windows UI for visual review
+        working-directory: client
+        run: flutter test --update-goldens test/studio_screens_test.dart
+      - uses: actions/upload-artifact@v7
+        with:
+          name: windows-ui-snapshots-${{ github.sha }}
+          path: artifacts/verification/studio-*-08.png
+          if-no-files-found: error
+          retention-days: 14

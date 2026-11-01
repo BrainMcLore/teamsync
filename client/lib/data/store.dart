@@ -35,12 +35,12 @@ class Store {
     db.execute('PRAGMA foreign_keys = ON');
     db.execute('PRAGMA journal_mode = WAL');
     final version = db.select('PRAGMA user_version').first.values.first as int;
-    if (version > 0 && version < 3 && path != ':memory:') {
+    if (version > 0 && version < 4 && path != ':memory:') {
       final backup =
-          '$path.pre-v3-${DateTime.now().toUtc().millisecondsSinceEpoch}.sqlite';
+          '$path.pre-v4-${DateTime.now().toUtc().millisecondsSinceEpoch}.sqlite';
       db.execute("VACUUM INTO '${backup.replaceAll("'", "''")}'");
     }
-    if (version > 3) {
+    if (version > 4) {
       db.close();
       throw DomainError('newerDatabase');
     }
@@ -88,6 +88,15 @@ PRAGMA user_version=2;
           'ALTER TABLE demos ADD COLUMN scouting TEXT NOT NULL DEFAULT \'{}\'',
         );
         db.execute('PRAGMA user_version=3');
+      });
+    }
+    if (version < 4) {
+      transaction(() {
+        db.execute("""
+CREATE TABLE utilities(id TEXT PRIMARY KEY, team_id TEXT NOT NULL REFERENCES teams(id), map_id TEXT NOT NULL REFERENCES maps(id), title TEXT NOT NULL, side TEXT NOT NULL CHECK(side IN ('T','CT')), notes TEXT NOT NULL, details TEXT NOT NULL, updated_at TEXT NOT NULL);
+CREATE INDEX utilities_team_map ON utilities(team_id,map_id);
+PRAGMA user_version=4;
+""");
       });
     }
   }

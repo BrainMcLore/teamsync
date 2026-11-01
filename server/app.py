@@ -64,8 +64,31 @@ class TacticalObject(StrictModel):
     x2: float | None = Field(default=None,ge=0,le=1,allow_inf_nan=False)
     y2: float | None = Field(default=None,ge=0,le=1,allow_inf_nan=False)
 
+class UtilityDetails(StrictModel):
+    strategy_ids: list[Annotated[str,StringConstraints(min_length=36,max_length=36)]] = Field(default_factory=list,max_length=50)
+    grenade: Literal['smoke','flash','molotov','he','decoy']
+    start: str = Field(default='',max_length=500)
+    target: str = Field(default='',max_length=500)
+    throw_type: str = Field(default='',max_length=120)
+    author: str = Field(default='',max_length=120)
+    source_url: str | None = Field(default=None,max_length=2000)
+    verified_at: str = Field(default='',max_length=40)
+    map_revision: str = Field(default='',max_length=120)
+
+    @field_validator('source_url')
+    @classmethod
+    def supported_source(cls,value):
+        if value is None:return value
+        from urllib.parse import urlsplit
+        parsed=urlsplit(value)
+        if parsed.scheme!='https' or parsed.username or parsed.password or parsed.port or parsed.hostname not in (
+            'youtube.com','www.youtube.com','m.youtube.com','youtu.be','cs2tricks.com','www.cs2tricks.com'):
+            raise ValueError('unsupported_source')
+        return value
+
 class DocumentPayload(StrictModel):
     title: str = Field(min_length=1,max_length=120)
+    utility: UtilityDetails | None = None
     notes: Annotated[str,StringConstraints(strip_whitespace=False)] = Field(default='',max_length=20000)
     map_id: str | None = Field(default=None,max_length=36)
     strategy_id: str | None = Field(default=None,max_length=36)
@@ -89,7 +112,7 @@ class DocumentWrite(StrictModel):
     operation_id: str
     document_id: str
     expected_version: int = Field(ge=0)
-    kind: Literal['map','strategy','task']
+    kind: Literal['map','strategy','task','utility']
     payload: DocumentPayload
 
     @field_validator('operation_id','document_id')
@@ -175,7 +198,7 @@ def create_app(database_url=None, public_url=None):
 
     @app.get('/api/v1/health')
     def health():
-        return {'status':'ok','version':'0.7.0','providers':{'steam':True,'discord':bool(discord_id and discord_secret)},'capabilities':['identity','teams','account_invites','roster','tactical_sync','training_sync','team_media','versioned_documents'],'native_client_required':True}
+        return {'status':'ok','version':'0.7.0','providers':{'steam':True,'discord':bool(discord_id and discord_secret)},'capabilities':['identity','teams','account_invites','roster','tactical_sync','training_sync','utilities','team_media','versioned_documents'],'native_client_required':True}
 
     @app.post('/api/v1/auth/{provider}/start')
     def auth_start(provider:str,body:AuthStart):
@@ -466,7 +489,10 @@ def create_app(database_url=None, public_url=None):
 
     @app.post('/api/v1/teams/{team}/documents')
     def write_document(team:str,body:DocumentWrite,session=Depends(authenticated)):
-        request_hash=hashlib.sha256(body.model_dump_json().encode()).hexdigest()
+        # Preserve the canonical request bytes of pre-utility clients so an
+        # acknowledged operation can still be retried after a server upgrade.
+        excluded={'payload': {'utility'}} if body.payload.utility is None else None
+        request_hash=hashlib.sha256(body.model_dump_json(exclude=excluded).encode()).hexdigest()
         with engine.begin() as conn:
             caller=member(conn,team,session['user_id'])
             manager=caller['role'] in ('owner','captain','coach')
@@ -488,7 +514,7 @@ def create_app(database_url=None, public_url=None):
             if not manager:
                 # Players may submit only their own existing assignment. Every
                 # other field is immutable; approval belongs to the coaching staff.
-                old=current['payload'] if current else {}
+                old=DocumentPayload.model_validate(current['payload']).model_dump() if current else {}
                 if not current or old.get('assignee_user_id')!=session['user_id']:
                     fail('forbidden',403)
                 if old.get('status')!='todo' or payload['status']!='submitted':
@@ -502,6 +528,12 @@ def create_app(database_url=None, public_url=None):
                     linked=conn.execute(select(documents).where(documents.c.id==payload[key],documents.c.team_id==team,documents.c.kind==kind)).first()
                     if not linked:
                         fail('invalid_link',422)
+            if payload['utility']:
+                for linked_id in payload['utility']['strategy_ids']:
+                    if not conn.execute(select(documents.c.id).where(documents.c.id==linked_id,documents.c.team_id==team,documents.c.kind=='strategy')).first():
+                        fail('invalid_link',422)
+            if body.kind=='utility' and (not payload['map_id'] or not payload['side'] or not payload['utility']):
+                fail('utility_requires_map_side_details',422)
             if body.kind=='strategy' and (not payload['map_id'] or not payload['side']):
                 fail('strategy_requires_map_side',422)
             if payload['assignee_user_id']:

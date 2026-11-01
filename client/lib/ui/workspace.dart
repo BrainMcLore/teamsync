@@ -25,6 +25,7 @@ import '../data/offline_package.dart';
 import '../l10n/app_localizations.dart';
 import 'editor.dart';
 import 'account_page.dart';
+import 'utilities_page.dart';
 
 class Workspace extends StatefulWidget {
   final Store store;
@@ -442,6 +443,7 @@ class _WorkspaceState extends State<Workspace> with WidgetsBindingObserver {
     (l.settings, Icons.settings_outlined),
     (l.playbooks, Icons.picture_as_pdf_outlined),
     (l.bootcamp, Icons.dns_outlined),
+    (l.utilityLibrary, Icons.sports_baseball_outlined),
   ];
   Widget empty(String text, IconData icon) => Center(
     child: ConstrainedBox(
@@ -1398,7 +1400,7 @@ class _WorkspaceState extends State<Workspace> with WidgetsBindingObserver {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            for (final i in [2, 4, 7, 8, 6])
+            for (final i in [2, 9, 4, 7, 8, 6])
               ListTile(
                 leading: Icon(destinations[i].$2),
                 title: Text(destinations[i].$1),
@@ -1549,6 +1551,13 @@ class _WorkspaceState extends State<Workspace> with WidgetsBindingObserver {
         team: teamId!,
       ),
       8 => BootcampPage(store: db, host: lanHost, installer: serverInstaller),
+      9 => UtilitiesPage(
+        key: ValueKey('utilities:$teamId'),
+        store: db,
+        team: teamId!,
+        filter: query,
+        onStrategy: openStrategy,
+      ),
       _ => settingsPage(),
     };
     return StudioShell(

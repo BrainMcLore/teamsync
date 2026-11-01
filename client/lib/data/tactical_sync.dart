@@ -8,6 +8,7 @@ import 'account.dart';
 import 'account_roster.dart';
 import 'files.dart';
 import 'store.dart';
+import 'utilities.dart';
 
 /// Durable outbox + optimistic versions. No network operation runs in a SQLite
 /// transaction. A lost acknowledgement reuses the exact operation and payload.
@@ -28,6 +29,31 @@ class TacticalSync {
   String hash(Object value) =>
       sha256.convert(utf8.encode(jsonEncode(value))).toString();
   Map<String, dynamic> canonical(String kind, Map value) {
+    if (kind == 'utility') {
+      final details = Map<String, dynamic>.from(value['utility'] as Map);
+      return {
+        'title': value['title'],
+        'notes': value['notes'] ?? '',
+        'map_id': value['map_id'],
+        'side': value['side'],
+        'utility': {
+          for (final key in [
+            'grenade',
+            'start',
+            'target',
+            'throw_type',
+            'author',
+            'verified_at',
+            'map_revision',
+          ])
+            key: details[key] ?? '',
+          'source_url': details['source_url'],
+          'strategy_ids': List<String>.from(
+            details['strategy_ids'] as List? ?? [],
+          ),
+        },
+      };
+    }
     if (kind == 'task') {
       return {
         'title': value['title'],
@@ -115,6 +141,7 @@ class TacticalSync {
   List<RecordData> records(String kind) => switch (kind) {
     'map' => store.maps(local),
     'task' => store.tasks(local),
+    'utility' => UtilityLibrary(store).list(local),
     _ => store.strategies(local),
   };
 
@@ -237,7 +264,7 @@ class TacticalSync {
   }
 
   Future<void> queueChanges() async {
-    for (final kind in ['map', 'strategy', 'task']) {
+    for (final kind in ['map', 'strategy', 'utility', 'task']) {
       if (!writable && kind != 'task') continue;
       final rows = records(kind);
       for (final row in rows) {
@@ -309,6 +336,22 @@ class TacticalSync {
     Map row, {
     bool uploadMedia = false,
   }) async {
+    if (kind == 'utility') {
+      final details = Map<String, dynamic>.from(
+        jsonDecode(row['details'] as String) as Map,
+      );
+      details['strategy_ids'] = [
+        for (final id in details['strategy_ids'] as List? ?? [])
+          entry('strategy', id as String)['remote'],
+      ];
+      return canonical(kind, {
+        'title': row['title'],
+        'notes': row['notes'],
+        'side': row['side'],
+        'map_id': entry('map', row['map_id'] as String)['remote'],
+        'utility': details,
+      });
+    }
     if (kind == 'task') {
       final assignee = rosterIds.entries
           .where((e) => e.value == row['member_id'])
@@ -398,12 +441,19 @@ class TacticalSync {
       if (rows.length < 5) break;
     }
     documents.sort(
-      (a, b) => (['map', 'strategy', 'task'].indexOf(a['kind'] as String))
-          .compareTo(['map', 'strategy', 'task'].indexOf(b['kind'] as String)),
+      (a, b) =>
+          ([
+            'map',
+            'strategy',
+            'utility',
+            'task',
+          ].indexOf(a['kind'] as String)).compareTo(
+            ['map', 'strategy', 'utility', 'task'].indexOf(b['kind'] as String),
+          ),
     );
     for (final document in documents) {
       final kind = document['kind'] as String;
-      if (!['map', 'strategy', 'task'].contains(kind)) continue;
+      if (!['map', 'strategy', 'utility', 'task'].contains(kind)) continue;
       final payload = canonical(kind, Map.from(document['payload'] as Map));
       var e = byRemote(document['id'] as String);
       if (e == null && kind == 'map') {
@@ -461,7 +511,49 @@ class TacticalSync {
           }
         }
       }
-      if (kind == 'task') {
+      if (kind == 'utility') {
+        final parent = byRemote(payload['map_id'] as String);
+        if (parent == null) throw DomainError('invalid_link');
+        store.applyingSync = true;
+        try {
+          final library = UtilityLibrary(store);
+          if (current != null &&
+              e != null &&
+              e['version'] != document['version'] &&
+              hash(await localPayload(kind, current)) != e['hash']) {
+            final title = current['title'] as String;
+            library.save(
+              local,
+              current['map_id'] as String,
+              '${title.substring(0, title.length.clamp(0, 75))} · $conflictLabel',
+              current['side'] as String,
+              current['notes'] as String,
+              Map<String, dynamic>.from(
+                jsonDecode(current['details'] as String) as Map,
+              ),
+            );
+            conflicts++;
+          }
+          final details = Map<String, dynamic>.from(payload['utility'] as Map);
+          details['strategy_ids'] = [
+            for (final remote in details['strategy_ids'] as List? ?? [])
+              byRemote(remote as String)?['local'] ??
+                  (throw DomainError('invalid_link')),
+          ];
+          final id = library.save(
+            local,
+            parent['local'] as String,
+            payload['title'] as String,
+            payload['side'] as String,
+            payload['notes'] as String,
+            details,
+            id: current?['id'] as String?,
+          );
+          e ??= entry(kind, id, remote: document['id'] as String);
+        } finally {
+          store.applyingSync = false;
+        }
+      } else if (kind == 'task') {
         store.applyingSync = true;
         try {
           final parent = payload['strategy_id'] == null
@@ -560,7 +652,7 @@ class TacticalSync {
       e['hash'] = hash(payload);
       persist();
       downloaded++;
-      if (kind == 'strategy' || kind == 'task') {
+      if (kind == 'strategy' || kind == 'task' || kind == 'utility') {
         store.notifyRemoteTactical(e['local'] as String);
       } else {
         for (final row

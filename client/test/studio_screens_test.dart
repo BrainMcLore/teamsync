@@ -8,12 +8,36 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:teamsync/main.dart';
 import 'package:teamsync/data/store.dart';
+import 'package:teamsync/data/utilities.dart';
+import 'package:teamsync/data/tactical_sync.dart';
+import 'package:teamsync/ui/workspace.dart';
 import 'package:teamsync/data/files.dart';
 import 'package:teamsync/data/map_catalog.dart';
 import 'package:teamsync/data/review_data.dart';
 import 'package:teamsync/ui/editor.dart';
 import 'package:teamsync/ui/demo_review.dart';
 import 'package:teamsync/l10n/app_localizations.dart';
+
+// Golden snapshots exercise rendering, without live storage/network races.
+class SnapshotSync extends TacticalSync {
+  SnapshotSync(super.store, super.files);
+  @override
+  Future<void> run(String localTeam, {required String conflictLabel}) async {}
+}
+
+Widget snapshotApp(Store store, LocalFiles files) => MaterialApp(
+  debugShowCheckedModeBanner: false,
+  theme: workspaceTheme(),
+  locale: const Locale('ru'),
+  localizationsDelegates: AppLocalizations.localizationsDelegates,
+  supportedLocales: AppLocalizations.supportedLocales,
+  home: Workspace(
+    store: store,
+    files: files,
+    onLocale: (_) {},
+    sync: SnapshotSync(store, files),
+  ),
+);
 
 Future<void> cacheImage(String path) async {
   final file = File(path),
@@ -92,6 +116,19 @@ void main() {
     final mirage = store
         .maps(team)
         .singleWhere((m) => m['catalog_id'] == 'de_mirage');
+    UtilityLibrary(store).save(
+      team,
+      mirage['id'] as String,
+      'Командный смок: подготовка мида',
+      'T',
+      'Перед тренировкой проверьте точку прицеливания и согласуйте момент броска с первым игроком.',
+      {
+        'grenade': 'smoke',
+        'start': 'T spawn',
+        'target': 'Окно',
+        'throw_type': 'Jumpthrow',
+      },
+    );
     final id = store.createStrategy(
       mirage['id'] as String,
       'Контроль мида → сплит A',
@@ -119,7 +156,7 @@ void main() {
     await tester.pumpWidget(
       RepaintBoundary(
         key: const Key('native-shot'),
-        child: TeamSyncApp(store: store, files: LocalFiles(root)),
+        child: snapshotApp(store, LocalFiles(root)),
       ),
     );
     await tester.pumpAndSettle();
@@ -162,7 +199,7 @@ void main() {
     await tester.pumpWidget(
       RepaintBoundary(
         key: const Key('native-shot'),
-        child: TeamSyncApp(store: store, files: LocalFiles(root)),
+        child: snapshotApp(store, LocalFiles(root)),
       ),
     );
     await tester.pumpAndSettle();
@@ -173,6 +210,17 @@ void main() {
       find.byKey(const Key('native-shot')),
       matchesGoldenFile(
         '../../artifacts/verification/studio-mobile-08${Platform.isLinux ? '-linux' : ''}.png',
+      ),
+    );
+    await tester.tap(find.byIcon(Icons.more_horiz).last);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Раскидки').last);
+    await tester.pumpAndSettle();
+    expect(tester.takeException(), isNull);
+    await expectLater(
+      find.byKey(const Key('native-shot')),
+      matchesGoldenFile(
+        '../../artifacts/verification/studio-utilities-08${Platform.isLinux ? '-linux' : ''}.png',
       ),
     );
   });
