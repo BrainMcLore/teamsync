@@ -59,6 +59,14 @@ class ReleaseChecks(unittest.TestCase):
         manifest = json.loads((self.root / 'dist/TeamSync-0.8.0-manifest.json').read_text())
         entry = next(f for f in manifest['files'] if f['name'] == artifact.name)
         self.assertEqual(entry['sha256'], hashlib.sha256(artifact.read_bytes()).hexdigest())
+        android = self.root / 'dist/TeamSync-0.8.0-Android.apk'
+        android.write_bytes(b'fixture signed apk')
+        self.run_tool('release-checksums.py', '--require-windows', '--require-android')
+        manifest = json.loads((self.root / 'dist/TeamSync-0.8.0-manifest.json').read_text())
+        self.assertTrue(manifest['complete'])
+        self.assertIn(android.name, [item['name'] for item in manifest['files']])
+        self.assertNotIn('TeamSync-0.8.0-Android-test.apk', manifest['missing'])
+
 
 
 if __name__ == '__main__':

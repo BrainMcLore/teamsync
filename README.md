@@ -63,7 +63,7 @@ flutter build apk --release \
   --dart-define=TEAMSYNC_API_URL=https://teamsync-api-ui7n.onrender.com
 ```
 
-Сейчас Gradle использует тестовую подпись. Такой APK подходит для проверки, но постоянный выпуск требует отдельного стабильного ключа. Никогда не добавляйте keystore и пароли в Git. [Android CI](.github/workflows/android.yml) проверяет аккаунты и командные операции на Android 15, затем собирает APK и проверяет подпись. Windows собирается отдельно на Windows runner.
+Без переменных подписи Gradle собирает тестовый APK. В CI для основной ветки настроен отдельный постоянный ключ; сертификат сверяется с `packaging/android-signing.sha256`. Keystore и пароль хранятся в закрытых Actions secrets и не входят в Git. Переход с прежнего тестового APK на другую подпись требует предварительного экспорта материалов и переустановки; обновление поверх старой тестовой подписи невозможно. [Android CI](.github/workflows/android.yml) проверяет аккаунты и командные операции на Android 15, затем собирает APK и проверяет подпись. Windows собирается отдельно на Windows runner.
 
 ```bash
 python -m venv .venv
@@ -89,7 +89,7 @@ python -m unittest discover -s tools -p test_release.py -v
 
 TeamSync is a native CS2 team workspace for Windows and Android, with Russian and English interfaces. Plan tactics on bundled maps, share drawings and notes with your roster, review prepared demos and export printable playbooks. Windows handles DEM parsing, HLTV downloads and local game servers. Android opens prepared reviews and the shared tactical library.
 
-This is an active development project. The published Windows release and the current source branch have different verification scopes; see the feature table and linked checks before deploying. Test APKs use a test signing key. Linux is a development environment, not an application target.
+This is an active development project. The published Windows release and the current source branch have different verification scopes; see the feature table and linked checks before deploying. Local builds without signing variables use a test key; main-branch CI uses a persistent release key and verifies its public certificate fingerprint. Linux is a development environment, not an application target.
 
 ### Сторонние материалы
 

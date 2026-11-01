@@ -414,15 +414,17 @@ class _StrategyEditorState extends State<StrategyEditor> {
       ),
       const SizedBox(height: 16),
       OutlinedButton.icon(
-        onPressed: () async {
-          if (await save()) {
-            try {
-              await widget.onTask();
-            } catch (_) {
-              if (mounted) message(l.error);
-            }
-          }
-        },
+        onPressed: readOnly
+            ? null
+            : () async {
+                if (await save()) {
+                  try {
+                    await widget.onTask();
+                  } catch (_) {
+                    if (mounted) message(l.error);
+                  }
+                }
+              },
         icon: const Icon(Icons.assignment_outlined),
         label: Text(l.newTask),
       ),

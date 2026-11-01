@@ -12,7 +12,10 @@ args = cli.parse_args()
 version = client_version(root)
 dist = root / 'dist'
 dist.mkdir(exist_ok=True)
-expected = [f'TeamSync-{version}-Windows-Setup.exe', f'TeamSync-{version}-Android-test.apk',
+android = f'TeamSync-{version}-Android.apk'
+if not (dist / android).is_file():
+    android = f'TeamSync-{version}-Android-test.apk'
+expected = [f'TeamSync-{version}-Windows-Setup.exe', android,
             f'TeamSync-{version}-Source.zip']
 missing = [name for name in expected if not (dist / name).is_file()]
 for required, name in [(args.require_windows, expected[0]), (args.require_android, expected[1])]:

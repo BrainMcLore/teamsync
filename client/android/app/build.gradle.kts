@@ -15,7 +15,6 @@ android {
     }
 
     defaultConfig {
-        // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
         applicationId = "app.teamsync.teamsync"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
@@ -29,11 +28,25 @@ android {
         versionName = flutter.versionName
     }
 
+    val releaseKeystore = System.getenv("TEAMSYNC_KEYSTORE_PATH")
+    signingConfigs {
+        if (!releaseKeystore.isNullOrBlank()) {
+            create("teamsyncRelease") {
+                storeFile = file(releaseKeystore)
+                storePassword = System.getenv("TEAMSYNC_KEYSTORE_PASSWORD")
+                    ?: error("TEAMSYNC_KEYSTORE_PASSWORD is required")
+                keyAlias = "teamsync"
+                keyPassword = storePassword
+                storeType = "PKCS12"
+            }
+        }
+    }
+
     buildTypes {
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig = signingConfigs.getByName("debug")
+            signingConfig = signingConfigs.getByName(
+                if (releaseKeystore.isNullOrBlank()) "debug" else "teamsyncRelease"
+            )
         }
     }
 }
