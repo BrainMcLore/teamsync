@@ -115,3 +115,8 @@ cache. A regression test switches accounts while a request is pending and confir
 that neither the old response nor the old cache becomes available to the new user.
 The offline-package test preserves an in-progress assignment and a returned task's
 review comment. Full client suite: 67 passed, 5 skipped. Server suite: 19 passed.
+
+Windows UI run 41329837357 passed at c4fd8e2; the task card with Start and History
+was visually reviewed and its platform baseline accepted. Production OpenAPI now
+reports all four task states and `task_review_reason`. Final native task/history
+integration builds are still in progress at this checkpoint.
