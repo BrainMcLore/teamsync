@@ -176,6 +176,34 @@ void main() {
         await sa.run(ta, conflictLabel: 'Conflict copy');
         await sb.run(tb, conflictLabel: 'Conflict copy');
         expect(b.strategies(tb).single['notes'], 'shared revised plan');
+        final playerMember =
+            a.members(ta).singleWhere((m) => m['name'] == 'QA Player')['id']
+                as String;
+        final assignment = a.createTask(
+          ta,
+          'Отработать выход',
+          'Тайминг первой флешки',
+          member: playerMember,
+          strategyId: tactic,
+        );
+        await sa.run(ta, conflictLabel: 'Conflict copy');
+        await sb.run(tb, conflictLabel: 'Conflict copy');
+        final receivedTask = b.tasks(tb).single;
+        expect(receivedTask['strategy_id'], b.strategies(tb).single['id']);
+        b.transitionTask(receivedTask['id'] as String, 'submitted');
+        await sb.run(tb, conflictLabel: 'Conflict copy');
+        await sa.run(ta, conflictLabel: 'Conflict copy');
+        expect(a.tasks(ta).single['status'], 'submitted');
+        expect(
+          () => b.transitionTask(receivedTask['id'] as String, 'approved'),
+          throwsA(
+            isA<DomainError>().having((e) => e.code, 'code', 'readOnlyTeam'),
+          ),
+        );
+        a.transitionTask(assignment, 'approved');
+        await sa.run(ta, conflictLabel: 'Conflict copy');
+        await sb.run(tb, conflictLabel: 'Conflict copy');
+        expect(b.tasks(tb).single['status'], 'approved');
       } finally {
         a.close();
         b.close();
