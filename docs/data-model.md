@@ -84,3 +84,9 @@ creates at most 500 personal assignments. Account binding, role, map ownership,
 strategy ownership and the current roster are revalidated before writing. A failed
 local transaction leaves no partial tasks. Network delivery uses the existing
 durable queue per task; the batch is not a new atomic server-side API operation.
+
+## Task discussion (development)
+
+`task_comments` stores immutable UUID, team, task document, author, text (1–5000 characters) and server time. The API verifies team membership and task kind; viewers read only. A repeated ID is accepted only for the same author, team, task and text. Pages use a stable `(created, id)` cursor. Per-task and per-author limits bound writes. PostgreSQL migration: `004_task_comments_postgresql.sql`.
+
+The client scopes cached comments and the pending queue to server/account/team/task. It caches up to 200 loaded comments and queues up to 50 sends. Opening or refreshing the discussion retries queued messages; there is no background-delivery promise. Account changes reject late responses before cache writes or queue acknowledgement. Text discussion does not yet include training evidence attachments.

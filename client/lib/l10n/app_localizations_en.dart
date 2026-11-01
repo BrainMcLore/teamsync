@@ -1598,4 +1598,27 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get taskUnlinkedAssignee => 'Previous player — choose an account';
+
+  @override
+  String get taskDiscussion => 'Discussion';
+
+  @override
+  String get discussionMessage => 'Comment';
+
+  @override
+  String get discussionSend => 'Send';
+
+  @override
+  String get discussionRefresh => 'Refresh / retry';
+
+  @override
+  String get discussionOffline =>
+      'Could not refresh the discussion. Cached comments and pending messages remain on this device. Open or refresh to retry.';
+
+  @override
+  String get discussionPending => 'Pending — saved on this device';
+
+  @override
+  String get discussionFailed =>
+      'Could not save the comment. Check your account, permissions and queue limit.';
 }

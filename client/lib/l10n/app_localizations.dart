@@ -2995,6 +2995,48 @@ abstract class AppLocalizations {
   /// In ru, this message translates to:
   /// **'Прежний игрок — выберите аккаунт'**
   String get taskUnlinkedAssignee;
+
+  /// No description provided for @taskDiscussion.
+  ///
+  /// In ru, this message translates to:
+  /// **'Обсуждение'**
+  String get taskDiscussion;
+
+  /// No description provided for @discussionMessage.
+  ///
+  /// In ru, this message translates to:
+  /// **'Комментарий'**
+  String get discussionMessage;
+
+  /// No description provided for @discussionSend.
+  ///
+  /// In ru, this message translates to:
+  /// **'Отправить'**
+  String get discussionSend;
+
+  /// No description provided for @discussionRefresh.
+  ///
+  /// In ru, this message translates to:
+  /// **'Обновить / повторить'**
+  String get discussionRefresh;
+
+  /// No description provided for @discussionOffline.
+  ///
+  /// In ru, this message translates to:
+  /// **'Не удалось обновить обсуждение. Загруженные комментарии и очередь остаются на устройстве. Откройте или обновите обсуждение для повтора.'**
+  String get discussionOffline;
+
+  /// No description provided for @discussionPending.
+  ///
+  /// In ru, this message translates to:
+  /// **'Ожидает отправки — сохранено на устройстве'**
+  String get discussionPending;
+
+  /// No description provided for @discussionFailed.
+  ///
+  /// In ru, this message translates to:
+  /// **'Не удалось сохранить комментарий. Проверьте аккаунт, права и лимит очереди.'**
+  String get discussionFailed;
 }
 
 class _AppLocalizationsDelegate

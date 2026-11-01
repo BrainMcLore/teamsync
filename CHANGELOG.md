@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Added per-task discussion with author/time, team permissions, stable cursor pagination and an account-scoped offline cache.
+- Unsent comments have a persistent queue; opening or refreshing the discussion retries with the same ID.
+
 - Legacy assignees no longer stop synchronization of unrelated tactics and tasks.
 - Managers can repair an assignment through the task plan editor; task data is preserved.
 - Added English/Russian synchronization guidance and regression coverage.

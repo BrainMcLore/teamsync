@@ -538,5 +538,12 @@
     }
   },
   "syncUnlinkedTasks": "Other data is synced. Some tasks need an account assignee: open Training and edit their plans.",
-  "taskUnlinkedAssignee": "Previous player — choose an account"
+  "taskUnlinkedAssignee": "Previous player — choose an account",
+  "taskDiscussion": "Discussion",
+  "discussionMessage": "Comment",
+  "discussionSend": "Send",
+  "discussionRefresh": "Refresh / retry",
+  "discussionOffline": "Could not refresh the discussion. Cached comments and pending messages remain on this device. Open or refresh to retry.",
+  "discussionPending": "Pending — saved on this device",
+  "discussionFailed": "Could not save the comment. Check your account, permissions and queue limit."
 }

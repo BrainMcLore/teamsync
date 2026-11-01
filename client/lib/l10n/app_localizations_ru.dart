@@ -1613,4 +1613,27 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get taskUnlinkedAssignee => 'Прежний игрок — выберите аккаунт';
+
+  @override
+  String get taskDiscussion => 'Обсуждение';
+
+  @override
+  String get discussionMessage => 'Комментарий';
+
+  @override
+  String get discussionSend => 'Отправить';
+
+  @override
+  String get discussionRefresh => 'Обновить / повторить';
+
+  @override
+  String get discussionOffline =>
+      'Не удалось обновить обсуждение. Загруженные комментарии и очередь остаются на устройстве. Откройте или обновите обсуждение для повтора.';
+
+  @override
+  String get discussionPending => 'Ожидает отправки — сохранено на устройстве';
+
+  @override
+  String get discussionFailed =>
+      'Не удалось сохранить комментарий. Проверьте аккаунт, права и лимит очереди.';
 }

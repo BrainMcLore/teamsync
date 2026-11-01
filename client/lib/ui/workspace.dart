@@ -1,3 +1,6 @@
+import '../data/task_discussion.dart';
+import 'task_discussion_dialog.dart';
+
 import 'dart:io';
 import 'dart:async';
 
@@ -1138,6 +1141,21 @@ class _WorkspaceState extends State<Workspace> with WidgetsBindingObserver {
                         }),
                   icon: const Icon(Icons.edit_outlined),
                   label: Text(l.editTaskPlan),
+                ),
+              if (db.setting('account_team_$teamId') != null)
+                TextButton.icon(
+                  onPressed: () => showDialog<void>(
+                    context: context,
+                    builder: (_) => TaskDiscussionDialog(
+                      discussion: TaskDiscussion(
+                        db,
+                        teamId!,
+                        task['id'] as String,
+                      ),
+                    ),
+                  ),
+                  icon: const Icon(Icons.forum_outlined),
+                  label: Text(l.taskDiscussion),
                 ),
               if (db.setting('account_team_$teamId') != null)
                 TextButton.icon(

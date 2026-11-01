@@ -11,7 +11,7 @@ The published 0.95 Beta remains immutable. Development continues in a separate b
 
 ## 2. Complete training workflow
 
-- [ ] Task discussion with authorship, permissions, pagination and offline cache.
+- [x] Task discussion with authorship, permissions, cursor pagination and offline cache (development branch).
 - [ ] Training evidence attached to the correct task with bounded media storage.
 - [ ] Scheduling, attendance and reminders; explicit delivery/offline behavior.
 - [ ] Team progress views that derive from real assignments and reviewed work.

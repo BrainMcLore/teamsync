@@ -6,7 +6,7 @@ Windows and Android clients; English/Russian UI; account-based teams and roles; 
 
 ## Development toward 1.0
 
-See the [full release acceptance plan](full-release.md). Legacy-assignment isolation and account reassignment are implemented in development; they are not part of the immutable 0.95 download.
+See the [full release acceptance plan](full-release.md). Legacy-assignment isolation, account reassignment and task discussion are implemented in development; they are not part of the immutable 0.95 download.
 
 ## Next
 

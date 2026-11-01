@@ -2,7 +2,7 @@ import time
 import uuid
 
 from sqlalchemy import (MetaData, Table, Column, String, Integer, Float, JSON,
-                        ForeignKey, UniqueConstraint, create_engine, event, LargeBinary)
+                        ForeignKey, UniqueConstraint, Index, create_engine, event, LargeBinary)
 
 metadata = MetaData()
 users = Table('users', metadata,
@@ -60,6 +60,14 @@ document_versions = Table('document_versions', metadata,
     Column('version', Integer, nullable=False), Column('payload', JSON, nullable=False),
     Column('author_id', ForeignKey('users.id'), nullable=False), Column('created', Float, nullable=False),
     UniqueConstraint('document_id','version'))
+task_comments = Table('task_comments', metadata,
+    Column('id', String(36), primary_key=True),
+    Column('team_id', ForeignKey('teams.id'), nullable=False),
+    Column('document_id', ForeignKey('documents.id'), nullable=False),
+    Column('author_id', ForeignKey('users.id'), nullable=False),
+    Column('text', String(5000), nullable=False), Column('created', Float, nullable=False),
+    Index('ix_task_comments_document_cursor', 'document_id', 'created', 'id'),
+    Index('ix_task_comments_author_created', 'author_id', 'created'))
 operations = Table('sync_operations', metadata,
     Column('id', String(36), primary_key=True), Column('team_id', ForeignKey('teams.id'), nullable=False),
     Column('user_id', ForeignKey('users.id'), nullable=False), Column('request_hash', String(64), nullable=False),
