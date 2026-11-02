@@ -97,6 +97,54 @@ Map<String, dynamic> decodeReview(String source) {
       }
     }
   }
+  final notebook = data['notebook'];
+  if (notebook != null) {
+    if (notebook is! Map ||
+        notebook['schema'] != 1 ||
+        notebook['annotations'] is! List ||
+        (notebook['annotations'] as List).length > 5000 ||
+        notebook['scouting'] is! Map) {
+      throw DomainError('reviewDataInvalid');
+    }
+    final roundNumbers = rounds.map((r) => r['number']).toSet();
+    for (final raw in notebook['annotations'] as List) {
+      if (raw is! Map ||
+          raw['tick'] is! int ||
+          (raw['tick'] as int) < 0 ||
+          (raw['tick'] as int) > (frames.last['tick'] as int) ||
+          !roundNumbers.contains(raw['round']) ||
+          raw['note'] is! String ||
+          (raw['note'] as String).trim().isEmpty ||
+          (raw['note'] as String).length > 2000 ||
+          raw['created_at'] is! String ||
+          (raw['created_at'] as String).length > 40 ||
+          DateTime.tryParse(raw['created_at'] as String) == null) {
+        throw DomainError('reviewDataInvalid');
+      }
+    }
+    for (final entry in (notebook['scouting'] as Map).entries) {
+      if (![
+            'teams',
+            'event',
+            'positions',
+            'tier',
+            'source',
+          ].contains(entry.key) ||
+          entry.value is! String ||
+          (entry.value as String).length > 10000) {
+        throw DomainError('reviewDataInvalid');
+      }
+    }
+    if (![
+      '',
+      '1',
+      '2',
+      '3',
+      '4',
+    ].contains(notebook['scouting']['tier'] ?? '')) {
+      throw DomainError('reviewDataInvalid');
+    }
+  }
   data['_index'] = ReviewIndex(data);
   return data;
 }
@@ -142,22 +190,87 @@ Future<String> importReview(
   String team,
   Uint8List bytes,
 ) async {
+  File? file;
+  try {
+    if (bytes.length > 100 * 1024 * 1024) {
+      throw DomainError('reviewDataInvalid');
+    }
+    final data = await compute(decodeReview, utf8.decode(bytes));
+    file = File('${root.path}/reviews/${Store.uuid.v4()}.teamsync-review');
+    await file.parent.create(recursive: true);
+    await file.writeAsBytes(bytes, flush: true);
+    return store.transaction<String>(() {
+      final name = (data['name'] as String?) ?? data['map'] as String;
+      store.addDemo(team, name, file!.path, bytes.length);
+      final id =
+          store.rows('SELECT id FROM demos WHERE path=?', [
+                file.path,
+              ]).single['id']
+              as String;
+      store.saveAnalysis(
+        id,
+        file.path,
+        data['map'] as String,
+        '',
+        participants: jsonEncode(data['players']),
+      );
+      final notebook = data['notebook'] as Map?;
+      if (notebook != null) {
+        store.saveScouting(
+          id,
+          Map<String, dynamic>.from(notebook['scouting'] as Map),
+        );
+        for (final raw in notebook['annotations'] as List) {
+          final row = raw as Map;
+          store.db.execute('INSERT INTO demo_annotations VALUES(?,?,?,?,?,?)', [
+            Store.uuid.v4(),
+            id,
+            row['tick'],
+            row['round'],
+            row['note'],
+            row['created_at'],
+          ]);
+        }
+      }
+      return id;
+    });
+  } catch (_) {
+    if (file != null && await file.exists()) await file.delete();
+    throw DomainError('reviewDataInvalid');
+  }
+}
+
+/// Validates and encodes large analysis files away from the UI isolate.
+Future<Uint8List> exportReview(Store store, RecordData demo) async {
+  return compute(_exportReview, {
+    'path': demo['analysis_path'],
+    'name': demo['name'],
+    'scouting': demo['scouting'] ?? '{}',
+    'annotations': [
+      for (final row in store.annotations(demo['id'] as String))
+        {
+          for (final key in ['tick', 'round', 'note', 'created_at'])
+            key: row[key],
+        },
+    ],
+  });
+}
+
+Future<Uint8List> _exportReview(Map<String, dynamic> input) async {
+  final file = File(input['path'] as String);
+  if (await file.length() > 100 * 1024 * 1024) {
+    throw DomainError('reviewDataInvalid');
+  }
+  final data = decodeReview(await file.readAsString())..remove('_index');
+  data['name'] = input['name'];
+  data['notebook'] = {
+    'schema': 1,
+    'annotations': input['annotations'],
+    'scouting': jsonDecode(input['scouting'] as String),
+  };
+  final encoded = jsonEncode(data);
+  final bytes = Uint8List.fromList(utf8.encode(encoded));
   if (bytes.length > 100 * 1024 * 1024) throw DomainError('reviewDataInvalid');
-  final data = await compute(decodeReview, utf8.decode(bytes));
-  final file = File('${root.path}/reviews/${Store.uuid.v4()}.teamsync-review');
-  await file.parent.create(recursive: true);
-  await file.writeAsBytes(bytes, flush: true);
-  final name = (data['name'] as String?) ?? data['map'] as String;
-  store.addDemo(team, name, file.path, bytes.length);
-  final id =
-      store.rows('SELECT id FROM demos WHERE path=?', [file.path]).single['id']
-          as String;
-  store.saveAnalysis(
-    id,
-    file.path,
-    data['map'] as String,
-    '',
-    participants: jsonEncode(data['players']),
-  );
-  return id;
+  decodeReview(encoded);
+  return bytes;
 }

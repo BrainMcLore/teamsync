@@ -1,6 +1,9 @@
 import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
+import 'dart:typed_data';
+
+import 'package:teamsync/data/review_data.dart';
 
 import 'package:crypto/crypto.dart';
 import 'package:flutter/material.dart';
@@ -424,6 +427,62 @@ void main() {
         (await channel.invokeMapMethod<String, dynamic>('status'))?['count'],
         0,
       );
+    });
+  });
+  testWidgets('offline review notebook survives Android export and import', (
+    tester,
+  ) async {
+    await tester.runAsync(() async {
+      final root = await Directory.systemTemp.createTemp('teamsync-notebook-');
+      final store = Store(':memory:');
+      try {
+        final team = store.createTeam('Notebook');
+        final source = {
+          'schema': 1,
+          'parser': 'demoparser2',
+          'map': 'de_mirage',
+          'name': 'Offline',
+          'tick_rate': 64,
+          'sample_stride': 8,
+          'players': [],
+          'kills': [],
+          'rounds': [
+            {'number': 1, 'start': 0, 'end': 128},
+          ],
+          'frames': [
+            {'tick': 0, 'round': 1, 'players': []},
+            {'tick': 128, 'round': 1, 'players': []},
+          ],
+        };
+        final id = await importReview(
+          store,
+          root,
+          team,
+          Uint8List.fromList(utf8.encode(jsonEncode(source))),
+        );
+        store.annotate(id, 64, 1, 'Контроль / hold');
+        store.saveScouting(id, {'teams': 'A vs B', 'tier': '1'});
+        final bytes = await exportReview(store, store.demos(team).single);
+        final copyTeam = store.createTeam('Imported');
+        final copy = await importReview(store, root, copyTeam, bytes);
+        expect(store.annotations(copy).single['tick'], 64);
+        expect(store.annotations(copy).single['note'], 'Контроль / hold');
+        expect(
+          jsonDecode(
+            store.demos(copyTeam).single['scouting'] as String,
+          )['tier'],
+          '1',
+        );
+        expect(
+          (await readReview(
+            store.demos(copyTeam).single['analysis_path'] as String,
+          ))['map'],
+          'de_mirage',
+        );
+      } finally {
+        store.close();
+        await root.delete(recursive: true);
+      }
     });
   });
 }

@@ -23,7 +23,8 @@ The published 0.95 Beta remains immutable. Development continues in a separate b
 
 - [ ] Current HLTV source verification/download acceptance on Windows.
 - [ ] Real CS2 launch and review performance on representative demos.
-- [ ] Complete exported review/history packages for Android and offline use.
+- [x] Portable parsed reviews with tick/round note snapshots and scouting labels; legacy import and atomic rollback (development branch).
+- [ ] Complete review edit/deletion history and physical cross-device offline acceptance.
 - [ ] Live joint review with reconnect and access control.
 
 ## 4. Bootcamp

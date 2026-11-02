@@ -222,18 +222,37 @@ class _DemoReviewPageState extends State<DemoReviewPage>
   }
 
   Future<void> share() async {
-    final path = widget.demo['analysis_path'] as String;
-    if (Platform.isWindows) {
-      final target = await getReviewSavePath();
-      if (target != null) await File(path).copy(target);
-    } else {
-      await SharePlus.instance.share(
-        ShareParams(
-          files: [XFile(path)],
-          fileNameOverrides: ['TeamSync.teamsync-review'],
-          sharePositionOrigin: const Rect.fromLTWH(0, 0, 100, 100),
-        ),
-      );
+    Directory? temporary;
+    try {
+      final target = Platform.isWindows ? await getReviewSavePath() : null;
+      if (Platform.isWindows && target == null) return;
+      final current = widget.store
+          .demos(widget.demo['team_id'] as String)
+          .firstWhere((d) => d['id'] == widget.demo['id']);
+      final bytes = await exportReview(widget.store, current);
+      if (Platform.isWindows) {
+        await File(target!).writeAsBytes(bytes, flush: true);
+      } else {
+        temporary = await Directory.systemTemp.createTemp('teamsync-review-');
+        final file = File('${temporary.path}/TeamSync.teamsync-review');
+        await file.writeAsBytes(bytes, flush: true);
+        await SharePlus.instance.share(
+          ShareParams(
+            files: [XFile(file.path)],
+            fileNameOverrides: ['TeamSync.teamsync-review'],
+            sharePositionOrigin: const Rect.fromLTWH(0, 0, 100, 100),
+          ),
+        );
+      }
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(l.error)));
+      }
+    } finally {
+      if (temporary != null && await temporary.exists()) {
+        await temporary.delete(recursive: true);
+      }
     }
   }
 

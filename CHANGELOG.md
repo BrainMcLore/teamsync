@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Portable review exports now include tick/round-linked notes, their creation times and scouting labels; legacy files remain compatible and failed imports roll back cleanly.
+
 - Added team/member workload snapshots with real task states, unfinished deadlines, unassigned work and explicit cache limitations (English/Russian).
 
 - Added opt-in native Windows/Android practice reminders, account-scoped preferences, generic notification text and cancellation/logout guards.

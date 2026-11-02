@@ -79,3 +79,12 @@ Open **Training → Team progress** for the current team's full assignment snaps
 The report uses this device's current synchronized/cached data, including pending local edits. Refresh synchronization before evaluating it. It is a current workload snapshot, not a historical completion rate, attendance score or player ranking; deleted assignments are absent.
 
 **Русский.** В разделе **Тренировки → Прогресс команды** показаны все текущие задания выбранной команды независимо от поиска. Видны задачи каждого участника, включая игроков без заданий, и отдельная группа без исполнителя. Сданное на проверку отделено от принятого тренером; просрочены только незавершённые задания. Данные берутся со снимка на устройстве, включая локальные изменения: перед оценкой обновите синхронизацию. Это текущая нагрузка, а не рейтинг игрока или статистика за прошлые периоды.
+
+
+## Portable demo review notebook (development toward 1.0)
+
+Use **Export review** inside the demo viewer to save/share a `.teamsync-review` file. It now includes parsed frames/events, timeline notes (tick, round, text and original creation time) and coach scouting labels. Import it through the demo library on Windows or Android. Old analysis-only files remain supported. Each import creates an independent local copy with new record IDs; edits do not synchronize between copies.
+
+No raw `.dem`, CS2 executable, external video, online permissions or annotation edit/deletion audit is included. Notes are snapshots, not an authenticated authorship/history record. Review size is limited to 100 MiB and 5,000 notes. The receiver needs TeamSync and its bundled map calibration/assets. Keep sensitive notes in mind when sharing files. Export performs parsing/encoding outside the UI isolate; malformed notebooks reject as a whole and database failures remove the newly created analysis file.
+
+**Русский.** Кнопка **Экспорт разбора** теперь переносит не только анализ, но и заметки на конкретных тиках/раундах с временем создания, а также метки матча. Файл `.teamsync-review` можно импортировать в библиотеку Windows или Android. Старые файлы анализа поддерживаются. Импорт создаёт отдельную локальную копию; дальнейшие правки между копиями не синхронизируются. Исходная демка, внешнее видео, права команды и история изменения/удаления заметок не включены. Это снимок заметок, а не подтверждённый журнал авторства. Ограничения: 100 МиБ и 5 000 заметок.
