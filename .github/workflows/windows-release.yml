@@ -65,6 +65,7 @@ jobs:
           .venv/Scripts/python.exe tools/prepare_review_acceptance.py
           if ($LASTEXITCODE -ne 0) { throw 'Real review preparation failed.' }
       - name: Build and verify Windows installer
+        id: build
         run: ./tools/build-windows.ps1 -Flutter (Get-Command flutter.bat).Source -Installer -InnoCompiler $env:TEAMSYNC_ISCC
       - name: Real HLTV archive download and native import
         if: inputs.live_hltv == true
@@ -75,6 +76,7 @@ jobs:
           flutter test test/managed_hltv_05_test.dart --timeout=8m
           if ($LASTEXITCODE -ne 0) { throw 'Live HLTV archive acceptance failed; do not certify external demo delivery.' }
       - name: Verify install, Beta upgrade, migration and uninstall
+        if: always() && steps.build.outcome == 'success'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
@@ -91,6 +93,7 @@ jobs:
           $candidate = Get-ChildItem dist/TeamSync-*-Windows-Setup.exe | Select-Object -First 1
           ./tools/check-windows-installer.ps1 -Candidate $candidate.FullName -Baseline $old
       - name: Package source, compatible server and checksums
+        if: always() && steps.build.outcome == 'success'
         run: |
           python tools/package-source.py
           if ($LASTEXITCODE -ne 0) { throw 'Source packaging failed.' }
@@ -99,6 +102,7 @@ jobs:
           python tools/release-checksums.py --require-windows
           if ($LASTEXITCODE -ne 0) { throw 'Release verification failed.' }
       - uses: actions/upload-artifact@v7
+        if: always() && steps.build.outcome == 'success'
         with:
           name: teamsync-windows-${{ github.sha }}
           path: dist/*
