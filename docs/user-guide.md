@@ -88,3 +88,12 @@ Use **Export review** inside the demo viewer to save/share a `.teamsync-review` 
 No raw `.dem`, CS2 executable, external video, online permissions or annotation edit/deletion audit is included. Notes are snapshots, not an authenticated authorship/history record. Review size is limited to 100 MiB and 5,000 notes. The receiver needs TeamSync and its bundled map calibration/assets. Keep sensitive notes in mind when sharing files. Export performs parsing/encoding outside the UI isolate; malformed notebooks reject as a whole and database failures remove the newly created analysis file.
 
 **Русский.** Кнопка **Экспорт разбора** теперь переносит не только анализ, но и заметки на конкретных тиках/раундах с временем создания, а также метки матча. Файл `.teamsync-review` можно импортировать в библиотеку Windows или Android. Старые файлы анализа поддерживаются. Импорт создаёт отдельную локальную копию; дальнейшие правки между копиями не синхронизируются. Исходная демка, внешнее видео, права команды и история изменения/удаления заметок не включены. Это снимок заметок, а не подтверждённый журнал авторства. Ограничения: 100 МиБ и 5 000 заметок.
+
+
+## Offline tactic history (development toward 1.0)
+
+New team offline packages use schema 2 and include all locally retained tactic revisions (up to 10,000 snapshots/package), with their original version numbers and timestamps. Import creates new team/map/tactic IDs and rewrites every history reference. Open a tactic’s version list to inspect or restore a prior revision; restoring creates a new revision and leaves the source team unchanged.
+
+Schema 1 packages remain readable, but cannot recover versions that were never exported. Older TeamSync builds reject schema 2 rather than silently discarding history. Online roles, account credentials and authenticated server audit logs are not transferred. Imported history is a local snapshot, not proof of authorship. Invalid, duplicate, missing-current or out-of-range revisions reject the import and roll back newly created database rows/media.
+
+**Русский.** Новый офлайн-пакет команды сохраняет локальную историю тактик: номера версий, время и содержимое, до 10 000 снимков на пакет. После импорта ссылки заменяются новыми идентификаторами. Старую версию можно восстановить как новую, исходная команда не меняется. Пакеты схемы 1 открываются, но отсутствующую историю восстановить невозможно. Старые сборки не читают схему 2. Аккаунты, права и подтверждённый серверный журнал не переносятся; импортированная история — локальный снимок.

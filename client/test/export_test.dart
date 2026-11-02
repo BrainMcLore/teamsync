@@ -126,6 +126,89 @@ void main() {
       expect(File('test/fixtures/own_clip.mp4').existsSync(), isTrue);
     },
   );
+  test(
+    'strategy history round trip remaps IDs and restores old content',
+    () async {
+      final team = store.createTeam('History');
+      final map = store.addMap(team, 'Mirage');
+      final id = store.createStrategy(map, 'A', 'T');
+      store.saveStrategy(id, 'Revision two', [], 1);
+      final before = store.versions(id);
+      final clone = await OfflinePackage.restore(
+        store,
+        dir,
+        OfflinePackage.export(store, team, 'en'),
+      );
+      final restored = store.strategies(clone).single['id'] as String;
+      final versions = store.versions(restored);
+      expect(versions.map((v) => v['version']).toList(), [2, 1]);
+      expect(
+        versions.map((v) => v['created_at']).toList(),
+        before.map((v) => v['created_at']).toList(),
+      );
+      for (final row in versions) {
+        final payload = jsonDecode(row['payload'] as String) as Map;
+        expect(payload['id'], restored);
+        expect(payload['map_id'], store.maps(clone).single['id']);
+      }
+      store.restoreVersion(restored, 1);
+      expect(store.strategy(restored)['notes'], '');
+      expect(store.strategy(restored)['version'], 3);
+      expect(store.strategy(id)['notes'], 'Revision two');
+    },
+  );
+
+  test('legacy packages restore without claiming a full history', () async {
+    final team = store.createTeam('Legacy');
+    store.createStrategy(store.addMap(team, 'Mirage'), 'A', 'T');
+    final data = jsonDecode(
+      utf8.decode(OfflinePackage.export(store, team, 'en')),
+    ) as Map;
+    data['schema'] = 1;
+    data.remove('strategy_history');
+    final clone = await OfflinePackage.restore(
+      store,
+      dir,
+      utf8.encode(jsonEncode(data)),
+    );
+    expect(
+      store.versions(store.strategies(clone).single['id'] as String),
+      hasLength(1),
+    );
+  });
+
+  test(
+    'corrupt history rolls back rows and newly created radar files',
+    () async {
+      final team = store.createTeam('Invalid history');
+      final map = store.addMap(team, 'Mirage');
+      store.mapImage(map, File('test/fixtures/radar.png').absolute.path);
+      store.createStrategy(map, 'A', 'T');
+      final bytes = OfflinePackage.export(store, team, 'en');
+      for (final mutation in ['duplicate', 'future', 'missing', 'path']) {
+        final data = jsonDecode(utf8.decode(bytes)) as Map;
+        final history = data['strategy_history'] as List;
+        if (mutation == 'duplicate') {
+          history.add(Map.from(history.single as Map));
+        }
+        if (mutation == 'future') history.single['version'] = 99;
+        if (mutation == 'missing') history.clear();
+        if (mutation == 'path') {
+          history.single['snapshot']['image_path'] = '/tmp/forged';
+        }
+        await expectLater(
+          OfflinePackage.restore(store, dir, utf8.encode(jsonEncode(data))),
+          throwsA(isA<DomainError>()),
+        );
+        expect(store.teams, hasLength(1));
+        expect(
+          await dir.list(recursive: true).where((e) => e is File).toList(),
+          isEmpty,
+        );
+      }
+    },
+  );
+
   test('generate real Cyrillic PDF in both languages', () async {
     final team = store.createTeam('Пятёрка'),
         map = store.addMap(team, 'Mirage');

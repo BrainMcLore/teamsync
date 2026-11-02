@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Offline team packages now retain local tactic revision history with remapped references, bounded validation and legacy schema compatibility.
+
 - Portable review exports now include tick/round-linked notes, their creation times and scouting labels; legacy files remain compatible and failed imports roll back cleanly.
 
 - Added team/member workload snapshots with real task states, unfinished deadlines, unassigned work and explicit cache limitations (English/Russian).

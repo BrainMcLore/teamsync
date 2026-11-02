@@ -63,7 +63,7 @@ class OfflinePackage {
     }
     final value = {
       'format': 'teamsync-offline',
-      'schema': 1,
+      'schema': 2,
       'locale': locale,
       'exported_at': store.now,
       'team': store.teams.singleWhere((e) => e['id'] == team),
@@ -80,13 +80,32 @@ class OfflinePackage {
           .toList(),
       'tasks': store.tasks(team),
       'utilities': utilities,
-      'excluded': [
-        'demo_files',
-        'external_videos',
-        'strategy_history',
-        'online_permissions',
+      'strategy_history': [
+        for (final strategy in store.strategies(team))
+          for (final row in store.versions(strategy['id'] as String))
+            {
+              'strategy_id': strategy['id'],
+              'version': row['version'],
+              'created_at': row['created_at'],
+              'snapshot': {
+                for (final entry
+                    in (jsonDecode(row['payload'] as String) as Map).entries)
+                  if ([
+                    'title',
+                    'side',
+                    'notes',
+                    'objects',
+                    'level',
+                  ].contains(entry.key))
+                    entry.key: entry.value,
+              },
+            },
       ],
+      'excluded': ['demo_files', 'external_videos', 'online_permissions'],
     };
+    if ((value['strategy_history'] as List).length > 10000) {
+      throw DomainError('packageError');
+    }
     final bytes = Uint8List.fromList(utf8.encode(jsonEncode(value)));
     if (bytes.length > limit) throw DomainError('packageError');
     return bytes;
@@ -101,7 +120,8 @@ class OfflinePackage {
     try {
       if (bytes.length > limit) throw DomainError('packageError');
       final data = jsonDecode(utf8.decode(bytes)) as Map<String, dynamic>;
-      if (data['format'] != 'teamsync-offline' || data['schema'] != 1) {
+      if (data['format'] != 'teamsync-offline' ||
+          ![1, 2].contains(data['schema'])) {
         throw DomainError('packageError');
       }
       final maps = data['maps'] as List,
@@ -114,6 +134,11 @@ class OfflinePackage {
           strategies.length > 500 ||
           tasks.length > 5000 ||
           utilities.length > 5000) {
+        throw DomainError('packageError');
+      }
+      final history = data['strategy_history'] as List? ?? [];
+      if (history.length > 10000 ||
+          data['schema'] == 2 && !data.containsKey('strategy_history')) {
         throw DomainError('packageError');
       }
       final images = <String, String>{};
@@ -261,6 +286,71 @@ class OfflinePackage {
             jsonEncode(snapshot),
             store.now,
           ]);
+        }
+        final seenHistory = <String>{};
+        final restoredHistory = <String>{};
+        for (final raw in history) {
+          final row = raw as Map;
+          final id = strategyIds[row['strategy_id']];
+          final version = row['version'];
+          final created = row['created_at'];
+          if (id == null ||
+              version is! int ||
+              version < 1 ||
+              version > (store.strategy(id)['version'] as int) ||
+              !seenHistory.add('$id:$version') ||
+              created is! String ||
+              created.length > 40 ||
+              DateTime.tryParse(created) == null) {
+            throw DomainError('packageError');
+          }
+          final value = row['snapshot'] as Map;
+          if (value.keys.any(
+                (k) =>
+                    !['title', 'side', 'notes', 'objects', 'level'].contains(k),
+              ) ||
+              !['T', 'CT'].contains(value['side']) ||
+              !['default', 'lower'].contains(value['level'] ?? 'default')) {
+            throw DomainError('packageError');
+          }
+          final notes = value['notes'] as String;
+          final objects = (jsonDecode(value['objects'] as String) as List)
+              .map((e) => Map<String, dynamic>.from(e as Map))
+              .toList();
+          store.validateStrategy(notes, objects);
+          final snapshot = {
+            'id': id,
+            'map_id': store.strategy(id)['map_id'],
+            'title': store.requiredText(value['title'] as String),
+            'side': value['side'],
+            'notes': notes,
+            'objects': jsonEncode(objects),
+            'level': value['level'] ?? 'default',
+            'version': version,
+            'updated_at': created,
+          };
+          if (restoredHistory.add(id)) {
+            store.db.execute(
+              'DELETE FROM strategy_versions WHERE strategy_id=?',
+              [id],
+            );
+          }
+          store.db.execute('INSERT INTO strategy_versions VALUES(?,?,?,?,?)', [
+            Store.uuid.v4(),
+            id,
+            version,
+            jsonEncode(snapshot),
+            created,
+          ]);
+        }
+        if (data['schema'] == 2 &&
+            strategyIds.values.any((id) => !restoredHistory.contains(id))) {
+          throw DomainError('packageError');
+        }
+        for (final id in restoredHistory) {
+          if (!seenHistory.contains('$id:${store.strategy(id)['version']}')) {
+            throw DomainError('packageError');
+          }
         }
         for (final raw in utilities) {
           final utility = raw as Map;

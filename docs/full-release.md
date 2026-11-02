@@ -36,7 +36,8 @@ The published 0.95 Beta remains immutable. Development continues in a separate b
 
 - [ ] Windows installer upgrade and uninstall preserving user data.
 - [ ] Android update over the persistent release signature on physical devices.
-- [ ] Backup/restore, migration and multi-device regression matrix.
+- [x] Offline tactic revision round trips, legacy package compatibility and corruption rollback (development branch).
+- [ ] Full backup/restore, migration and multi-device regression matrix.
 - [ ] Matching documentation, final CI, package integrity and secret audit.
 
 Русский: пункты выше — критерии приёмки 1.0. Сначала надёжность общего пространства, затем полный цикл тренировок, демки/офлайн, буткемп и проверка обновлений. Непроверенные внешние интеграции не считаются готовыми по одному наличию кнопки.
