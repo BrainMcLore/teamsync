@@ -36,3 +36,8 @@ The Android integration suite now performs an offline review export/import/open 
 Revision `748bbb4` passes 122 Flutter tests (5 external/private checks skipped) and clean static analysis. New package tests preserve tactic version numbers/timestamps, remap all historical IDs, restore prior content as a new revision, retain schema 1 compatibility, and roll back database/media on duplicate, missing-current, future or path-bearing revisions. Redacted Git history scanning found no secrets.
 
 The preceding portable-review revision `62fc923` passed [Android verification 41478417578](https://github.com/BrainMcLore/teamsync/actions/runs/41478417578), including the emulator's offline notebook export/import/open test and signed APK build. This native result is for `62fc923`; the later tactic-history change has local regression coverage and must be included in final release CI. Physical transfer and real-device upgrade acceptance remain pending.
+
+
+## Full 1.0 acceptance audit
+
+See the dated [acceptance audit](release-audit.md) for native run/source IDs, artifact hashes, dependency advisory scopes, installer lifecycle checks, the online-restore defect found/fixed during testing, and all outstanding gates. The explicit live HLTV archive test failed with `source_verification_timeout` before downloading any bytes; successful catalog access and subsequent green core CI do not certify that scenario. Physical devices are currently unavailable, and several roadmap features remain unimplemented. This is not 1.0 release approval.

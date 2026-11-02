@@ -63,4 +63,23 @@ The archive failure originally exposed only a generic DomainError after about fi
 
 ## Defect found and fixed during acceptance
 
-Backup restoration created an unlinked local team that the account-only workspace did not display. The application now copies into the selected online team, after manager confirmation. It retains existing materials, refuses viewer/logout/account-switch cases, creates no archive members/accounts, resets copied tasks to unassigned Todo, and keeps local tactic snapshots without claiming server-authenticated review history. A logout during media writes rolls back the import and removes newly written files. Local regressions pass, including import followed by synchronization to a second fixture account with no imported identities/approvals. Refreshed native candidate verification is recorded below once complete. This functional change means the earlier APK/installer hashes above identify pre-fix acceptance builds, not a final 1.0 package.
+Backup restoration created an unlinked local team that the account-only workspace did not display. The application now copies into the selected online team, after manager confirmation. It retains existing materials, refuses viewer/logout/account-switch cases, creates no archive members/accounts, resets copied tasks to unassigned Todo, and keeps local tactic snapshots without claiming server-authenticated review history. A logout during media writes rolls back the import and removes newly written files. Local regressions pass, including import followed by synchronization to a second fixture account with no imported identities/approvals. Refreshed native candidate verification follows below. This functional change means the earlier APK/installer hashes above identify pre-fix acceptance builds, not a final 1.0 package.
+
+
+## Latest candidates with the restore fix
+
+Both candidates use runtime source `6809ad5` and remain development builds, versioned 0.95 Beta. The later `f297674` change adds a fixture regression and updates documentation, without changing application runtime code.
+
+| Native check | Result | Evidence |
+| --- | --- | --- |
+| Windows core acceptance | Passed | [Run 41486629187](https://github.com/BrainMcLore/teamsync/actions/runs/41486629187): 127 client tests passed, 2 private/external skips; 58 worker/API tests passed; installer build, baseline upgrade, actual startup/migration and uninstall canaries passed again |
+| Android acceptance | Passed | [Run 41486635945](https://github.com/BrainMcLore/teamsync/actions/runs/41486635945): 124 client tests passed, 5 platform/private skips; 4 emulator integration tests passed; signed APK and certificate pin verified |
+| Independent final artifact integrity | Passed | Both binaries' SHA-256 values verified after downloading; APK/source/server ZIP CRCs passed; source/server archives exclude generated folders and credential/database files |
+| Live HLTV archive | Failed, still open | `source_verification_timeout`, 0 bytes. The green core workflow does not rerun or override the failed explicit external acceptance |
+
+Current candidate binary hashes:
+
+- Windows installer: 133,255,208 bytes; SHA-256 `79af50124a8b98a1a15f6cec917f33b4f3e4fd4a305a21ab503e829f15471925`.
+- Android APK: 104,034,484 bytes; SHA-256 `bd2c258bb1cdf60c213f000fc4682db1a901a27cc4eed9938be888930f037b00`.
+
+The Windows workflow manifest lists the APK as missing because binaries are produced by separate workflows; the independently verified Android artifact above supplies the other target. No combined final 1.0 release has been published. Physical devices were confirmed unavailable by the user, and the missing functionality/physical gates above remain open.
