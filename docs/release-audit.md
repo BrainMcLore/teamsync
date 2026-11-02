@@ -7,7 +7,7 @@ Date: 2026-11-02. Targets: Windows x64 and Android. Linux is the development hos
 | Check | Result | Scope |
 | --- | --- | --- |
 | Flutter analysis | Passed | No analyzer issues |
-| Client regression | 126 passed, 3 skipped | Includes the pinned real-recording query benchmark and desktop/mobile review rendering |
+| Client regression | 127 passed, 3 skipped | Includes the pinned real-recording query benchmark and desktop/mobile review rendering |
 | API/worker on Linux host | 57 passed, 1 deliberately excluded | The combined ZIP/RAR test needs the Windows-bundled `7z.exe`; Windows CI runs it without this exclusion |
 | Packaging | 5 passed | Reproducibility, source/server exclusion rules, APK certificate matching, installer data canaries |
 | Python dependency consistency | Passed | `pip check` |
@@ -63,4 +63,4 @@ The archive failure originally exposed only a generic DomainError after about fi
 
 ## Defect found and fixed during acceptance
 
-Backup restoration created an unlinked local team that the account-only workspace did not display. The application now copies into the selected online team, after manager confirmation. It retains existing materials, refuses viewer/logout/account-switch cases, creates no archive members/accounts, resets copied tasks to unassigned Todo, and keeps local tactic snapshots without claiming server-authenticated review history. A logout during media writes rolls back the import and removes newly written files. Local regressions pass; refreshed native candidate verification is recorded below once complete. This functional change means the earlier APK/installer hashes above identify pre-fix acceptance builds, not a final 1.0 package.
+Backup restoration created an unlinked local team that the account-only workspace did not display. The application now copies into the selected online team, after manager confirmation. It retains existing materials, refuses viewer/logout/account-switch cases, creates no archive members/accounts, resets copied tasks to unassigned Todo, and keeps local tactic snapshots without claiming server-authenticated review history. A logout during media writes rolls back the import and removes newly written files. Local regressions pass, including import followed by synchronization to a second fixture account with no imported identities/approvals. Refreshed native candidate verification is recorded below once complete. This functional change means the earlier APK/installer hashes above identify pre-fix acceptance builds, not a final 1.0 package.

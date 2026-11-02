@@ -6,6 +6,7 @@ import 'dart:typed_data';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter/material.dart';
 import 'package:teamsync/data/account.dart';
+import 'package:teamsync/data/offline_package.dart';
 import 'package:teamsync/data/account_roster.dart';
 import 'package:teamsync/data/files.dart';
 import 'package:teamsync/data/store.dart';
@@ -799,6 +800,74 @@ void main() {
       root.deleteSync(recursive: true);
     });
   }
+  test('restored online materials synchronize to a teammate without imported identities or approvals', () async {
+    final root = Directory.systemTemp.createTempSync('teamsync_restore_sync_');
+    final a = Store(':memory:'), b = Store(':memory:');
+    addTearDown(() {
+      a.close();
+      b.close();
+      root.deleteSync(recursive: true);
+    });
+    final source = a.createTeam('Archive');
+    final archivedMember = a.addMember(
+      source,
+      'Archived owner',
+      'owner',
+      'IGL',
+    );
+    final map = a.addMap(source, 'Mirage');
+    a.mapImage(map, File('test/fixtures/radar.png').absolute.path);
+    final tactic = a.createStrategy(map, 'Imported execute', 'T');
+    a.saveStrategy(tactic, 'Imported plan', [], 1);
+    final oldTask = a.createTask(
+      source,
+      'Imported drill',
+      '',
+      member: archivedMember,
+      strategyId: tactic,
+    );
+    a.transitionTask(oldTask, 'submitted');
+    a.transitionTask(oldTask, 'approved');
+    final remote = {'id': Store.uuid.v4(), 'name': 'Online', 'role': 'owner'};
+    final ta = saveAccountRoster(
+      a,
+      'https://fixture.example',
+      'alice',
+      remote,
+      [],
+    );
+    final tb = saveAccountRoster(b, 'https://fixture.example', 'bob', {
+      ...remote,
+      'role': 'coach',
+    }, []);
+    await OfflinePackage.restore(
+      a,
+      Directory('${root.path}/a'),
+      OfflinePackage.export(a, source, 'en'),
+      targetTeam: ta,
+    );
+    final server = SharedFixture();
+    final sa = TacticalSync(
+      a,
+      LocalFiles(Directory('${root.path}/a')),
+      clientFactory: (_) => SyncAccount(server, 'alice'),
+    );
+    final sb = TacticalSync(
+      b,
+      LocalFiles(Directory('${root.path}/b')),
+      clientFactory: (_) => SyncAccount(server, 'bob'),
+    );
+    await sa.run(ta, conflictLabel: 'Conflict');
+    await sb.run(tb, conflictLabel: 'Conflict');
+    expect(b.strategies(tb).single['notes'], 'Imported plan');
+    final copied = b.tasks(tb).single;
+    expect(copied['title'], 'Imported drill');
+    expect(copied['member_id'], isNull);
+    expect(copied['status'], 'todo');
+    expect(b.members(tb).any((m) => m['name'] == 'Archived owner'), isFalse);
+    expect(a.tasks(source).single['status'], 'approved');
+  });
+
   test('two accounts share drawings, preserve conflicts and retry a durable outbox', () async {
     final root = Directory.systemTemp.createTempSync('teamsync_shared_');
     addTearDown(() => root.deleteSync(recursive: true));
