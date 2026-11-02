@@ -1,3 +1,4 @@
+import 'team_progress_dialog.dart';
 import 'schedule_page.dart';
 import '../data/task_evidence.dart';
 import 'task_evidence_dialog.dart';
@@ -1230,6 +1231,17 @@ class _WorkspaceState extends State<Workspace> with WidgetsBindingObserver {
           onAction: db.canEditTeam(teamId!)
               ? () => act(() => createTask())
               : null,
+        ),
+        Padding(
+          padding: const EdgeInsets.only(bottom: 12),
+          child: OutlinedButton.icon(
+            icon: const Icon(Icons.insights_outlined),
+            label: Text(l.teamProgress),
+            onPressed: () => showDialog<void>(
+              context: context,
+              builder: (_) => TeamProgressDialog(store: db, team: teamId!),
+            ),
+          ),
         ),
         Expanded(
           child: items.isEmpty

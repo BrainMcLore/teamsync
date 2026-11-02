@@ -1823,4 +1823,23 @@ class AppLocalizationsEn extends AppLocalizations {
   String remindersCount(int count) {
     return 'Scheduled on this device: $count';
   }
+
+  @override
+  String get teamProgress => 'Team progress';
+
+  @override
+  String get progressTotal => 'Total';
+
+  @override
+  String get progressOverdue => 'Overdue';
+
+  @override
+  String get progressUnknown => 'Other status';
+
+  @override
+  String get progressUnassigned => 'Unassigned / unavailable member';
+
+  @override
+  String get progressSnapshotHelp =>
+      'Current assignments across the whole team, including tasks outside the search filter. Submitted work awaits review; only accepted work counts as approved. Overdue means an unfinished task past its deadline. This device’s snapshot may include unsynchronized changes and cached data; refresh the team before reviewing. This is not a historical rating.';
 }

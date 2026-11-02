@@ -17,7 +17,7 @@ The published 0.95 Beta remains immutable. Development continues in a separate b
 - [x] Opt-in account-scoped native local reminders with explicit permission and offline behavior (development branch).
 - [ ] Physical Windows/Android reminder delivery, reboot, permission changes and upgrade acceptance.
 - [ ] Cloud push notifications and remote changes while the app is closed.
-- [ ] Team progress views that derive from real assignments and reviewed work.
+- [x] Current team/member workload snapshots derived from real assignment states, separating submitted and accepted work (development branch).
 
 ## 3. Demo and offline acceptance
 

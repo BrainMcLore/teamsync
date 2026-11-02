@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Added team/member workload snapshots with real task states, unfinished deadlines, unassigned work and explicit cache limitations (English/Russian).
+
 - Added opt-in native Windows/Android practice reminders, account-scoped preferences, generic notification text and cancellation/logout guards.
 - Local reminders use the last synchronized schedule; cloud push and physical-device delivery acceptance remain pending.
 

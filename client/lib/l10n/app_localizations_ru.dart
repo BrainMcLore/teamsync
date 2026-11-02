@@ -1838,4 +1838,23 @@ class AppLocalizationsRu extends AppLocalizations {
   String remindersCount(int count) {
     return 'Запланировано на устройстве: $count';
   }
+
+  @override
+  String get teamProgress => 'Прогресс команды';
+
+  @override
+  String get progressTotal => 'Всего';
+
+  @override
+  String get progressOverdue => 'Просрочено';
+
+  @override
+  String get progressUnknown => 'Другой статус';
+
+  @override
+  String get progressUnassigned => 'Без исполнителя / участник недоступен';
+
+  @override
+  String get progressSnapshotHelp =>
+      'Текущие задания всей команды, включая скрытые поиском. Сданное задание ожидает проверки; принятым считается только одобренное тренером. Просрочены незавершённые задания с истёкшим сроком. Снимок на устройстве может включать неотправленные изменения и кеш; перед оценкой обновите команду. Это не исторический рейтинг.';
 }

@@ -70,3 +70,12 @@ These are local reminders based on the last synchronized schedule. Keep the app 
 Изменения с сервера применяются после синхронизации: при открытом приложении проверка выполняется примерно раз в минуту. Закрытое приложение без облачного push не узнает об удалённой отмене. Время последнего обновления меняется только после полной успешной загрузки. Энергосбережение Android может задержать сигнал, принудительная остановка — заблокировать его. Выключенный Windows может пропустить уведомление. Проверка фактического показа, перезагрузки и обновления на физических устройствах ещё впереди.
 
 Platform behavior: [Android alarms](https://developer.android.com/develop/background-work/services/alarms), [Android notification permission](https://developer.android.com/develop/ui/compose/notifications/notification-permission), [Windows scheduled notifications](https://learn.microsoft.com/en-us/windows/apps/develop/notifications/app-notifications/app-notifications-scheduled), [Windows desktop notification identity](https://learn.microsoft.com/en-us/windows/win32/shell/enable-desktop-toast-with-appusermodelid).
+
+
+## Team progress (development toward 1.0)
+
+Open **Training → Team progress** for the current team's full assignment snapshot, independent of the search filter. The report separates Todo, In progress, Submitted and Approved, and lists every current member including those with no tasks. Unassigned/unavailable members remain visible as a separate group. Only Todo/In progress tasks past their deadline are overdue; waiting for coach review is shown as Submitted. Unknown legacy statuses remain counted rather than appearing approved.
+
+The report uses this device's current synchronized/cached data, including pending local edits. Refresh synchronization before evaluating it. It is a current workload snapshot, not a historical completion rate, attendance score or player ranking; deleted assignments are absent.
+
+**Русский.** В разделе **Тренировки → Прогресс команды** показаны все текущие задания выбранной команды независимо от поиска. Видны задачи каждого участника, включая игроков без заданий, и отдельная группа без исполнителя. Сданное на проверку отделено от принятого тренером; просрочены только незавершённые задания. Данные берутся со снимка на устройстве, включая локальные изменения: перед оценкой обновите синхронизацию. Это текущая нагрузка, а не рейтинг игрока или статистика за прошлые периоды.

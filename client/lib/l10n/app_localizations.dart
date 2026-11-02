@@ -3403,6 +3403,42 @@ abstract class AppLocalizations {
   /// In ru, this message translates to:
   /// **'Запланировано на устройстве: {count}'**
   String remindersCount(int count);
+
+  /// No description provided for @teamProgress.
+  ///
+  /// In ru, this message translates to:
+  /// **'Прогресс команды'**
+  String get teamProgress;
+
+  /// No description provided for @progressTotal.
+  ///
+  /// In ru, this message translates to:
+  /// **'Всего'**
+  String get progressTotal;
+
+  /// No description provided for @progressOverdue.
+  ///
+  /// In ru, this message translates to:
+  /// **'Просрочено'**
+  String get progressOverdue;
+
+  /// No description provided for @progressUnknown.
+  ///
+  /// In ru, this message translates to:
+  /// **'Другой статус'**
+  String get progressUnknown;
+
+  /// No description provided for @progressUnassigned.
+  ///
+  /// In ru, this message translates to:
+  /// **'Без исполнителя / участник недоступен'**
+  String get progressUnassigned;
+
+  /// No description provided for @progressSnapshotHelp.
+  ///
+  /// In ru, this message translates to:
+  /// **'Текущие задания всей команды, включая скрытые поиском. Сданное задание ожидает проверки; принятым считается только одобренное тренером. Просрочены незавершённые задания с истёкшим сроком. Снимок на устройстве может включать неотправленные изменения и кеш; перед оценкой обновите команду. Это не исторический рейтинг.'**
+  String get progressSnapshotHelp;
 }
 
 class _AppLocalizationsDelegate
