@@ -101,7 +101,10 @@ class ReminderCoordinator extends ChangeNotifier {
       allowed = false,
       partial = false,
       foreground = true;
-  bool _disposed = false, _again = false, _started = false;
+  bool _disposed = false,
+      _again = false,
+      _started = false,
+      _logoutPending = false;
   int count = 0, _epoch = 0;
   String? error, lastSync;
   ReminderCoordinator(
@@ -135,8 +138,14 @@ class ReminderCoordinator extends ChangeNotifier {
     if (_disposed) return;
     _epoch++;
     if (key == 'account_identity' ||
+        key == 'account_signed_out' && store.setting(key) == '0') {
+      _logoutPending = false;
+    }
+    if (key == 'account_identity' ||
         key == 'account_signed_out' ||
         key.startsWith('account_team_')) {
+      count = 0;
+      lastSync = null;
       unawaited(native.clear().catchError((_) {}));
     }
     unawaited(refresh());
@@ -232,11 +241,12 @@ class ReminderCoordinator extends ChangeNotifier {
         count = 0;
         return;
       }
-      if (actor == null || !enabled || !allowed) {
+      if (_logoutPending || actor == null || !enabled || !allowed) {
         await native.clear();
         if (current()) count = 0;
         return;
       }
+      lastSync ??= store.setting('reminder_sync_$actor');
       final cacheKey = 'reminder_feed_$actor';
       final cached = Map<String, dynamic>.from(
         jsonDecode(store.setting(cacheKey) ?? '{}') as Map,
@@ -294,8 +304,10 @@ class ReminderCoordinator extends ChangeNotifier {
       final scheduled = await native.replace(plan);
       if (!current()) return;
       count = scheduled;
-      lastSync = now.toIso8601String();
-      store.setSetting('reminder_sync_$actor', lastSync!);
+      if (!partial) {
+        lastSync = now.toIso8601String();
+        store.setSetting('reminder_sync_$actor', lastSync!);
+      }
     } catch (_) {
       if (!_disposed) {
         error = 'unavailable';
@@ -317,6 +329,7 @@ class ReminderCoordinator extends ChangeNotifier {
   }
 
   Future<void> clearForLogout() async {
+    _logoutPending = true;
     _epoch++;
     await native.clear();
     count = 0;

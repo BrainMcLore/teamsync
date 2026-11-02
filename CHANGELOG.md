@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Added opt-in native Windows/Android practice reminders, account-scoped preferences, generic notification text and cancellation/logout guards.
+- Local reminders use the last synchronized schedule; cloud push and physical-device delivery acceptance remain pending.
+
 - Added shared fixed-time events, self RSVP and separate coach attendance, with audited corrections and retained former-member records.
 - Added account-scoped offline schedule caches and durable versioned mutations; open views refresh every 30 seconds.
 

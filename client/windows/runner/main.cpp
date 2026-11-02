@@ -14,12 +14,12 @@ int APIENTRY wWinMain(_In_ HINSTANCE instance, _In_opt_ HINSTANCE prev,
     bool cleared = ClearScheduledReminders(); ::RoUninitialize();
     return cleared ? EXIT_SUCCESS : EXIT_FAILURE;
   }
-  HANDLE instance = CreateMutexW(nullptr, FALSE, L"Local\\TeamSync.Desktop.Instance");
-  if (instance && GetLastError() == ERROR_ALREADY_EXISTS) {
+  HANDLE instance_mutex = CreateMutexW(nullptr, FALSE, L"Local\\TeamSync.Desktop.Instance");
+  if (instance_mutex && GetLastError() == ERROR_ALREADY_EXISTS) {
     if (HWND window = FindWindowW(L"FLUTTER_RUNNER_WIN32_WINDOW", L"TeamSync")) {
       ShowWindow(window, SW_RESTORE); SetForegroundWindow(window);
     }
-    CloseHandle(instance); return 0;
+    CloseHandle(instance_mutex); return 0;
   }
   // Attach to console when present (e.g., 'flutter run') or create a
   // new console when running with a debugger.
@@ -54,7 +54,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE instance, _In_opt_ HINSTANCE prev,
   }
 
   ::RoUninitialize();
-  if (instance) CloseHandle(instance);
+  if (instance_mutex) CloseHandle(instance_mutex);
   return EXIT_SUCCESS;
 }
 

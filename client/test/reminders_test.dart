@@ -152,7 +152,7 @@ void main() {
       final (s, team) = fixture();
       addTearDown(s.close);
       final native = FakeNotifications(), api = ReminderApi();
-      final now = DateTime.utc(2026, 11, 1, 12);
+      var now = DateTime.utc(2026, 11, 1, 12);
       api.events = [event(now)];
       final c = ReminderCoordinator(
         s,
@@ -170,10 +170,13 @@ void main() {
         'Decline',
         target: 'alice',
       );
+      final previousSync = c.lastSync;
+      now = now.add(const Duration(minutes: 1));
       api.offline = true;
       await c.refresh();
       expect(native.batches.last, isEmpty);
       expect(c.partial, isTrue);
+      expect(c.lastSync, previousSync);
       scope.discard(
         (scope.pending().single['body'] as Map)['operation_id'] as String,
       );
@@ -186,6 +189,30 @@ void main() {
       api.removed = true;
       await c.refresh();
       expect(native.batches.last, isEmpty);
+    },
+  );
+  test(
+    'logout suspends planning while the server logout request is pending',
+    () async {
+      final (s, _) = fixture();
+      addTearDown(s.close);
+      final native = FakeNotifications(), api = ReminderApi();
+      final now = DateTime.utc(2026, 11, 1, 12);
+      api.events = [event(now)];
+      final c = ReminderCoordinator(
+        s,
+        platform: native,
+        clientFactory: (_) => api,
+        now: () => now,
+      );
+      addTearDown(c.dispose);
+      await c.refresh();
+      expect(native.batches.last, hasLength(1));
+      await c.clearForLogout();
+      // The local identity still exists while a slow network logout is running.
+      await c.refresh();
+      expect(native.batches.last, isEmpty);
+      expect(c.count, 0);
     },
   );
   test('late fetch after logout cannot restore any alarms', () async {
