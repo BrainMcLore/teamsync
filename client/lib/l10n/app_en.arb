@@ -140,7 +140,7 @@
   "backupHelp": "Includes this team's roster, maps, radar images, strategies and tasks. Original demo files and external videos are excluded. Maximum package size: 100 MB.",
   "restorePackage": "Import offline package",
   "packageError": "Invalid, incomplete or oversized offline package. Existing teams have not been changed.",
-  "packageImported": "Package imported as a new local team",
+  "packageImported": "Materials copied into the selected team. Assign teammates to the copied tasks.",
   "exported": "Export saved",
   "onlineAccount": "Online account",
   "accountHelp": "Sign in with Steam or Discord to work on your team’s shared tactics. Passwords are entered only on the provider’s page.",
@@ -626,5 +626,6 @@
   "progressOverdue": "Overdue",
   "progressUnknown": "Other status",
   "progressUnassigned": "Unassigned / unavailable member",
-  "progressSnapshotHelp": "Current assignments across the whole team, including tasks outside the search filter. Submitted work awaits review; only accepted work counts as approved. Overdue means an unfinished task past its deadline. This device’s snapshot may include unsynchronized changes and cached data; refresh the team before reviewing. This is not a historical rating."
+  "progressSnapshotHelp": "Current assignments across the whole team, including tasks outside the search filter. Submitted work awaits review; only accepted work counts as approved. Overdue means an unfinished task past its deadline. This device’s snapshot may include unsynchronized changes and cached data; refresh the team before reviewing. This is not a historical rating.",
+  "importIntoTeamHelp": "Copy materials into the selected online team, keeping existing content. Accounts and members are not imported. Copied tasks start as unassigned To do; assign real teammates and review them again. Old approvals do not become authenticated reviews in this team."
 }

@@ -2,6 +2,8 @@
 
 The published 0.95 Beta remains immutable. Development continues in a separate branch; 1.0 is released only after the following gates are demonstrated, not merely implemented in the UI.
 
+Current evidence and remaining blockers: [1.0 acceptance audit](release-audit.md).
+
 ## 1. Reliable shared workspace
 
 - [x] Isolate legacy tasks with unlinked assignees so they cannot block other documents.
@@ -34,7 +36,8 @@ The published 0.95 Beta remains immutable. Development continues in a separate b
 
 ## 5. Release gate
 
-- [ ] Windows installer upgrade and uninstall preserving user data.
+- [x] Hosted Windows baseline install, candidate upgrade/startup, legacy migration and database/media preservation after uninstall.
+- [ ] Physical Windows upgrade with representative user/account data.
 - [ ] Android update over the persistent release signature on physical devices.
 - [x] Offline tactic revision round trips, legacy package compatibility and corruption rollback (development branch).
 - [ ] Full backup/restore, migration and multi-device regression matrix.

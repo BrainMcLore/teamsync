@@ -3,6 +3,7 @@ import 'dart:io';
 import 'dart:math';
 
 import 'package:teamsync/data/review_data.dart';
+import 'package:teamsync/data/offline_package.dart';
 
 import 'package:crypto/crypto.dart';
 import 'package:flutter/material.dart';
@@ -484,4 +485,66 @@ void main() {
       }
     });
   });
+  testWidgets(
+    'backup import stays in the active online team without archive accounts',
+    (tester) async {
+      await tester.runAsync(() async {
+        final root = await Directory.systemTemp.createTemp(
+          'teamsync-online-restore-',
+        );
+        final store = Store(':memory:');
+        try {
+          final source = store.createTeam('Archive');
+          final member = store.addMember(
+            source,
+            'Archived member',
+            'owner',
+            'IGL',
+          );
+          final tactic = store.createStrategy(
+            store.addMap(source, 'Mirage'),
+            'A',
+            'T',
+          );
+          store.saveStrategy(tactic, 'Version two', [], 1);
+          final task = store.createTask(
+            source,
+            'Drill',
+            '',
+            member: member,
+            strategyId: tactic,
+          );
+          store.transitionTask(task, 'submitted');
+          store.transitionTask(task, 'approved');
+          final target = saveAccountRoster(
+            store,
+            'https://fixture.example',
+            'alice',
+            {'id': 'remote', 'name': 'Online', 'role': 'owner'},
+            [
+              {'id': 'alice', 'name': 'Alice', 'role': 'owner'},
+            ],
+          );
+          await OfflinePackage.restore(
+            store,
+            root,
+            OfflinePackage.export(store, source, 'en'),
+            targetTeam: target,
+          );
+          expect(visibleAccountTeams(store).single['id'], target);
+          expect(store.teams, hasLength(2));
+          expect(store.members(target), hasLength(1));
+          expect(store.tasks(target).single['member_id'], isNull);
+          expect(store.tasks(target).single['status'], 'todo');
+          expect(
+            store.versions(store.strategies(target).single['id'] as String),
+            hasLength(2),
+          );
+        } finally {
+          store.close();
+          await root.delete(recursive: true);
+        }
+      });
+    },
+  );
 }

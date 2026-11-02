@@ -377,7 +377,8 @@ class AppLocalizationsEn extends AppLocalizations {
       'Invalid, incomplete or oversized offline package. Existing teams have not been changed.';
 
   @override
-  String get packageImported => 'Package imported as a new local team';
+  String get packageImported =>
+      'Materials copied into the selected team. Assign teammates to the copied tasks.';
 
   @override
   String get exported => 'Export saved';
@@ -1842,4 +1843,8 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get progressSnapshotHelp =>
       'Current assignments across the whole team, including tasks outside the search filter. Submitted work awaits review; only accepted work counts as approved. Overdue means an unfinished task past its deadline. This device’s snapshot may include unsynchronized changes and cached data; refresh the team before reviewing. This is not a historical rating.';
+
+  @override
+  String get importIntoTeamHelp =>
+      'Copy materials into the selected online team, keeping existing content. Accounts and members are not imported. Copied tasks start as unassigned To do; assign real teammates and review them again. Old approvals do not become authenticated reviews in this team.';
 }

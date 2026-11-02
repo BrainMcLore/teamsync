@@ -334,7 +334,7 @@ void main() {
       await tester.pumpWidget(const SizedBox.shrink());
     });
   }
-  final fixture = Directory('../.tools/demo-fixtures/parsed');
+  final fixture = File('../.tools/demo-fixtures/parsed/mirage.json');
   testWidgets('real recorded positions render in native review', (
     tester,
   ) async {
@@ -353,9 +353,7 @@ void main() {
       () => cacheImage(catalog!.radar(catalog.find('de_mirage')!)),
     );
     final team = store.createTeam('QA');
-    final file = fixture.listSync().whereType<File>().firstWhere(
-      (f) => f.path.endsWith('.json'),
-    );
+    final file = fixture;
     store.addDemo(team, 'Real CS2 parser fixture', file.path, 60601900);
     final demo = store.demos(team).single;
     store.saveAnalysis(

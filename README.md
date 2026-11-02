@@ -16,7 +16,7 @@
 <a href="https://github.com/BrainMcLore/teamsync/releases/download/v0.95.0-beta/TeamSync-0.95.0-beta-Android.apk"><img alt="Download Android APK" src="https://img.shields.io/badge/Download-Android_APK-66b7e8?style=for-the-badge&amp;labelColor=101923"></a>
 </p>
 
-<p align="center"><a href="https://github.com/BrainMcLore/teamsync/releases/tag/v0.95.0-beta">Release notes & checksums</a> · <a href="docs/user-guide.md">User guide</a> · <a href="docs/development.md">Build from source</a></p>
+<p align="center"><a href="https://github.com/BrainMcLore/teamsync/releases/tag/v0.95.0-beta">Release notes & checksums</a> · <a href="docs/user-guide.md">User guide</a> · <a href="docs/development.md">Build from source</a> · <a href="docs/release-audit.md">1.0 acceptance audit</a></p>
 
 ## A shared tactical room
 

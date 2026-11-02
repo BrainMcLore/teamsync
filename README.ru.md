@@ -8,6 +8,8 @@
 
 <p align="center"><a href="https://github.com/BrainMcLore/teamsync/releases/download/v0.95.0-beta/TeamSync-0.95.0-beta-Windows-Setup.exe"><b>⬇ Windows x64</b></a>　·　<a href="https://github.com/BrainMcLore/teamsync/releases/download/v0.95.0-beta/TeamSync-0.95.0-beta-Android.apk"><b>⬇ Android APK</b></a>　·　<a href="https://github.com/BrainMcLore/teamsync/releases/tag/v0.95.0-beta">Состав релиза и SHA-256</a></p>
 
+[Проверки готовности к 1.0 и оставшиеся ограничения](docs/release-audit.md).
+
 ## Общая тактическая комната
 
 ![Библиотека карт TeamSync](docs/images/ru/maps.png)

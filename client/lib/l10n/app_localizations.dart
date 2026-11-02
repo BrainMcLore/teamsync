@@ -731,7 +731,7 @@ abstract class AppLocalizations {
   /// No description provided for @packageImported.
   ///
   /// In ru, this message translates to:
-  /// **'Пакет импортирован как новая локальная команда'**
+  /// **'Материалы скопированы в выбранную команду. Назначьте исполнителей скопированных заданий.'**
   String get packageImported;
 
   /// No description provided for @exported.
@@ -3439,6 +3439,12 @@ abstract class AppLocalizations {
   /// In ru, this message translates to:
   /// **'Текущие задания всей команды, включая скрытые поиском. Сданное задание ожидает проверки; принятым считается только одобренное тренером. Просрочены незавершённые задания с истёкшим сроком. Снимок на устройстве может включать неотправленные изменения и кеш; перед оценкой обновите команду. Это не исторический рейтинг.'**
   String get progressSnapshotHelp;
+
+  /// No description provided for @importIntoTeamHelp.
+  ///
+  /// In ru, this message translates to:
+  /// **'Материалы будут скопированы в выбранную онлайн-команду без удаления существующих. Аккаунты и участники не импортируются. Задания начнутся без исполнителей в статусе «К выполнению»: назначьте реальных игроков и проверьте работу заново. Старые отметки принятия не становятся подтверждёнными проверками этой команды.'**
+  String get importIntoTeamHelp;
 }
 
 class _AppLocalizationsDelegate

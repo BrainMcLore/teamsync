@@ -1,3 +1,4 @@
+import '../data/account_scope.dart';
 import 'team_progress_dialog.dart';
 import 'schedule_page.dart';
 import '../data/task_evidence.dart';
@@ -1464,6 +1465,10 @@ class _WorkspaceState extends State<Workspace> with WidgetsBindingObserver {
   }
 
   Future<void> importPackage() async {
+    final target = teamId!;
+    final scope = TeamAccountScope(db, target);
+    scope.assertActive();
+    if (!db.canEditTeam(target)) throw DomainError('readOnlyTeam');
     final source = await openFile(
       acceptedTypeGroups: [
         const XTypeGroup(
@@ -1477,13 +1482,34 @@ class _WorkspaceState extends State<Workspace> with WidgetsBindingObserver {
     if (await source.length() > OfflinePackage.limit) {
       throw DomainError('packageError');
     }
+    if (!mounted) return;
+    final proceed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(l.restorePackage),
+        content: SingleChildScrollView(child: Text(l.importIntoTeamHelp)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(l.back),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text(l.restorePackage),
+          ),
+        ],
+      ),
+    );
+    if (proceed != true) return;
+    final bytes = await source.readAsBytes();
+    scope.assertActive();
     await OfflinePackage.restore(
       db,
       widget.files.root,
-      await source.readAsBytes(),
+      bytes,
+      targetTeam: target,
     );
     message(l.packageImported);
-    await openAccount();
   }
 
   Widget settingsPage() => ListView(
@@ -1530,8 +1556,11 @@ class _WorkspaceState extends State<Workspace> with WidgetsBindingObserver {
       ListTile(
         contentPadding: EdgeInsets.zero,
         title: Text(l.restorePackage),
+        subtitle: Text(l.importIntoTeamHelp),
         leading: const Icon(Icons.file_open_outlined),
-        onTap: busy ? null : () => act(importPackage),
+        onTap: busy || !db.canEditTeam(teamId!)
+            ? null
+            : () => act(importPackage),
       ),
       const Divider(),
       ListTile(

@@ -3,6 +3,7 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'store.dart';
+import 'account_scope.dart';
 import 'files.dart';
 import 'utilities.dart';
 import 'own_video.dart';
@@ -114,16 +115,32 @@ class OfflinePackage {
   static Future<String> restore(
     Store store,
     Directory root,
-    Uint8List bytes,
-  ) async {
+    Uint8List bytes, {
+    String? targetTeam,
+  }) async {
+    final scope =
+        targetTeam != null && store.setting('account_team_$targetTeam') != null
+        ? TeamAccountScope(store, targetTeam)
+        : null;
+    void assertTarget() {
+      if (targetTeam == null) return;
+      scope?.assertActive();
+      if (!store.teams.any((t) => t['id'] == targetTeam) ||
+          !store.canEditTeam(targetTeam)) {
+        throw DomainError('readOnlyTeam');
+      }
+    }
+
     final created = <File>[];
     try {
+      assertTarget();
       if (bytes.length > limit) throw DomainError('packageError');
       final data = jsonDecode(utf8.decode(bytes)) as Map<String, dynamic>;
       if (data['format'] != 'teamsync-offline' ||
           ![1, 2].contains(data['schema'])) {
         throw DomainError('packageError');
       }
+      store.requiredText((data['team'] as Map)['name'] as String);
       final maps = data['maps'] as List,
           members = data['members'] as List,
           strategies = data['strategies'] as List,
@@ -215,7 +232,10 @@ class OfflinePackage {
         utility['details'] = jsonEncode(details);
       }
       return store.transaction<String>(() {
-        final team = store.createTeam((data['team'] as Map)['name'] as String);
+        assertTarget();
+        final team =
+            targetTeam ??
+            store.createTeam((data['team'] as Map)['name'] as String);
         final memberIds = <String, String>{},
             mapIds = <String, String>{},
             strategyIds = <String, String>{};
@@ -223,12 +243,28 @@ class OfflinePackage {
           final m = raw as Map;
           final old = m['id'] as String;
           if (memberIds.containsKey(old)) throw DomainError('packageError');
-          memberIds[old] = store.addMember(
-            team,
-            m['name'] as String,
-            m['role'] as String,
-            m['game_role'] as String,
-          );
+          if (targetTeam == null) {
+            memberIds[old] = store.addMember(
+              team,
+              m['name'] as String,
+              m['role'] as String,
+              m['game_role'] as String,
+            );
+          } else {
+            // Archive identities are not authenticated accounts in the target.
+            store.requiredText(m['name'] as String);
+            store.requiredText(m['game_role'] as String, 40);
+            if (![
+              'owner',
+              'captain',
+              'coach',
+              'player',
+              'viewer',
+            ].contains(m['role'])) {
+              throw DomainError('packageError');
+            }
+            memberIds[old] = '';
+          }
         }
         for (final raw in maps) {
           final m = raw as Map;
@@ -384,7 +420,7 @@ class OfflinePackage {
             team,
             t['title'] as String,
             t['notes'] as String,
-            member: memberIds[t['member_id']],
+            member: targetTeam == null ? memberIds[t['member_id']] : null,
             strategyId: strategyIds[t['strategy_id']],
             taskType: t['task_type'] as String? ?? 'general',
             dueAt: Store.parseTaskDeadline(t['due_at']),
@@ -404,10 +440,10 @@ class OfflinePackage {
             throw DomainError('packageError');
           }
           store.db.execute('UPDATE tasks SET review_reason=? WHERE id=?', [
-            reason,
+            targetTeam == null ? reason : '',
             id,
           ]);
-          if (status != 'todo') {
+          if (targetTeam == null && status != 'todo') {
             store.transitionTask(
               id,
               status == 'in_progress' ? 'in_progress' : 'submitted',

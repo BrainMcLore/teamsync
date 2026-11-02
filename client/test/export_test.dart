@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:teamsync/data/store.dart';
+import 'package:teamsync/data/account_roster.dart';
 import 'package:teamsync/data/offline_package.dart';
 import 'package:teamsync/data/playbook.dart';
 import 'package:teamsync/data/utilities.dart';
@@ -206,6 +207,118 @@ void main() {
           isEmpty,
         );
       }
+    },
+  );
+
+  test('online restore copies materials but never creates archive accounts or forged approvals', () async {
+    final source = store.createTeam('Archive');
+    final oldMember = store.addMember(source, 'Old coach', 'owner', 'IGL');
+    final tactic = store.createStrategy(
+      store.addMap(source, 'Mirage'),
+      'A',
+      'T',
+    );
+    store.saveStrategy(tactic, 'Retained version', [], 1);
+    final task = store.createTask(
+      source,
+      'Drill',
+      'Notes',
+      member: oldMember,
+      strategyId: tactic,
+    );
+    store.transitionTask(task, 'submitted');
+    store.transitionTask(task, 'approved');
+    final target = saveAccountRoster(
+      store,
+      'https://fixture.example',
+      'alice',
+      {'id': 'remote', 'name': 'Online', 'role': 'owner'},
+      [
+        {'id': 'alice', 'name': 'Alice', 'role': 'owner'},
+      ],
+    );
+    store.createTask(target, 'Existing', 'Keep');
+    final count = store.teams.length;
+    final restored = await OfflinePackage.restore(
+      store,
+      dir,
+      OfflinePackage.export(store, source, 'en'),
+      targetTeam: target,
+    );
+    expect(restored, target);
+    expect(store.teams.length, count);
+    expect(visibleAccountTeams(store).single['id'], target);
+    expect(store.members(target).map((m) => m['name']).toList(), ['Alice']);
+    final copy = store.tasks(target).singleWhere((t) => t['title'] == 'Drill');
+    expect(copy['member_id'], isNull);
+    expect(copy['status'], 'todo');
+    expect(copy['review_reason'], '');
+    expect(
+      store.tasks(target).singleWhere((t) => t['title'] == 'Existing')['notes'],
+      'Keep',
+    );
+    expect(store.versions(copy['strategy_id'] as String), hasLength(2));
+    expect(store.tasks(source).single['status'], 'approved');
+  });
+
+  test(
+    'online restore refuses viewer, signed-out and cross-account targets',
+    () async {
+      final source = store.createTeam('Archive');
+      final sourceMap = store.addMap(source, 'Mirage');
+      store.mapImage(sourceMap, File('test/fixtures/radar.png').absolute.path);
+      store.createStrategy(sourceMap, 'A', 'T');
+      final bytes = OfflinePackage.export(store, source, 'en');
+      final target = saveAccountRoster(
+        store,
+        'https://fixture.example',
+        'alice',
+        {'id': 'remote', 'name': 'Online', 'role': 'owner'},
+        [
+          {'id': 'alice', 'name': 'Alice', 'role': 'owner'},
+        ],
+      );
+      for (final state in ['viewer', 'signed-out', 'other-account']) {
+        store.setSetting(
+          'shared_role_$target',
+          state == 'viewer' ? 'viewer' : 'owner',
+        );
+        store.setSetting(
+          'account_signed_out',
+          state == 'signed-out' ? '1' : '0',
+        );
+        store.setSetting(
+          'account_identity',
+          jsonEncode([
+            'https://fixture.example',
+            state == 'other-account' ? 'bob' : 'alice',
+          ]),
+        );
+        await expectLater(
+          OfflinePackage.restore(store, dir, bytes, targetTeam: target),
+          throwsA(isA<DomainError>()),
+        );
+        expect(store.maps(target), isEmpty);
+        expect(store.teams, hasLength(2));
+      }
+      store.setSetting(
+        'account_identity',
+        jsonEncode(['https://fixture.example', 'alice']),
+      );
+      store.setSetting('account_signed_out', '0');
+      final pending = OfflinePackage.restore(
+        store,
+        dir,
+        bytes,
+        targetTeam: target,
+      );
+      store.setSetting('account_signed_out', '1');
+      await expectLater(pending, throwsA(isA<DomainError>()));
+      expect(store.maps(target), isEmpty);
+      expect(
+        await dir.list(recursive: true).where((e) => e is File).toList(),
+        isEmpty,
+      );
     },
   );
 
