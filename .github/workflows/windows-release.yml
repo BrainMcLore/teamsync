@@ -57,8 +57,26 @@ jobs:
         run: |
           .venv/Scripts/python.exe -m pytest worker server/tests -q
           if ($LASTEXITCODE -ne 0) { throw 'Worker/server checks failed.' }
+          .venv/Scripts/python.exe tools/prepare_review_acceptance.py
+          if ($LASTEXITCODE -ne 0) { throw 'Real review preparation failed.' }
       - name: Build and verify Windows installer
         run: ./tools/build-windows.ps1 -Flutter (Get-Command flutter.bat).Source -Installer -InnoCompiler $env:TEAMSYNC_ISCC
+      - name: Verify install, Beta upgrade, migration and uninstall
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $baseline = Join-Path $env:RUNNER_TEMP 'teamsync-published-beta'
+          New-Item -ItemType Directory -Path $baseline | Out-Null
+          gh release download v0.95.0-beta --repo BrainMcLore/teamsync --pattern 'TeamSync-0.95.0-beta-Windows-Setup.exe' --pattern 'TeamSync-0.95.0-beta-manifest.json' --dir $baseline
+          if ($LASTEXITCODE -ne 0) { throw 'Published Beta download failed.' }
+          $name = 'TeamSync-0.95.0-beta-Windows-Setup.exe'
+          $manifest = Get-Content (Join-Path $baseline 'TeamSync-0.95.0-beta-manifest.json') -Raw | ConvertFrom-Json
+          $entry = @($manifest.files | Where-Object name -EQ $name)
+          if ($entry.Count -ne 1) { throw 'Baseline installer missing from published manifest.' }
+          $old = Join-Path $baseline $name
+          if ((Get-FileHash $old -Algorithm SHA256).Hash.ToLowerInvariant() -ne $entry[0].sha256) { throw 'Published installer hash mismatch.' }
+          $candidate = Get-ChildItem dist/TeamSync-*-Windows-Setup.exe | Select-Object -First 1
+          ./tools/check-windows-installer.ps1 -Candidate $candidate.FullName -Baseline $old
       - name: Package source, compatible server and checksums
         run: |
           python tools/package-source.py

@@ -127,7 +127,7 @@ void main() {
   });
 
   final source = File('../.tools/benchmark-source-04.txt');
-  test('benchmark actual user review event queries without modifying the recording', () async {
+  test('benchmark real recorded review event queries without modifying the recording', () async {
     final path = source.readAsStringSync().trim();
     final watch = Stopwatch()..start();
     final data = await readReview(path);

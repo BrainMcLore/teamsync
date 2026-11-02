@@ -12,6 +12,18 @@ from zipfile import ZipFile
 
 
 class ReleaseChecks(unittest.TestCase):
+    def test_installer_fixture_refuses_overwrite_and_detects_data_loss(self):
+        helper = Path(__file__).with_name('check_installer_data.py')
+        profile = self.root / 'disposable-profile'
+        def invoke(*args):
+            return subprocess.run([sys.executable, str(helper), *args], capture_output=True, text=True)
+        self.assertEqual(invoke('seed', str(profile)).returncode, 0)
+        self.assertEqual(invoke('check', str(profile), '--schema', '1').returncode, 0)
+        self.assertNotEqual(invoke('seed', str(profile)).returncode, 0)
+        self.assertNotEqual(invoke('check', str(profile), '--schema', '7').returncode, 0)
+        (profile / 'media/installer-acceptance.txt').unlink()
+        self.assertNotEqual(invoke('check', str(profile), '--schema', '1').returncode, 0)
+
     def test_apksigner_old_and_new_labels_require_exact_public_certificate(self):
         expected = '1' * 64
         for prefix in ['Signer #1', 'V2 Signer:']:
