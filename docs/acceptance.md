@@ -1,4 +1,4 @@
-# Beta acceptance boundary
+# Release acceptance boundary
 
 | Area | Automated coverage | Human acceptance still needed |
 | --- | --- | --- |
@@ -9,6 +9,6 @@
 | Accounts | API identity and team tests | Broader live Steam linking and provider behavior |
 | Bootcamp | Configuration and installer logic | Real PUG and TeamSpeak sessions |
 
-Beta publication does not certify the unfinished roadmap. Legacy tasks assigned to a player without an account link may require reassignment; they are not silently deleted.
+Publication of 1.0.0 does not certify the unfinished roadmap. Legacy tasks assigned to a player without an account link may require reassignment; they are not silently deleted.
 
-Русский: автоматические проверки не заменяют проверку на физических устройствах, реальных матчах и внешних сервисах. Известные ограничения перечислены в [README](../README.ru.md#что-означает-beta).
+Русский: автоматические проверки не заменяют проверку на физических устройствах, реальных матчах и внешних сервисах. Известные ограничения перечислены в [README](../README.ru.md#состав-релиза-и-известные-ограничения).

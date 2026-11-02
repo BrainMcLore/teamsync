@@ -1,6 +1,6 @@
 # Changelog / Изменения
 
-## Unreleased
+## 1.0.0 — 2026-11-02
 
 - Fixed backup restoration creating an invisible offline team: managers now copy materials into the selected online team, with real-account boundaries, unassigned fresh tasks and rollback on logout/account change.
 

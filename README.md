@@ -3,7 +3,7 @@
 ![TeamSync — plan, practice and review together](docs/images/hero.svg)
 
 <p align="center">
-<a href="https://github.com/BrainMcLore/teamsync/releases/tag/v0.95.0-beta"><img alt="0.95 Beta" src="https://img.shields.io/badge/release-0.95_Beta-98e8ce?style=flat-square&amp;labelColor=101923"></a>
+<a href="https://github.com/BrainMcLore/teamsync/releases/tag/v1.0.0"><img alt="1.0.0" src="https://img.shields.io/badge/release-1.0.0-98e8ce?style=flat-square&amp;labelColor=101923"></a>
 <a href="https://github.com/BrainMcLore/teamsync/actions/workflows/windows-release.yml"><img alt="Windows build" src="https://github.com/BrainMcLore/teamsync/actions/workflows/windows-release.yml/badge.svg"></a>
 <a href="https://github.com/BrainMcLore/teamsync/actions/workflows/android.yml"><img alt="Android verification" src="https://github.com/BrainMcLore/teamsync/actions/workflows/android.yml/badge.svg"></a>
 <img alt="English and Russian" src="https://img.shields.io/badge/languages-EN_%2F_RU-66b7e8?style=flat-square&amp;labelColor=101923">
@@ -12,11 +12,11 @@
 **Your team's CS2 preparation, in one place.** Draw tactics on ready-to-use maps, share utility lineups, assign personal practice plans, review demos and print LAN playbooks. TeamSync is an installable **Windows and Android application**, with English and Russian interfaces.
 
 <p align="center">
-<a href="https://github.com/BrainMcLore/teamsync/releases/download/v0.95.0-beta/TeamSync-0.95.0-beta-Windows-Setup.exe"><img alt="Download Windows installer" src="https://img.shields.io/badge/Download-Windows_x64-98e8ce?style=for-the-badge&amp;labelColor=101923"></a>
-<a href="https://github.com/BrainMcLore/teamsync/releases/download/v0.95.0-beta/TeamSync-0.95.0-beta-Android.apk"><img alt="Download Android APK" src="https://img.shields.io/badge/Download-Android_APK-66b7e8?style=for-the-badge&amp;labelColor=101923"></a>
+<a href="https://github.com/BrainMcLore/teamsync/releases/download/v1.0.0/TeamSync-1.0.0-Windows-Setup.exe"><img alt="Download Windows installer" src="https://img.shields.io/badge/Download-Windows_x64-98e8ce?style=for-the-badge&amp;labelColor=101923"></a>
+<a href="https://github.com/BrainMcLore/teamsync/releases/download/v1.0.0/TeamSync-1.0.0-Android.apk"><img alt="Download Android APK" src="https://img.shields.io/badge/Download-Android_APK-66b7e8?style=for-the-badge&amp;labelColor=101923"></a>
 </p>
 
-<p align="center"><a href="https://github.com/BrainMcLore/teamsync/releases/tag/v0.95.0-beta">Release notes & checksums</a> · <a href="docs/user-guide.md">User guide</a> · <a href="docs/development.md">Build from source</a> · <a href="docs/release-audit.md">1.0 acceptance audit</a></p>
+<p align="center"><a href="https://github.com/BrainMcLore/teamsync/releases/tag/v1.0.0">Release notes & checksums</a> · <a href="docs/user-guide.md">User guide</a> · <a href="docs/development.md">Build from source</a> · <a href="docs/release-audit.md">1.0 acceptance audit</a></p>
 
 ## A shared tactical room
 
@@ -61,24 +61,23 @@ Assignments move through **Assigned → In progress → Submitted → Approved**
 
 ## Get started
 
-1. Install the Windows package or Android APK from **[0.95 Beta](https://github.com/BrainMcLore/teamsync/releases/tag/v0.95.0-beta)**.
+1. Install the Windows package or Android APK from **[1.0.0](https://github.com/BrainMcLore/teamsync/releases/tag/v1.0.0)**.
 2. Sign in, create a team or accept an invitation, and open its shared library.
 3. Pick a map, save a tactic and wait for the sync confirmation.
 4. Use **Prepare map** to turn tactics into assigned training plans.
 
 Release assets include SHA-256 checksums. Android releases use a persistent signing key; installing over an older build signed with a different test key requires a backup and reinstall. Export your materials before changing installations.
 
-## Beta scope
+## Release scope & known limitations
 
-**0.95 is a beta**, with working Windows/Android builds and automated client, API, parser and Android integration checks. It is not a claim that every planned feature is finished.
+**1.0 ships the current Windows/Android feature set**, including team tactics, task discussion and evidence, schedule/attendance, local reminders, workload snapshots and portable review/backup files. Remaining roadmap work is deferred; it is not represented as completed.
 
-- HLTV/CDN access can require a verification window or change availability. External source links open the original; third-party videos are not copied for offline use.
-- Training evidence, independent comments, scheduling, push notifications and live joint review remain planned.
-- Remote server-agent control and complete offline review/history bundles remain planned.
-- Steam account linking, real CS2 playback, live PUG/TeamSpeak sessions and physical-device scenarios still need broader acceptance.
-- Hosted service limits and cold starts apply. [Self-hosting](docs/deployment.md) is supported; provider pricing and availability are not guaranteed.
+- Live HLTV archive acceptance failed in hosted Windows CI with `source_verification_timeout` (0 bytes). Catalog access passed; reliable demo downloading is not guaranteed. Local demo/review import remains available.
+- Reminders are local and apply remote changes after synchronization. Cloud push, joint live review, authenticated remote bootcamp control and note edit/deletion audit are not included.
+- Physical-device updates, notification banners, live Steam linking, real CS2 playback and PUG/TeamSpeak sessions still require broader acceptance.
+- Hosted service limits and cold starts apply. [Self-hosting](docs/deployment.md) is supported.
 
-See the [roadmap](docs/roadmap.md), [verification scope](docs/verification.md) and [acceptance checklist](docs/acceptance.md).
+See the [acceptance audit](docs/release-audit.md), [user guide](docs/user-guide.md) and [roadmap](docs/roadmap.md).
 
 ## Build & explore
 

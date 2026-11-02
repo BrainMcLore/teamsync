@@ -2,6 +2,10 @@
 
 Date: 2026-11-02. Targets: Windows x64 and Android. Linux is the development host. **This is an acceptance report, not a 1.0 release announcement.** Published 0.95 Beta artifacts remain unchanged.
 
+## Release decision
+
+The user chose to publish the current feature baseline as 1.0.0 with the known limitations below. Earlier readiness assessments are retained as audit history; the release does not mark failed, unavailable or unimplemented checks as passed. Official versioned packages and release notes are linked from the README.
+
 ## Verified locally
 
 | Check | Result | Scope |
@@ -82,4 +86,4 @@ Current candidate binary hashes:
 - Windows installer: 133,255,208 bytes; SHA-256 `79af50124a8b98a1a15f6cec917f33b4f3e4fd4a305a21ab503e829f15471925`.
 - Android APK: 104,034,484 bytes; SHA-256 `bd2c258bb1cdf60c213f000fc4682db1a901a27cc4eed9938be888930f037b00`.
 
-The Windows workflow manifest lists the APK as missing because binaries are produced by separate workflows; the independently verified Android artifact above supplies the other target. No combined final 1.0 release has been published. Physical devices were confirmed unavailable by the user, and the missing functionality/physical gates above remain open.
+The Windows workflow manifest lists the APK as missing because binaries are produced by separate workflows; the independently verified Android artifact above supplies the other target. These pre-release hashes are retained as audit evidence; official 1.0.0 artifacts have their own release manifest. Physical devices were confirmed unavailable by the user, and the missing functionality/physical gates above remain open.

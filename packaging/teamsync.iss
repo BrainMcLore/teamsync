@@ -1,10 +1,10 @@
-#define AppVersion "0.95.0"
-#define ReleaseVersion "0.95.0-beta"
+#define AppVersion "1.0.0"
+#define ReleaseVersion "1.0.0"
 [Setup]
 AppId={{7C263DB7-0143-4F56-A85E-5F28AC37E16D}
 AppName=TeamSync
 AppVersion={#AppVersion}
-AppVerName=TeamSync 0.95 Beta
+AppVerName=TeamSync 1.0.0
 AppPublisher=TeamSync
 DefaultDirName={localappdata}\Programs\TeamSync
 DefaultGroupName=TeamSync

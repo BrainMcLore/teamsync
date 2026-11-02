@@ -1,8 +1,8 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1280" height="360" viewBox="0 0 1280 360" role="img" aria-labelledby="title desc">
-<title id="title">TeamSync 0.95 Beta</title><desc id="desc">A native CS2 workspace for Windows and Android. Plan, practice and review together.</desc>
+<title id="title">TeamSync 1.0</title><desc id="desc">A native CS2 workspace for Windows and Android. Plan, practice and review together.</desc>
 <defs><linearGradient id="bg" x2="1" y2="1"><stop stop-color="#101e29"/><stop offset="1" stop-color="#080e15"/></linearGradient><pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M40 0H0V40" fill="none" stroke="#25404b" stroke-opacity=".28"/></pattern><marker id="arrow" markerWidth="8" markerHeight="8" refX="5" refY="3" orient="auto"><path d="M0 0L6 3L0 6" fill="none" stroke="#98e8ce" stroke-width="1.5"/></marker></defs>
 <rect width="1280" height="360" rx="28" fill="url(#bg)"/><rect x="700" width="580" height="360" fill="url(#grid)"/>
-<rect x="52" y="44" width="156" height="30" rx="15" fill="#98e8ce" fill-opacity=".12" stroke="#98e8ce" stroke-opacity=".35"/><text x="130" y="64" fill="#98e8ce" text-anchor="middle" font-family="Arial,sans-serif" font-size="13" font-weight="700" letter-spacing="2">0.95 BETA</text>
+<rect x="52" y="44" width="156" height="30" rx="15" fill="#98e8ce" fill-opacity=".12" stroke="#98e8ce" stroke-opacity=".35"/><text x="130" y="64" fill="#98e8ce" text-anchor="middle" font-family="Arial,sans-serif" font-size="13" font-weight="700" letter-spacing="2">1.0 RELEASE</text>
 <text x="48" y="166" fill="#edf5f9" font-family="Arial,sans-serif" font-size="80" font-weight="700" letter-spacing="-4">TeamSync</text>
 <text x="53" y="211" fill="#b4c6d2" font-family="Arial,sans-serif" font-size="22">One team. One tactical workspace.</text>
 <text x="54" y="281" fill="#98e8ce" font-family="Arial,sans-serif" font-size="15" font-weight="700" letter-spacing="3">PLAN  /  PRACTICE  /  REVIEW</text>

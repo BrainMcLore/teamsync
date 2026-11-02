@@ -148,7 +148,7 @@ class DocumentWrite(StrictModel):
         return str(uuid.UUID(value))
 
 def create_app(database_url=None, public_url=None):
-    app=FastAPI(title='TeamSync API',version='0.95.0-beta',docs_url=None,redoc_url=None)
+    app=FastAPI(title='TeamSync API',version='1.0.0',docs_url=None,redoc_url=None)
     engine=open_database(database_url or os.getenv('DATABASE_URL','sqlite:///./teamsync-server.sqlite'))
     app.state.engine=engine
     base=(public_url or os.getenv('PUBLIC_URL','http://127.0.0.1:8000')).rstrip('/')
@@ -229,7 +229,7 @@ def create_app(database_url=None, public_url=None):
 
     @app.get('/api/v1/health')
     def health():
-        return {'status':'ok','version':'0.95.0-beta','providers':{'steam':True,'discord':bool(discord_id and discord_secret)},'capabilities':['identity','teams','account_invites','roster','tactical_sync','training_sync','utilities','utility_skills','team_media','versioned_documents','task_discussion','task_evidence','team_schedule'],'native_client_required':True}
+        return {'status':'ok','version':'1.0.0','providers':{'steam':True,'discord':bool(discord_id and discord_secret)},'capabilities':['identity','teams','account_invites','roster','tactical_sync','training_sync','utilities','utility_skills','team_media','versioned_documents','task_discussion','task_evidence','team_schedule'],'native_client_required':True}
 
     @app.post('/api/v1/auth/{provider}/start')
     def auth_start(provider:str,body:AuthStart):

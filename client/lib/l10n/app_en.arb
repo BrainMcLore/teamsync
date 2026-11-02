@@ -79,7 +79,7 @@
   "stay": "Keep editing",
   "language": "Interface language",
   "storage": "Data directory",
-  "stageNotice": "Early build with local preparation and configurable online accounts. Shared editing, demo parsing, scheduling and server management are still in development.",
+  "stageNotice": "TeamSync 1.0. See the release notes for supported features and known limitations.",
   "importDemo": "Import .dem",
   "demoNotice": "Files are copied to this device. Parsing, playback and launching CS2 are not available in this build.",
   "invalidDemo": "This file is not a supported CS2 demo (PBDEMS2) or exceeds the 2 GB import limit.",

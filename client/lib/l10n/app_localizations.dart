@@ -533,7 +533,7 @@ abstract class AppLocalizations {
   /// No description provided for @stageNotice.
   ///
   /// In ru, this message translates to:
-  /// **'Ранняя сборка с локальной подготовкой и подключаемыми онлайн-аккаунтами. Совместное редактирование, разбор демок, расписание и управление серверами ещё разрабатываются.'**
+  /// **'TeamSync 1.0. Поддерживаемые возможности и известные ограничения перечислены в описании релиза.'**
   String get stageNotice;
 
   /// No description provided for @importDemo.

@@ -158,7 +158,7 @@ class StudioShell extends StatelessWidget {
                           ),
                           const SizedBox(height: 12),
                           const Text(
-                            'CS2 / TEAMSYNC 0.95 BETA',
+                            'CS2 / TEAMSYNC 1.0',
                             style: TextStyle(
                               color: Studio.muted,
                               fontSize: 9,

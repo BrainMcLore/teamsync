@@ -1,6 +1,6 @@
-# Road to 1.0 / До полного релиза
+# Release scope and follow-up / Релиз и дальнейшие задачи
 
-The published 0.95 Beta remains immutable. Development continues in a separate branch; 1.0 is released only after the following gates are demonstrated, not merely implemented in the UI.
+The user selected the current feature set for release as 1.0.0 with the documented limitations. The published 0.95 Beta remains immutable. Unchecked items below are deferred work or outstanding acceptance, not completed features.
 
 Current evidence and remaining blockers: [1.0 acceptance audit](release-audit.md).
 

@@ -2,11 +2,11 @@
 
 ![TeamSync — планируйте, тренируйтесь и разбирайте матчи вместе](docs/images/hero.svg)
 
-<p align="center"><a href="https://github.com/BrainMcLore/teamsync/releases/tag/v0.95.0-beta"><img alt="0.95 Beta" src="https://img.shields.io/badge/релиз-0.95_Beta-98e8ce?style=for-the-badge"></a> <img alt="Windows и Android" src="https://img.shields.io/badge/Windows_%2B_Android-EN_%2F_RU-66b7e8?style=for-the-badge"></p>
+<p align="center"><a href="https://github.com/BrainMcLore/teamsync/releases/tag/v1.0.0"><img alt="1.0.0" src="https://img.shields.io/badge/релиз-1.0.0-98e8ce?style=for-the-badge"></a> <img alt="Windows и Android" src="https://img.shields.io/badge/Windows_%2B_Android-EN_%2F_RU-66b7e8?style=for-the-badge"></p>
 
 **Подготовка вашей команды в CS2 — в одном приложении.** Создавайте тактики на готовых картах, собирайте раскидки, назначайте тренировки игрокам, разбирайте демки и печатайте заготовки раундов. Устанавливаемое приложение для **Windows и Android**, с русским и английским интерфейсом.
 
-<p align="center"><a href="https://github.com/BrainMcLore/teamsync/releases/download/v0.95.0-beta/TeamSync-0.95.0-beta-Windows-Setup.exe"><b>⬇ Windows x64</b></a>　·　<a href="https://github.com/BrainMcLore/teamsync/releases/download/v0.95.0-beta/TeamSync-0.95.0-beta-Android.apk"><b>⬇ Android APK</b></a>　·　<a href="https://github.com/BrainMcLore/teamsync/releases/tag/v0.95.0-beta">Состав релиза и SHA-256</a></p>
+<p align="center"><a href="https://github.com/BrainMcLore/teamsync/releases/download/v1.0.0/TeamSync-1.0.0-Windows-Setup.exe"><b>⬇ Windows x64</b></a>　·　<a href="https://github.com/BrainMcLore/teamsync/releases/download/v1.0.0/TeamSync-1.0.0-Android.apk"><b>⬇ Android APK</b></a>　·　<a href="https://github.com/BrainMcLore/teamsync/releases/tag/v1.0.0">Состав релиза и SHA-256</a></p>
 
 [Проверки готовности к 1.0 и оставшиеся ограничения](docs/release-audit.md).
 
@@ -49,24 +49,23 @@
 
 ## Начало работы
 
-1. Установите [0.95 Beta](https://github.com/BrainMcLore/teamsync/releases/tag/v0.95.0-beta) для своей платформы.
+1. Установите [1.0.0](https://github.com/BrainMcLore/teamsync/releases/tag/v1.0.0) для своей платформы.
 2. Войдите в аккаунт, создайте команду или примите приглашение.
 3. Сохраните тактику и дождитесь подтверждения синхронизации.
 4. Через подготовку карты создайте персональные задания игрокам.
 
 APK подписан постоянным ключом. Для перехода с прежней тестовой сборки с другой подписью может понадобиться резервная копия и переустановка. Перед сменой установки экспортируйте свои материалы.
 
-## Что означает Beta
+## Состав релиза и известные ограничения
 
-0.95 — рабочая бета, а не заявление о завершении всех запланированных функций.
+**1.0 выпускает текущий набор возможностей Windows/Android:** общие тактики, обсуждения и доказательства заданий, расписание и посещаемость, локальные напоминания, прогресс команды и переносимые файлы разборов/резервных копий. Остальные пункты плана перенесены на следующие версии.
 
-- Доступ к HLTV/CDN может требовать окна проверки. Ссылки на стороннее видео открывают оригинал; такие видео не копируются для офлайн-просмотра.
-- Доказательства выполнения, отдельные комментарии, расписание, push-уведомления и совместный живой разбор остаются в планах.
-- Серверный агент и полные офлайн-пакеты истории/разборов ещё не выпущены.
-- Вход Steam, запуск CS2, реальные PUG/TeamSpeak-сессии и физические устройства требуют более широкой проверки.
-- У облачного сервиса есть ограничения и холодные старты. Доступно [самостоятельное размещение](docs/deployment.md); неизменность условий провайдеров не гарантируется.
+- Проверка скачивания архива HLTV в Windows CI завершилась `source_verification_timeout`, 0 байт. Каталог работает, но надёжное скачивание демок не гарантируется. Импорт локальных демок и разборов доступен.
+- Напоминания локальные: удалённые изменения применяются после синхронизации. Облачный push, совместный онлайн-разбор, защищённый удалённый агент буткемпа и журнал правок/удалений заметок не включены.
+- Обновления на физических устройствах, показ уведомлений, живое связывание Steam, запуск CS2 и реальные PUG/TeamSpeak-сессии требуют дальнейшей проверки.
+- У облачного сервиса есть ограничения и холодные старты. Доступно [самостоятельное размещение](docs/deployment.md).
 
-[Руководство](docs/user-guide.md) · [Проверки](docs/verification.md) · [Приёмка](docs/acceptance.md) · [Планы](docs/roadmap.md)
+[Аудит приёмки](docs/release-audit.md) · [Руководство](docs/user-guide.md) · [Планы](docs/roadmap.md)
 
 ## Разработка
 

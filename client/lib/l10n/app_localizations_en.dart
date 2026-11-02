@@ -237,7 +237,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get stageNotice =>
-      'Early build with local preparation and configurable online accounts. Shared editing, demo parsing, scheduling and server management are still in development.';
+      'TeamSync 1.0. See the release notes for supported features and known limitations.';
 
   @override
   String get importDemo => 'Import .dem';
