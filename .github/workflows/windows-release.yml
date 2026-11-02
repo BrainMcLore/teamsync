@@ -2,6 +2,11 @@ name: Windows release
 
 on:
   workflow_dispatch:
+    inputs:
+      live_hltv:
+        description: 'Run the real HLTV archive download/import acceptance (large network transfer)'
+        type: boolean
+        default: false
   push:
     tags: ['v*']
 
@@ -61,6 +66,14 @@ jobs:
           if ($LASTEXITCODE -ne 0) { throw 'Real review preparation failed.' }
       - name: Build and verify Windows installer
         run: ./tools/build-windows.ps1 -Flutter (Get-Command flutter.bat).Source -Installer -InnoCompiler $env:TEAMSYNC_ISCC
+      - name: Real HLTV archive download and native import
+        if: inputs.live_hltv == true
+        working-directory: client
+        env:
+          TEAMSYNC_LIVE_HLTV: '1'
+        run: |
+          flutter test test/managed_hltv_05_test.dart --timeout=8m
+          if ($LASTEXITCODE -ne 0) { throw 'Live HLTV archive acceptance failed; do not certify external demo delivery.' }
       - name: Verify install, Beta upgrade, migration and uninstall
         env:
           GH_TOKEN: ${{ github.token }}
