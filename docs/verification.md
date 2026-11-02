@@ -30,3 +30,9 @@ The following workload snapshot adds three tests (116 Flutter passes total): unf
 Revision `62fc923` adds timeline-note/scouting round trips to portable reviews. Local checks: 119 Flutter tests passed, 5 external/private checks skipped; static analysis clean. Tests cover legacy analysis-only compatibility, original tick/round/text/creation-time preservation, independent imported IDs, unknown scouting/path rejection, invalid note boundaries and database-triggered rollback with file cleanup. Review encoding runs through an isolate. A redacted history scan found no secrets.
 
 The Android integration suite now performs an offline review export/import/open round trip on device storage. Native verification runs: [Android 41478417578](https://github.com/BrainMcLore/teamsync/actions/runs/41478417578), [Windows 41478423066](https://github.com/BrainMcLore/teamsync/actions/runs/41478423066). Consult run conclusions; dispatch alone is not acceptance. Physical cross-device sharing and annotation edit/deletion history remain outstanding.
+
+## Development toward 1.0 — offline tactic revisions
+
+Revision `748bbb4` passes 122 Flutter tests (5 external/private checks skipped) and clean static analysis. New package tests preserve tactic version numbers/timestamps, remap all historical IDs, restore prior content as a new revision, retain schema 1 compatibility, and roll back database/media on duplicate, missing-current, future or path-bearing revisions. Redacted Git history scanning found no secrets.
+
+The preceding portable-review revision `62fc923` passed [Android verification 41478417578](https://github.com/BrainMcLore/teamsync/actions/runs/41478417578), including the emulator's offline notebook export/import/open test and signed APK build. This native result is for `62fc923`; the later tactic-history change has local regression coverage and must be included in final release CI. Physical transfer and real-device upgrade acceptance remain pending.
