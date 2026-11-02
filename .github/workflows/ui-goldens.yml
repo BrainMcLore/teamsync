@@ -4,6 +4,14 @@ on:
     branches: ['codex/ui-*']
   workflow_dispatch:
     inputs:
+      hltv_only:
+        description: 'Diagnose live HLTV using an already-built installer artifact'
+        type: boolean
+        default: false
+      artifact_run:
+        description: 'Windows release workflow run containing the installer artifact'
+        type: string
+        default: ''
       real_review:
         description: 'Include the pinned real CS2 recording in review UI acceptance'
         type: boolean
@@ -14,9 +22,10 @@ on:
         default: false
 permissions:
   contents: read
+  actions: read
 jobs:
   snapshots:
-    if: inputs.credential_smoke_only != true
+    if: inputs.credential_smoke_only != true && inputs.hltv_only != true
     runs-on: windows-2022
     timeout-minutes: 20
     steps:
@@ -52,6 +61,7 @@ jobs:
           retention-days: 14
 
   native-credentials:
+    if: inputs.hltv_only != true
     runs-on: windows-2022
     timeout-minutes: 10
     defaults:
@@ -70,3 +80,50 @@ jobs:
           if ($LASTEXITCODE -ne 0) { throw 'Native credential check compilation failed.' }
           & ./.tools/native-credential-check.exe
           if ($LASTEXITCODE -ne 0) { throw 'Native credential check failed.' }
+
+  live-hltv:
+    if: inputs.hltv_only == true
+    runs-on: windows-2022
+    timeout-minutes: 20
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - uses: actions/checkout@v7
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.47.8'
+          channel: stable
+          cache: true
+      - name: Install the verified candidate companion for isolated HLTV acceptance
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ACCEPTANCE_RUN: ${{ inputs.artifact_run }}
+        run: |
+          if ($env:ACCEPTANCE_RUN -notmatch '^\d+$') { throw 'A numeric Windows artifact run is required.' }
+          $download = Join-Path $env:RUNNER_TEMP 'hltv-installer-artifact'
+          gh run download $env:ACCEPTANCE_RUN --repo BrainMcLore/teamsync --pattern 'teamsync-windows-*' --dir $download
+          if ($LASTEXITCODE -ne 0) { throw 'Candidate artifact download failed.' }
+          $installer = Get-ChildItem $download -Recurse -Filter '*-Windows-Setup.exe' | Select-Object -First 1
+          if (-not $installer) { throw 'Candidate installer missing.' }
+          $manifestPath = Get-ChildItem $download -Recurse -Filter '*-manifest.json' | Select-Object -First 1
+          $manifest = Get-Content $manifestPath.FullName -Raw | ConvertFrom-Json
+          $entry = @($manifest.files | Where-Object name -EQ $installer.Name)
+          if ($entry.Count -ne 1 -or (Get-FileHash $installer.FullName -Algorithm SHA256).Hash.ToLowerInvariant() -ne $entry[0].sha256) { throw 'Candidate hash mismatch.' }
+          $target = Join-Path $env:RUNNER_TEMP 'TeamSyncHltvAcceptance'
+          $setup = Start-Process $installer.FullName -ArgumentList @('/VERYSILENT','/SUPPRESSMSGBOXES','/NORESTART','/SP-', "/DIR=`"$target`"") -Wait -PassThru
+          if ($setup.ExitCode -ne 0) { throw 'Candidate installation failed.' }
+          $worker = Join-Path (Get-Location) '.tools/worker-dist/teamsync-demo'
+          New-Item -ItemType Directory -Path $worker -Force | Out-Null
+          Copy-Item (Join-Path $target 'demo-worker/*') -Destination $worker -Recurse -Force
+          & (Join-Path $worker 'teamsync-download.exe') --check-runtime
+          if ($LASTEXITCODE -ne 0) { throw 'WebView2 runtime unavailable.' }
+      - name: Diagnose native HLTV archive import
+        working-directory: client
+        env:
+          TEAMSYNC_LIVE_HLTV: '1'
+        run: |
+          flutter pub get
+          if ($LASTEXITCODE -ne 0) { throw 'Dependency resolution failed.' }
+          flutter test test/managed_hltv_05_test.dart --timeout=8m
+          if ($LASTEXITCODE -ne 0) { throw 'Native HLTV acceptance failed; see the recorded error code.' }

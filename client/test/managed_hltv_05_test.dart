@@ -36,6 +36,10 @@ void main() {
         }
         expect(maps, unorderedEquals(['de_cache', 'de_mirage', 'de_dust2']));
         expect(job.bytes, 617663073);
+      } on DomainError catch (error) {
+        fail(
+          'HLTV native import failed: code=${error.code}, phase=${job.phase}, bytes=${job.bytes}',
+        );
       } finally {
         await job.cancel();
         store.close();
