@@ -3,10 +3,16 @@ on:
   push:
     branches: ['codex/ui-*']
   workflow_dispatch:
+    inputs:
+      credential_smoke_only:
+        description: 'Run only the native Windows credential adapter check'
+        type: boolean
+        default: false
 permissions:
   contents: read
 jobs:
   snapshots:
+    if: inputs.credential_smoke_only != true
     runs-on: windows-2022
     timeout-minutes: 20
     steps:
@@ -25,3 +31,23 @@ jobs:
           path: client/test/goldens/windows/**/*.png
           if-no-files-found: error
           retention-days: 14
+
+  native-credentials:
+    runs-on: windows-2022
+    timeout-minutes: 10
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - uses: actions/checkout@v7
+      - name: Compile and exercise the native credential adapter
+        run: |
+          $vswhere = Join-Path ${env:ProgramFiles(x86)} 'Microsoft Visual Studio/Installer/vswhere.exe'
+          $installation = & $vswhere -latest -products '*' -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath
+          if (-not $installation) { throw 'MSVC toolchain missing.' }
+          & (Join-Path $installation 'Common7/Tools/Launch-VsDevShell.ps1') -Arch amd64 -HostArch amd64 -SkipAutomaticLocation
+          New-Item -ItemType Directory -Path .tools -Force | Out-Null
+          cl /nologo /EHsc /std:c++17 /utf-8 tools/native_secure_storage_smoke.cpp /Fe:.tools/native-credential-check.exe
+          if ($LASTEXITCODE -ne 0) { throw 'Native credential check compilation failed.' }
+          & ./.tools/native-credential-check.exe
+          if ($LASTEXITCODE -ne 0) { throw 'Native credential check failed.' }
