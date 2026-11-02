@@ -62,7 +62,7 @@ The archive failure originally exposed only a generic DomainError after about fi
 | Authenticated remote bootcamp agent | Not implemented | Scoped authenticated commands, errors, isolation and revocation |
 | Review edit/deletion audit | Not implemented | Retained revisions/deletions and explicitly attributed history, including portable transfer |
 
-**Русский.** Автотесты и нативные сборки подтверждают только перечисленные сценарии. Физические устройства, живой вход Steam, показ уведомлений, CS2 и реальные серверы требуют отдельной приёмки. Облачный push, совместный онлайн-разбор, защищённый удалённый агент и журнал правок/удалений заметок ещё не реализованы — их нельзя закрыть одним запуском тестов. До закрытия обязательных пунктов сборка не объявляется финальной 1.0.
+**Русский.** Автотесты и нативные сборки подтверждают только перечисленные сценарии. Физические устройства, живой вход Steam, показ уведомлений, CS2 и реальные серверы требуют отдельной приёмки. Облачный push, совместный онлайн-разбор, защищённый удалённый агент и журнал правок/удалений заметок ещё не реализованы — их нельзя закрыть одним запуском тестов. Пользователь выбрал выпуск 1.0.0 с этими ограничениями; незакрытые пункты перенесены в последующую приёмку и разработку.
 
 
 ## Defect found and fixed during acceptance
@@ -70,7 +70,7 @@ The archive failure originally exposed only a generic DomainError after about fi
 Backup restoration created an unlinked local team that the account-only workspace did not display. The application now copies into the selected online team, after manager confirmation. It retains existing materials, refuses viewer/logout/account-switch cases, creates no archive members/accounts, resets copied tasks to unassigned Todo, and keeps local tactic snapshots without claiming server-authenticated review history. A logout during media writes rolls back the import and removes newly written files. Local regressions pass, including import followed by synchronization to a second fixture account with no imported identities/approvals. Refreshed native candidate verification follows below. This functional change means the earlier APK/installer hashes above identify pre-fix acceptance builds, not a final 1.0 package.
 
 
-## Latest candidates with the restore fix
+## Pre-release candidates with the restore fix
 
 Both candidates use runtime source `6809ad5` and remain development builds, versioned 0.95 Beta. The later `f297674` change adds a fixture regression and updates documentation, without changing application runtime code.
 
